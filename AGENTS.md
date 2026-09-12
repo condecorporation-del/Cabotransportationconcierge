@@ -84,7 +84,7 @@ Una tarea está hecha solo si se cumple **todo** esto:
 - **Vulnerabilidades:**
   - Validación estricta de entradas y privilegios mínimos.
   - Secretos solo en variables de entorno.
-  - Dependencias fijadas y auditadas en CI (`pip-audit`, `npm audit`, `gitleaks`, `bandit`).
+  - Dependencias fijadas y auditadas en CI (`pip-audit`, `npm audit`, `gitleaks` y las reglas `S` de ruff).
   - Ante la duda, cerrado por defecto.
 
 ### 5.1 Backend (`backend/`, Python 3.12 + FastAPI)
@@ -181,7 +181,7 @@ Una tarea está hecha solo si se cumple **todo** esto:
 
 | Qué | Comando |
 |---|---|
-| Servicios de desarrollo (Postgres + Mailpit) | `docker compose up -d` |
+| Servicios de desarrollo | Postgres 16 nativo (servicio de Windows) y `mailpit` (ADR-001) |
 | Backend: instalar | `cd backend; uv sync` |
 | Backend: migrar | `cd backend; uv run alembic upgrade head` |
 | Backend: seed del catálogo | `cd backend; uv run python scripts/seed_catalog.py --dry-run` |

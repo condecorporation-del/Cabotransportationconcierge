@@ -12,22 +12,22 @@
 
 | Indicador | Estado |
 |---|---|
-| **Fase actual** | F0 — Fundación (no iniciada). Workplan v1.1 y `AGENTS.md` escritos y pendientes de aprobación. La v1.1 agrega: bilingüe EN/ES desde el lanzamiento, responsive perfecto, presupuestos de carga y réplica de funciones de allwayscabotransportation.com (§3.4). |
-| **Último avance** | Prototipo visual en `site/` aprobado por Marlon: home con el video "SEPTEMBER 10% OFF", arrival guide, mega menú, botones Customer Help y WhatsApp. |
-| **Backend** | ❌ No existe todavía. |
-| **Base de datos** | ❌ No existe. |
+| **Fase actual** | F0 — Fundación: 7/9 verificadas. Abiertas: **F0.2** (Marlon debe rotar la API key de OpenRouter; el archivo ya salió del repo) y **F0.7** (el CI está escrito, pero su primera corrida necesita el remoto de GitHub). |
+| **Último avance** | 12 sep 2026 — F0:<br>• Repo git con prototipo aprobado.<br>• Backend mínimo FastAPI con `/api/v1/health` y `/health/ready`.<br>• Configuración fail-fast.<br>• Postgres 16 nativo con bases `ctc` y `ctc_test`.<br>• Cliente de API tipado generado desde OpenAPI.<br>• CI escrito.<br>• ADR-001 (entorno sin Docker).<br>• Checklist para el cliente. |
+| **Backend** | ✅ App mínima: health y readiness con Postgres real. Ruff (reglas de seguridad) y mypy estricto en 0 errores. |
+| **Base de datos** | ✅ Local: Postgres 16.15 nativo con `ctc` y `ctc_test`. Sin tablas todavía (llegan en F1 con Alembic). |
 | **Sitio público real** | ❌ Solo el prototipo estático `site/` (HTML generado por `site/build.js`). |
 | **Admin** | ❌ No existe. |
-| **Tests** | ❌ Ninguno. |
+| **Tests** | ✅ 6 tests pytest verdes contra Postgres real. pip-audit y npm audit sin vulnerabilidades. |
 | **Deploy** | ❌ No configurado. |
-| **Git** | ❌ La carpeta no es repositorio todavía. |
+| **Git** | ✅ Repo local en rama `main`, gitleaks sin hallazgos. Sin remoto: no se hace push hasta que Marlon indique el repositorio. |
 
-**Siguiente tarea:** F0.1 (inicializar repositorio y estructura).
+**Siguiente tarea:** F1.1 (engine y sesión por request). En paralelo, cerrar F0.2 (rotar la key) y F0.7 (crear el remoto de GitHub).
 
 **Progreso por fase**
 
 ```
-F0  Fundación y decisiones          [----------] 0/9
+F0  Fundación y decisiones          [███████---] 7/9
 F1  Base de datos y dominio         [----------] 0/12
 F2  Motor de precios y catálogo     [----------] 0/9
 F3  Reservas públicas               [----------] 0/11
@@ -92,7 +92,7 @@ Cada decisión trae su porqué. Si alguien quiere cambiar una, registra la nueva
 | D10 | **Multiempresa desde la migración inicial:** `company_id` en todas las tablas de negocio, con una empresa por defecto. | Es la meta de vender el sistema. Migrarlo después cuesta 10 veces más (lección de ClassVIP). |
 | D11 | **Tramos de viaje (`booking_legs`) en tabla propia**, no dentro de `metadata`. | ClassVIP reconstruía llegada y salida parseando `metadata` (`booking_operations.py`), lo que era frágil. El despacho necesita filtrar por fecha y hora de cada tramo. |
 | D12 | **IA vía OpenRouter** (API compatible con OpenAI, modelo configurable por variable de entorno) **con herramientas** (function calling). | Marlon ya usa OpenRouter. Las herramientas garantizan que la IA nunca invente precios ni datos: todo sale de la base. |
-| D13 | **Tests contra PostgreSQL real** (Docker en local y en CI), no SQLite. | ClassVIP probaba con SQLite en memoria, lo que esconde diferencias de Postgres (enums, `FOR UPDATE`, secuencias, tipos). |
+| D13 | **Tests contra PostgreSQL real** (nativo en local según ADR-001, contenedor de servicio en CI), no SQLite. | ClassVIP probaba con SQLite en memoria, lo que esconde diferencias de Postgres (enums, `FOR UPDATE`, secuencias, tipos). |
 | D14 | **Deploy:** backend y worker en Railway (Docker), web en Vercel, admin en Vercel y base en Supabase. Staging separado de producción. | Es lo que ya funciona en ClassVIP; staging evita probar en producción. |
 | D15 | **Bilingüe EN/ES desde el lanzamiento** con el i18n de Astro:<br>• Inglés en `/` y español en `/es/`, con los mismos slugs.<br>• Diccionarios de UI tipados (el build falla si falta una clave) y contenido por idioma.<br>• Selector en el header que mantiene la página equivalente, más `hreflang` y `x-default`.<br>• El idioma se guarda en la reserva y define correos, voucher y respuestas de la IA.<br>• El admin va en español con opción de inglés. | Marlon lo pidió (12 sep 2026). Hacerlo desde F7 cuesta mucho menos que traducir al final, y los clientes son turistas de EE. UU. y Canadá además de hispanohablantes. |
 | D16 | **Responsive primero:**<br>• Diseño desde 320 px, con breakpoints 360/390 (móvil), 768 (tablet), 1024 (laptop) y 1440+ (desktop).<br>• Objetivos táctiles ≥ 44 px y sin scroll horizontal.<br>• Tablas que en móvil se vuelven tarjetas; selectores y menús tipo bottom sheet. | Marlon lo pidió; la mayoría de los turistas reserva desde el teléfono. |
@@ -375,7 +375,6 @@ cabo-transportation-concierge/
 │   └── api-client/            ← tipos TS generados desde OpenAPI (no editar a mano)
 ├── site/                      ← PROTOTIPO APROBADO — referencia visual, no se borra
 ├── design/                    ← primer prototipo descartado — borrar con OK de Marlon
-├── docker-compose.yml         ← postgres + mailpit (dev)
 └── .github/workflows/         ← ci.yml, e2e.yml
 ```
 
@@ -618,7 +617,7 @@ Hoy el prototipo tiene **179 links que apuntan a `#` en el home y 68 en Arrival 
 | Base de datos | Rol de aplicación con privilegios mínimos; RLS de Supabase con política de denegación pública en todas las tablas (lección de ClassVIP Fase 23-24); backups diarios y PITR en producción; prueba de restauración. |
 | Datos personales | Minimización; logs sin email ni teléfono completos (structlog con redacción); Sentry con scrubbing; política de retención de conversaciones de IA (180 días). |
 | IA | Herramientas con permisos de solo lectura, excepto `create_booking_draft` y `handoff`; sin acceso a datos de otros clientes; defensa contra prompt injection (las instrucciones del sistema no se exponen; lo que devuelven las herramientas se trata como dato). |
-| Cadena de suministro | `pip-audit`, `npm audit`, `bandit`, `gitleaks` y Dependabot en CI; versiones fijadas con lockfiles (`uv.lock`, `package-lock.json`). |
+| Cadena de suministro | `pip-audit`, `npm audit`, ruff con las reglas `S` (bandit), `gitleaks` y Dependabot en CI; versiones fijadas con lockfiles (`uv.lock`, `package-lock.json`). |
 | Secretos | Solo en variables de entorno del proveedor; `.env` nunca en git; rotación inmediata si un secreto aparece en un chat, log o commit. |
 
 ---
@@ -688,13 +687,13 @@ Cada tamaño se prueba en inglés y en español. El español es cerca de 20% má
 | Nivel | Herramienta | Qué cubre | Mínimo |
 |---|---|---|---|
 | Unit | pytest | Motor de precios (tabla completa zona × vehículo × viaje × extras × promo), máquina de estados, helpers de tiempo | 100% de `pricing.py` y `booking_state.py` |
-| Servicios | pytest + Postgres en Docker | Reservas, pagos, cuentas, outbox, auditoría, tenancy | ≥ 85% de `services/` |
+| Servicios | pytest + Postgres real | Reservas, pagos, cuentas, outbox, auditoría, tenancy | ≥ 85% de `services/` |
 | API | pytest + httpx | Contratos, auth, CSRF, roles, rate limit, errores | Todos los endpoints |
 | Contrato | openapi-typescript + `tsc` | web y admin compilan contra el OpenAPI actual | En CI |
 | Frontend | vitest + Testing Library | Islas y módulos del admin | Flujos principales |
 | E2E | Playwright | Reserva con tarjeta de prueba → correo capturado → visible en admin; manual en admin; cancelación con reembolso; My Trip; chat con cotización | En cada merge a `main` |
 | Estático | ruff, mypy `--strict`, eslint, prettier | Estilo y tipos | 0 errores |
-| Seguridad | bandit, pip-audit, npm audit, gitleaks | Vulnerabilidades y secretos | 0 altos |
+| Seguridad | ruff `S` (bandit), pip-audit, npm audit, gitleaks | Vulnerabilidades y secretos | 0 altos |
 | Accesibilidad | axe (Playwright) | Páginas públicas y admin | 0 violaciones serias |
 | Responsive visual | Playwright (capturas) | Matriz de §12.2 en EN y ES para páginas clave y admin | 0 diferencias no aprobadas, sin scroll horizontal |
 | i18n | Script de build | Claves de traducción completas y cada página con su par de idioma | 0 faltantes |
@@ -705,7 +704,7 @@ Cada tamaño se prueba en inglés y en español. El español es cerca de 20% má
 
 | Entorno | Backend | Web / Admin | DB | Stripe | Correo |
 |---|---|---|---|---|---|
-| Local | `uvicorn --reload` + worker | `astro dev` / `vite` | Postgres en Docker | Test + `stripe listen` | Mailpit (Docker) |
+| Local | `uvicorn --reload` + worker | `astro dev` / `vite` | Postgres 16 nativo (ADR-001) | Test + `stripe listen` | Mailpit (binario) |
 | Staging | Railway (servicio staging) | Vercel preview | Supabase proyecto staging | Test | Resend (dominio de staging) |
 | Producción | Railway | Vercel | Supabase proyecto prod | Live | Resend (dominio verificado) |
 
@@ -721,15 +720,15 @@ Formato de cada tarea: `- [ ] ID — qué`, con **Verificar** (comando o prueba 
 
 ### F0 — Fundación y decisiones
 
-- [ ] **F0.1** — `git init`, `.gitignore` (`.env*`, `node_modules`, `.venv`, `videos` master pesados, `site/video/gen`), rama `main` y primer commit con `site/`, `WORKPLAN.md` y `AGENTS.md`. **No hacer push sin que Marlon dé el repo remoto.** Verificar: `git status` limpio; `git check-ignore site/.env` lo ignora.
+- [x] **F0.1** — `git init`, `.gitignore` (`.env*`, `node_modules`, `.venv`, `videos` master pesados, `site/video/gen`), rama `main` y primer commit con `site/`, `WORKPLAN.md` y `AGENTS.md`. **No hacer push sin que Marlon dé el repo remoto.** Verificar: `git status` limpio; `git check-ignore site/.env` lo ignora.
 - [ ] **F0.2** — Mover la API key de OpenRouter de `site/.env` a un gestor fuera del repo y **pedir a Marlon que la rote** (se compartió en el chat). Verificar: `site/.env` no existe y hay una key nueva.
-- [ ] **F0.3** — Crear la estructura de carpetas de §5.2 (vacía, con README por carpeta). Verificar: `tree -L 2`.
-- [ ] **F0.4** — Backend: `uv init`, `pyproject.toml` con dependencias fijadas, ruff, mypy estricto, pytest y la app mínima con `/health`. Verificar: `uv run pytest` y `curl localhost:8000/api/v1/health`.
-- [ ] **F0.5** — `docker-compose.yml` con Postgres 16 y Mailpit; fixture de pytest con base de datos de prueba real. Verificar: un test que hace `SELECT 1` contra Postgres.
-- [ ] **F0.6** — `packages/api-client`: script `npm run gen` que genera tipos desde `/openapi.json`. Verificar: los tipos generados compilan.
-- [ ] **F0.7** — CI de GitHub Actions: lint, tipos, tests con servicio Postgres, bandit, pip-audit y gitleaks. Verificar: el workflow corre verde en un PR de prueba (cuando exista el remoto).
-- [ ] **F0.8** — `core/config.py` fail-fast y `.env.example` completo. Verificar: con `ENVIRONMENT=production` y sin `SECRET_KEY`, la app no arranca y el mensaje es claro.
-- [ ] **F0.9** — `docs/content/checklist-cliente.md` con todo lo que falta de Marlon o del cliente (§16). Verificar: el documento existe y se le compartió a Marlon.
+- [x] **F0.3** — Crear la estructura de §5.2 a medida que se usa: `backend/`, `packages/api-client/`, `docs/` y `.github/` en F0; `web/` en F7 y `admin/` en F11. Sin carpetas vacías de relleno. Verificar: `git ls-files` muestra esas carpetas con contenido real.
+- [x] **F0.4** — Backend: `uv init`, `pyproject.toml` con dependencias fijadas, ruff, mypy estricto, pytest y la app mínima con `/health`. Verificar: `uv run pytest` y `curl localhost:8000/api/v1/health`.
+- [x] **F0.5** — Postgres 16 nativo y Mailpit (ADR-001: sin Docker en esta PC); fixture de pytest con base de datos de prueba real. Verificar: un test que hace `SELECT 1` contra Postgres.
+- [x] **F0.6** — `packages/api-client`: script `npm run gen` que genera tipos desde `/openapi.json`. Verificar: los tipos generados compilan.
+- [ ] **F0.7** — CI de GitHub Actions: lint (ruff con reglas `S` de bandit), tipos, tests con servicio Postgres, pip-audit, npm audit, contrato del cliente de API y gitleaks. Verificar: el workflow corre verde en un PR de prueba (cuando exista el remoto).
+- [x] **F0.8** — `core/config.py` fail-fast y `.env.example` completo. Verificar: con `ENVIRONMENT=production` y sin `SECRET_KEY`, la app no arranca y el mensaje es claro.
+- [x] **F0.9** — `docs/content/checklist-cliente.md` con todo lo que falta de Marlon o del cliente (§16). Verificar: el documento existe y se le compartió a Marlon.
 
 ### F1 — Base de datos y dominio
 
@@ -980,7 +979,7 @@ Formato de cada tarea: `- [ ] ID — qué`, con **Verificar** (comando o prueba 
 - [ ] **F13.6** — Supabase: RLS con denegación pública en todas las tablas y rol de aplicación mínimo. Verificar: consulta con `anon key` → 0 filas.
 - [ ] **F13.7** — Backups y PITR activados; prueba de restauración en staging. Verificar: restauración documentada.
 - [ ] **F13.8** — Logging con redacción de datos personales y Sentry con scrubbing. Verificar: un email no aparece completo en los logs.
-- [ ] **F13.9** — Escaneos: bandit, pip-audit, npm audit, gitleaks y OWASP ZAP baseline contra staging. Verificar: 0 altos.
+- [ ] **F13.9** — Escaneos: ruff `S` (bandit), pip-audit, npm audit, gitleaks y OWASP ZAP baseline contra staging. Verificar: 0 altos.
 - [ ] **F13.10** — Pruebas de IA adversarial (injection, extracción de prompt, datos de otros). Verificar: suite F10.10 verde.
 - [ ] **F13.11** — Política de privacidad y aviso de cookies acordes a lo que se recolecta. Verificar: revisión de Marlon.
 - [ ] **F13.12** — Runbook de incidentes (claves filtradas, caída de Stripe o de la base de datos). Verificar: `docs/runbook.md`.

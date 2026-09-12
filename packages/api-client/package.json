@@ -1,0 +1,18 @@
+{
+  "name": "@ctc/api-client",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "src/index.ts",
+  "scripts": {
+    "gen": "uv run --directory ../../backend python -m app.openapi > openapi.json && openapi-typescript openapi.json -o src/schema.d.ts",
+    "check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "openapi-fetch": "0.17.0"
+  },
+  "devDependencies": {
+    "openapi-typescript": "7.13.0",
+    "typescript": "5.9.3"
+  }
+}

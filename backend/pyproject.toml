@@ -1,0 +1,48 @@
+[project]
+name = "ctc-backend"
+version = "0.1.0"
+description = "API de Cabo Transportation Concierge"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "asyncpg>=0.31.0",
+    "fastapi>=0.141.1",
+    "pydantic-settings>=2.15.0",
+    "sqlalchemy[asyncio]>=2.0.52",
+    "uvicorn[standard]>=0.52.4",
+]
+
+[dependency-groups]
+dev = [
+    "httpx>=0.28.1",
+    "mypy>=2.3.1",
+    "pip-audit>=2.10.1",
+    "pytest>=9.1.1",
+    "pytest-asyncio>=1.4.0",
+    "python-dotenv>=1.2.3",
+    "ruff>=0.16.7",
+]
+
+[tool.uv]
+package = false
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+# S = reglas de seguridad de bandit; BLE = excepciones demasiado amplias.
+select = ["E", "W", "F", "I", "B", "UP", "ASYNC", "S", "BLE", "SIM", "PT", "RUF"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["S101", "S105", "S106"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+plugins = ["pydantic.mypy"]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+addopts = "-q --strict-markers"

@@ -21,6 +21,9 @@ dist/
 .astro/
 .vercel/
 
+# Intermedio de npm run gen (el contrato versionado es src/schema.d.ts)
+packages/api-client/openapi.json
+
 # Media pesada: se regenera con site/video/generate.mjs y compose.mjs
 site/video/gen/
 site/videos/hero-promo.mp4
