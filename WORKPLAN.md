@@ -20,7 +20,7 @@
 | **Admin** | ❌ No existe. |
 | **Tests** | ✅ 6 tests pytest verdes contra Postgres real. pip-audit y npm audit sin vulnerabilidades. |
 | **Deploy** | ❌ No configurado. |
-| **Git** | ✅ Repo local en rama `main`, gitleaks sin hallazgos. Sin remoto: no se hace push hasta que Marlon indique el repositorio. |
+| **Git** | ✅ Remoto `github.com/condecorporation-del/Cabotransportationconcierge` (push por la deploy key `~/.ssh/deploy_cabo_concierge`, alias SSH `github-cabo`). Rama `main` subida; gitleaks sin hallazgos en el historial. |
 
 **Siguiente tarea:** F1.1 (engine y sesión por request). En paralelo, cerrar F0.2 (rotar la key) y F0.7 (crear el remoto de GitHub).
 
