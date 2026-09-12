@@ -206,7 +206,7 @@ ffmpeg está en `C:\Users\conde\AppData\Local\Microsoft\WinGet\Packages\Gyan.FFm
 - Rama `main` protegida; trabajar en ramas `f<fase>/<tarea>-<slug>` (ej. `f2/2.1-pricing-engine`).
 - **Un commit por tarea**, en español: `F2.1: motor de precios con recargos y promociones`.
 - Push, PR, merge o deploy **solo cuando Marlon lo pida**. No hacer `force push` ni reescribir historial sin su OK.
-- Antes de commitear: tests, lint, tipos y `gitleaks` en verde.
+- Antes de commitear: tests, lint y tipos en verde, más `gitleaks git --pre-commit --staged` sin hallazgos. **No uses `gitleaks dir`** como filtro de commit: también escanea carpetas ignoradas (`.venv`, `node_modules`, `.env` local) y da falsos positivos. Para auditar el historial completo: `gitleaks git`.
 
 ---
 
