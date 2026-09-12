@@ -12,7 +12,7 @@
 
 | Indicador | Estado |
 |---|---|
-| **Fase actual** | F0 — Fundación: 7/9 verificadas. Abiertas: **F0.2** (Marlon debe rotar la API key de OpenRouter; el archivo ya salió del repo) y **F0.7** (el CI está escrito, pero su primera corrida necesita el remoto de GitHub). |
+| **Fase actual** | F0 — Fundación: 8/9 verificadas. Solo falta **F0.2**: Marlon debe rotar la API key de OpenRouter (el archivo ya salió del repo). CI verde en GitHub: run `34726728816`, commit `b8d66dd`. |
 | **Último avance** | 12 sep 2026 — F0:<br>• Repo git con prototipo aprobado.<br>• Backend mínimo FastAPI con `/api/v1/health` y `/health/ready`.<br>• Configuración fail-fast.<br>• Postgres 16 nativo con bases `ctc` y `ctc_test`.<br>• Cliente de API tipado generado desde OpenAPI.<br>• CI escrito.<br>• ADR-001 (entorno sin Docker).<br>• Checklist para el cliente. |
 | **Backend** | ✅ App mínima: health y readiness con Postgres real. Ruff (reglas de seguridad) y mypy estricto en 0 errores. |
 | **Base de datos** | ✅ Local: Postgres 16.15 nativo con `ctc` y `ctc_test`. Sin tablas todavía (llegan en F1 con Alembic). |
@@ -22,12 +22,12 @@
 | **Deploy** | ❌ No configurado. |
 | **Git** | ✅ Remoto `github.com/condecorporation-del/Cabotransportationconcierge` (push por la deploy key `~/.ssh/deploy_cabo_concierge`, alias SSH `github-cabo`). Rama `main` subida; gitleaks sin hallazgos en el historial. |
 
-**Siguiente tarea:** F1.1 (engine y sesión por request). En paralelo, cerrar F0.2 (rotar la key) y F0.7 (crear el remoto de GitHub).
+**Siguiente tarea:** F1.1 (engine y sesión por request). En paralelo: F0.2 (Marlon rota la key de OpenRouter).
 
 **Progreso por fase**
 
 ```
-F0  Fundación y decisiones          [███████---] 7/9
+F0  Fundación y decisiones          [████████--] 8/9
 F1  Base de datos y dominio         [----------] 0/12
 F2  Motor de precios y catálogo     [----------] 0/9
 F3  Reservas públicas               [----------] 0/11
@@ -726,7 +726,7 @@ Formato de cada tarea: `- [ ] ID — qué`, con **Verificar** (comando o prueba 
 - [x] **F0.4** — Backend: `uv init`, `pyproject.toml` con dependencias fijadas, ruff, mypy estricto, pytest y la app mínima con `/health`. Verificar: `uv run pytest` y `curl localhost:8000/api/v1/health`.
 - [x] **F0.5** — Postgres 16 nativo y Mailpit (ADR-001: sin Docker en esta PC); fixture de pytest con base de datos de prueba real. Verificar: un test que hace `SELECT 1` contra Postgres.
 - [x] **F0.6** — `packages/api-client`: script `npm run gen` que genera tipos desde `/openapi.json`. Verificar: los tipos generados compilan.
-- [ ] **F0.7** — CI de GitHub Actions: lint (ruff con reglas `S` de bandit), tipos, tests con servicio Postgres, pip-audit, npm audit, contrato del cliente de API y gitleaks. Verificar: el workflow corre verde en un PR de prueba (cuando exista el remoto).
+- [x] **F0.7** — CI de GitHub Actions: lint (ruff con reglas `S` de bandit), tipos, tests con servicio Postgres, pip-audit, npm audit, contrato del cliente de API y gitleaks. Verificar: el workflow corre verde en un PR de prueba (cuando exista el remoto).
 - [x] **F0.8** — `core/config.py` fail-fast y `.env.example` completo. Verificar: con `ENVIRONMENT=production` y sin `SECRET_KEY`, la app no arranca y el mensaje es claro.
 - [x] **F0.9** — `docs/content/checklist-cliente.md` con todo lo que falta de Marlon o del cliente (§16). Verificar: el documento existe y se le compartió a Marlon.
 
