@@ -2,6 +2,37 @@
 
 Una entrada por sesión o tarea, la más reciente arriba (formato en `AGENTS.md` §10).
 
+## 2026-09-12 — F1.11 Códigos de reserva y F1.12 diagnóstico de la base (F1 completa)
+
+**Qué se hizo**
+- **F1.11:**
+  - `app/models/sequences.py` con `BookingCodeCounter` (PK empresa + año, `last_value >= 1`, cascada desde la empresa) y migración `523ec6ce4943`.
+  - `app/services/booking_codes.py` con `next_booking_code(session, company_id, year)` → `CTC-2026-000001`.
+  - Un solo `INSERT … ON CONFLICT (company_id, year) DO UPDATE SET last_value = last_value + 1 RETURNING last_value`. Postgres bloquea la fila del contador hasta el commit, así que dos reservas simultáneas nunca reciben el mismo código. ClassVIP usaba `COUNT(*)` y chocaba (E7).
+- **F1.12:** `scripts/check_db.py` reporta:
+  - Latencia de `SELECT 1`.
+  - Versión de Postgres.
+  - Migración actual y head de Alembic, y si están al día.
+  - Conteos de `companies`, `hotels`, `rates`, `bookings`, `payments` y `email_outbox`.
+
+  Sale con código 1 si no conecta (sin mostrar el detalle de la URL) o si faltan migraciones.
+- Ajuste de tipos: `insert()` recibe el modelo y sus columnas ORM, no `__table__`. Mismo patrón que en el seed; mypy estricto limpio.
+
+**Archivos:** `backend/app/models/sequences.py`, `backend/app/models/__init__.py`, `backend/app/services/__init__.py`, `backend/app/services/booking_codes.py`, `backend/alembic/versions/20260912_523ec6ce4943_contador_de_codigos_de_reserva.py`, `backend/scripts/check_db.py`, `backend/tests/test_booking_codes.py`, `backend/tests/test_check_db.py`, `WORKPLAN.md`
+
+**Verificación**
+- `uv run pytest` → **44 passed**. Tests nuevos:
+  - Códigos consecutivos que reinician en 2027.
+  - **50 reservas concurrentes** en transacciones y conexiones separadas: códigos `CTC-2026-000001` a `000050`, sin repetir.
+  - `check_db` al día contra la base de tests.
+  - `check_db` con head distinto → `up_to_date: False` y sin conteos.
+- **Caso real:** la verificación anterior se detuvo en mypy antes de migrar `ctc`. Al correr `check_db` reportó `migration a6a95d459beb` contra head `523ec6ce4943`, `up_to_date: False`, y salió con código 1 con la instrucción de `alembic upgrade head`. Después de migrar: `up_to_date: True`, filas `companies 1, hotels 226, rates 24, bookings 0, payments 0, email_outbox 0`, código 0.
+- `alembic check` → "No new upgrade operations detected".
+- `ruff check`, `ruff format` y `mypy app scripts` → 0 errores.
+- CI del commit anterior `2ed109a` (run `34728586891`) → los 3 jobs en success.
+
+**F1 queda completa (12/12).** Pendiente de Marlon: aprobar la matriz de tarifas (D-P1) y confirmar la zona de Los Cabos Golf Resort (D-P13). Siguiente: F2, motor de precios.
+
 ## 2026-09-12 — F1.10 Creación del owner
 
 **Qué se hizo**

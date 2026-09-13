@@ -12,23 +12,23 @@
 
 | Indicador | Estado |
 |---|---|
-| **Fase actual** | F1 — Base de datos y dominio: 10/12 (F1.1 a F1.10). Modelo de datos completo, catálogo cargable y creación del owner. F0 ✅ 9/9. CI verde (run `34728171656`). Vista previa del prototipo en https://cabotransportationconcierge.vercel.app (noindex). |
+| **Fase actual** | F1 ✅ completa (12/12): modelo de datos, migraciones, aislamiento por empresa, catálogo, owner, códigos de reserva y diagnóstico de la base. F0 ✅ 9/9. CI verde (run `34728586891`). Siguiente: F2 (motor de precios). Vista previa del prototipo en https://cabotransportationconcierge.vercel.app (noindex). |
 | **Último avance** | 12 sep 2026 — F0:<br>• Repo git con prototipo aprobado.<br>• Backend mínimo FastAPI con `/api/v1/health` y `/health/ready`.<br>• Configuración fail-fast.<br>• Postgres 16 nativo con bases `ctc` y `ctc_test`.<br>• Cliente de API tipado generado desde OpenAPI.<br>• CI escrito.<br>• ADR-001 (entorno sin Docker).<br>• Checklist para el cliente. |
-| **Backend** | ✅ App mínima: health y readiness con Postgres real. Ruff (reglas de seguridad) y mypy estricto en 0 errores. |
-| **Base de datos** | ✅ Local: Postgres 16.15 nativo con `ctc` y `ctc_test`. Migraciones:<br>• `5721f5faa1c7`: empresas, ajustes, admins y sesiones.<br>• `4b96b66d17b0`: `pg_trgm`, zonas, hoteles, clases de vehículo, tarifas, extras, actividades, paquetes, promociones y clientes.<br>• `0b3217285efc`: reservas, tramos e ítems.<br>• `56ed3ca7c373`: pagos, eventos de Stripe y cuentas por cobrar.<br>• `a6a95d459beb`: choferes, vehículos, asignaciones, tareas, auditoría, cola de correos, IA, contacto y reseñas.<br>`alembic check` sin diferencias.<br>Catálogo de prueba cargado en `ctc` con `scripts/seed_catalog.py`: 226 hoteles, 24 tarifas, 15 extras. |
+| **Backend** | ✅ Base lista para la lógica de negocio:<br>• Health y readiness.<br>• Engine apto para Supabase.<br>• Todos los modelos de §6 con aislamiento por empresa.<br>• Scripts `seed_catalog`, `ensure_owner` y `check_db`.<br>• Servicio de códigos de reserva.<br>Todavía no hay endpoints de negocio (empiezan en F2). Ruff (reglas de seguridad) y mypy estricto en 0 errores. |
+| **Base de datos** | ✅ Local: Postgres 16.15 nativo con `ctc` y `ctc_test`. Migraciones:<br>• `5721f5faa1c7`: empresas, ajustes, admins y sesiones.<br>• `4b96b66d17b0`: `pg_trgm`, zonas, hoteles, clases de vehículo, tarifas, extras, actividades, paquetes, promociones y clientes.<br>• `0b3217285efc`: reservas, tramos e ítems.<br>• `56ed3ca7c373`: pagos, eventos de Stripe y cuentas por cobrar.<br>• `a6a95d459beb`: choferes, vehículos, asignaciones, tareas, auditoría, cola de correos, IA, contacto y reseñas.<br>• `523ec6ce4943`: contador de códigos de reserva.<br>`alembic check` sin diferencias y `scripts/check_db.py` en código 0.<br>Catálogo de prueba cargado en `ctc` con `scripts/seed_catalog.py`: 226 hoteles, 24 tarifas, 15 extras. |
 | **Sitio público real** | ❌ Solo el prototipo estático `site/` (HTML generado por `site/build.js`). |
 | **Admin** | ❌ No existe. |
-| **Tests** | ✅ 40 tests pytest verdes contra Postgres real, incluidos el aislamiento por empresa, los constraints de todas las tablas, el seed idempotente del catálogo y la creación del owner. En cada corrida la migración va a base y de vuelta a head. pip-audit y npm audit sin vulnerabilidades. |
+| **Tests** | ✅ 44 tests pytest verdes contra Postgres real, incluidos el aislamiento por empresa, los constraints de todas las tablas, el seed idempotente, la creación del owner, 50 códigos de reserva concurrentes y el diagnóstico de la base. En cada corrida la migración va a base y de vuelta a head. pip-audit y npm audit sin vulnerabilidades. |
 | **Deploy** | ❌ No configurado. |
 | **Git** | ✅ Remoto `github.com/condecorporation-del/Cabotransportationconcierge` (push por la deploy key `~/.ssh/deploy_cabo_concierge`, alias SSH `github-cabo`). Rama `main` subida; gitleaks sin hallazgos en el historial. |
 
-**Siguiente tarea:** F1.11 (secuencia de códigos de reserva), luego F1.12 (`scripts/check_db.py`).
+**Siguiente tarea:** F2.1 (`services/pricing.py`: cotización con tarifas, extras, recargo nocturno y promoción).
 
 **Progreso por fase**
 
 ```
 F0  Fundación y decisiones          [██████████] 9/9 ✅
-F1  Base de datos y dominio         [█████████-] 10/12
+F1  Base de datos y dominio         [██████████] 12/12 ✅
 F2  Motor de precios y catálogo     [----------] 0/9
 F3  Reservas públicas               [----------] 0/11
 F4  Pagos con Stripe                [----------] 0/10
@@ -811,8 +811,16 @@ Formato de cada tarea: `- [ ] ID — qué`, con **Verificar** (comando o prueba 
   - `app/core/security.py`: Argon2id con `pwdlib` y mínimo de 12 caracteres. Lo reutiliza el login en F6.1.
 
   Verificar: tests de owner creado una sola vez con hash Argon2id verificable, contraseña corta rechazada y empresa inexistente con mensaje claro; `pip-audit` sin vulnerabilidades.
-- [ ] **F1.11** — Secuencia de código de reserva por empresa (`CTC-AAAA-NNNNNN`). Verificar: test de 50 inserts concurrentes sin colisión.
-- [ ] **F1.12** — `scripts/check_db.py` (SELECT 1, tablas y conteos). Verificar: corre contra local y staging.
+- [x] **F1.11** — Código de reserva por empresa y año (`CTC-AAAA-NNNNNN`).
+  - Tabla `booking_code_counters` y `app/services/booking_codes.py`.
+  - Un solo `INSERT … ON CONFLICT DO UPDATE … RETURNING` incrementa y devuelve el número. Postgres bloquea la fila hasta el commit, así que no hay colisiones (anti E7) y no hace falta una secuencia por empresa.
+
+  Verificar: test de 50 reservas concurrentes en conexiones separadas (códigos 1–50 sin repetir) y test de reinicio por año.
+- [x] **F1.12** — `scripts/check_db.py`: latencia de `SELECT 1`, versión de Postgres, migración actual contra head y conteos de tablas clave. Sale con código 1 si no conecta o si faltan migraciones, así que sirve como verificación en un deploy.
+
+  Verificar:
+  - Local: con una migración pendiente reportó `up_to_date: False` y salió con código 1; tras `alembic upgrade head`, salió con código 0 y mostró conteos.
+  - Staging: se corre en F15.4, porque todavía no existe.
 
 ### F2 — Motor de precios y catálogo
 

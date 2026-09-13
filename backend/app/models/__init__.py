@@ -64,6 +64,7 @@ from app.models.operations import (
     TaskStatus,
     Vehicle,
 )
+from app.models.sequences import BookingCodeCounter
 
 __all__ = [
     "AccountCharge",
@@ -82,6 +83,7 @@ __all__ = [
     "AuditLog",
     "Booking",
     "BookingAssignment",
+    "BookingCodeCounter",
     "BookingItem",
     "BookingLeg",
     "BookingSource",
