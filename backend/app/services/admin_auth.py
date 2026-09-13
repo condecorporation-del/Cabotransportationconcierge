@@ -29,6 +29,8 @@ MAX_FAILED_LOGINS = 5
 LOCKOUT_MINUTES = 15
 SESSION_HOURS = 12
 SESSION_COOKIE_NAME = "ctc_admin_session"
+CSRF_COOKIE_NAME = "ctc_admin_csrf"
+CSRF_HEADER_NAME = "X-CSRF-Token"
 BACKUP_CODE_COUNT = 8
 TOTP_ISSUER = "Cabo Transportation Concierge"
 TOTP_REQUIRED_ROLES = frozenset({AdminRole.OWNER, AdminRole.MANAGER})
@@ -209,7 +211,7 @@ async def verify_totp(
     return LoginOutcome("authenticated", admin, session_token=session_token, csrf_token=csrf_token)
 
 
-async def admin_from_session_token(session: AsyncSession, raw_token: str) -> AdminUser | None:
+async def session_for_token(session: AsyncSession, raw_token: str) -> AdminSession | None:
     now = datetime.now(UTC)
     admin_session = await session.scalar(
         select(AdminSession).where(
@@ -218,17 +220,9 @@ async def admin_from_session_token(session: AsyncSession, raw_token: str) -> Adm
             AdminSession.expires_at > now,
         )
     )
-    if admin_session is None:
-        return None
-    admin = await session.get(AdminUser, admin_session.admin_user_id)
-    if admin is None or not admin.is_active:
-        return None
-    return admin
+    return admin_session
 
 
-async def revoke_session(session: AsyncSession, raw_token: str) -> None:
-    admin_session = await session.scalar(
-        select(AdminSession).where(AdminSession.token_hash == hash_token(raw_token))
-    )
-    if admin_session is not None and admin_session.revoked_at is None:
+def revoke(admin_session: AdminSession) -> None:
+    if admin_session.revoked_at is None:
         admin_session.revoked_at = datetime.now(UTC)

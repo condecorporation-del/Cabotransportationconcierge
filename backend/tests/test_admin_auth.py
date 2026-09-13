@@ -30,6 +30,16 @@ def _totp_secret(challenge_token: str) -> str:
     return secret
 
 
+def _csrf_headers(api: AsyncClient) -> dict[str, str]:
+    token = api.cookies.get("ctc_admin_csrf")
+    assert token is not None
+    return {"X-CSRF-Token": token}
+
+
+async def _logout(api: AsyncClient) -> None:
+    await api.post(URL + "/logout", headers=_csrf_headers(api))
+
+
 async def test_login_without_totp_role_returns_session_cookie(
     api: AsyncClient, db: AsyncSession
 ) -> None:
@@ -126,7 +136,7 @@ async def test_second_login_of_an_enrolled_owner_asks_for_totp_only(
         URL + "/totp/verify",
         json={"challenge_token": first["challenge_token"], "code": pyotp.TOTP(secret).now()},
     )
-    await api.post(URL + "/logout")
+    await _logout(api)
 
     second = (
         await api.post(URL + "/login", json={"email": "admin@example.com", "password": PASSWORD})
@@ -171,7 +181,7 @@ async def test_backup_code_logs_in_once_and_then_is_rejected(
         )
     ).json()
     backup_code = enrolled["backup_codes"][0]
-    await api.post(URL + "/logout")
+    await _logout(api)
 
     second = (
         await api.post(URL + "/login", json={"email": "admin@example.com", "password": PASSWORD})
@@ -181,7 +191,7 @@ async def test_backup_code_logs_in_once_and_then_is_rejected(
         json={"challenge_token": second["challenge_token"], "code": backup_code},
     )
     assert first_use.status_code == 200, first_use.text
-    await api.post(URL + "/logout")
+    await _logout(api)
 
     third = (
         await api.post(URL + "/login", json={"email": "admin@example.com", "password": PASSWORD})
@@ -209,6 +219,6 @@ async def test_logout_revokes_the_session(api: AsyncClient, db: AsyncSession) ->
     await api.post(URL + "/login", json={"email": "admin@example.com", "password": PASSWORD})
     assert (await api.get(URL + "/me")).status_code == 200
 
-    logout = await api.post(URL + "/logout")
+    logout = await api.post(URL + "/logout", headers=_csrf_headers(api))
     assert logout.status_code == 204
     assert (await api.get(URL + "/me")).status_code == 401

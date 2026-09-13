@@ -2,6 +2,28 @@
 
 Una entrada por sesión o tarea, la más reciente arriba (formato en `AGENTS.md` §10).
 
+## 2026-09-13 — F6.3: CSRF de doble token y middleware de roles
+
+Seguido de F6.1/F6.2: antes de construir la primera ruta de negocio del admin (F6.4) convenía cerrar la protección contra CSRF, porque agregarla después habría significado tocar cada mutación otra vez.
+
+**Cómo quedó el doble token:** al iniciar sesión (login sin TOTP o `verify_totp`) se ponen dos cookies con el mismo `max_age` de 12 h: `ctc_admin_session` (`HttpOnly`, como ya estaba) y `ctc_admin_csrf` — esta nueva, a propósito **sin** `HttpOnly`, porque el patrón de doble envío exige que el JS del admin la pueda leer para repetirla en el header `X-CSRF-Token` de cada mutación. `require_csrf` (nuevo, `app/api/v1/admin/deps.py`) deja pasar `GET`/`HEAD`/`OPTIONS` sin pedir nada, y en cualquier otro método exige que el header exista, sea igual a la cookie, **y** que su hash coincida con `csrf_hash` de la sesión activa — la tercera condición es la que de verdad protege: una página ajena no puede leer la cookie (mismo origen), pero tampoco podría inventar un valor que coincidiera con el hash guardado aunque de alguna forma adivinara la cookie.
+
+**`app/services/admin_auth.py`, refactor:** `admin_from_session_token` se partió en `session_for_token` (regresa la fila `AdminSession`, no solo el `AdminUser`) porque `require_csrf` necesita `csrf_hash`, que vive ahí. `current_admin` (F6.1) ahora depende de `current_admin_session` en vez de repetir la búsqueda. `revoke_session(token)` se volvió `revoke(admin_session)`, ya que el logout pasó a depender de la sesión ya cargada (`CurrentAdminSession`) en vez de releer la cookie a mano.
+
+**`require_role(*roles)`** (nuevo, mismo archivo): dependencia reutilizable — 403 si el rol del admin no está en la lista. Todavía no protege ninguna ruta real porque F6.4 es la primera; queda lista para entonces. Se probó llamándola directamente con un `AdminUser` de mentira (sin pasar por la base ni por HTTP), ya que no tiene sentido montar una ruta de prueba solo para ejercitar una función pura.
+
+**`POST /admin/auth/logout`** es, por ahora, la única mutación autenticada que existe, así que es la que prueba el criterio de verificación de F6.3 ("POST sin header → 403"). `/login` y `/totp/verify` quedan fuera del CSRF a propósito: son el paso *antes* de tener sesión, no hay cookie de CSRF que exigir todavía.
+
+**Archivos:** `backend/app/services/admin_auth.py`, `backend/app/api/v1/admin/deps.py`, `backend/app/api/v1/admin/auth.py`, `backend/tests/test_admin_auth.py`, `backend/tests/test_admin_csrf.py`, `packages/api-client/src/schema.d.ts`, `WORKPLAN.md`
+
+**Verificación**
+- `uv run pytest` → **215 passed** (5 nuevos en `test_admin_csrf.py`, más los 11 de F6.1/F6.2 ajustados para mandar el header en cada `/logout`): un POST autenticado sin `X-CSRF-Token` → 403; con un valor que no coincide con la cookie → 403; con el valor correcto → 204 y de verdad cierra la sesión; un `GET` no necesita el header; `require_role` deja pasar el rol permitido y bloquea los demás con 403.
+- `uv run ruff format --check . && uv run ruff check .` → sin errores. `uv run mypy app scripts` → sin errores.
+- `uv run alembic check` (sin migración nueva: F6.3 no toca el esquema) y `uv run pip-audit` → sin diferencias ni vulnerabilidades.
+- `npm run gen && npm run check` en `packages/api-client` → contrato regenerado, `tsc` sin errores.
+
+**Pendiente:** `require_role` no se ejercita todavía contra una ruta HTTP real — eso llega con F6.4, la primera ruta de negocio del admin.
+
 ## 2026-09-13 — F6.1 y F6.2: login del admin con Argon2id y TOTP obligatorio
 
 Con F5 cerrado en lo que no depende de una tarea programada, seguí con F6 porque desbloquea F4.6-F4.8 y F5.9. Hice F6.1 y F6.2 juntos: no tenía sentido dejar un login sin la doble autenticación que el mismo §11 exige para `owner`/`manager`.

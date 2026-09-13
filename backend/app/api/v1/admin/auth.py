@@ -1,37 +1,50 @@
 from fastapi import APIRouter, Depends, Request, Response, status
 
 from app.api.deps import CurrentCompany, DbSession, client_ip
-from app.api.v1.admin.deps import CurrentAdmin
+from app.api.v1.admin.deps import CurrentAdmin, CurrentAdminSession, require_csrf
 from app.core.config import get_settings
 from app.core.rate_limit import rate_limit
 from app.schemas.admin_auth import AdminMeOut, AuthOut, LoginIn, TotpVerifyIn
 from app.services.admin_auth import (
+    CSRF_COOKIE_NAME,
     SESSION_COOKIE_NAME,
     SESSION_HOURS,
     LoginOutcome,
     login,
-    revoke_session,
+    revoke,
     verify_totp,
 )
 
 router = APIRouter(prefix="/admin/auth", tags=["admin-auth"])
 
 
-def _set_session_cookie(response: Response, token: str) -> None:
+def _set_admin_cookies(response: Response, session_token: str, csrf_token: str) -> None:
+    secure = get_settings().environment not in ("development", "test")
+    max_age = SESSION_HOURS * 3600
     response.set_cookie(
         SESSION_COOKIE_NAME,
-        token,
-        max_age=SESSION_HOURS * 3600,
+        session_token,
+        max_age=max_age,
         httponly=True,
-        secure=get_settings().environment not in ("development", "test"),
+        secure=secure,
+        samesite="lax",
+        path="/",
+    )
+    # Legible por JS a propósito: es la mitad que el header X-CSRF-Token debe repetir (F6.3).
+    response.set_cookie(
+        CSRF_COOKIE_NAME,
+        csrf_token,
+        max_age=max_age,
+        httponly=False,
+        secure=secure,
         samesite="lax",
         path="/",
     )
 
 
 def _outcome_to_response(outcome: LoginOutcome, response: Response) -> AuthOut:
-    if outcome.session_token:
-        _set_session_cookie(response, outcome.session_token)
+    if outcome.session_token and outcome.csrf_token:
+        _set_admin_cookies(response, outcome.session_token, outcome.csrf_token)
     return AuthOut(
         outcome=outcome.kind,
         challenge_token=outcome.challenge_token,
@@ -77,15 +90,16 @@ async def totp_verify_route(
     return _outcome_to_response(outcome, response)
 
 
-@router.post("/logout", status_code=status.HTTP_204_NO_CONTENT)
+@router.post(
+    "/logout", status_code=status.HTTP_204_NO_CONTENT, dependencies=[Depends(require_csrf)]
+)
 async def logout_route(
-    _company: CurrentCompany, session: DbSession, request: Request, response: Response
+    admin_session: CurrentAdminSession, session: DbSession, response: Response
 ) -> None:
-    raw_token = request.cookies.get(SESSION_COOKIE_NAME)
-    if raw_token:
-        await revoke_session(session, raw_token)
-        await session.commit()
+    revoke(admin_session)
+    await session.commit()
     response.delete_cookie(SESSION_COOKIE_NAME, path="/")
+    response.delete_cookie(CSRF_COOKIE_NAME, path="/")
 
 
 @router.get("/me")
