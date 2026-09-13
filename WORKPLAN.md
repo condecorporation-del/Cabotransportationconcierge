@@ -12,23 +12,23 @@
 
 | Indicador | Estado |
 |---|---|
-| **Fase actual** | F0 ✅ completa (9/9). CI verde en GitHub (run `34726728816`). F0.2 cerrada: Marlon borró la key de OpenRouter, y esa key no se usa en este proyecto. Siguiente: F1. |
+| **Fase actual** | F1 — Base de datos y dominio: 3/12 (F1.1, F1.3 y F1.4). F0 ✅ 9/9. Vista previa del prototipo en https://cabotransportationconcierge.vercel.app (noindex). |
 | **Último avance** | 12 sep 2026 — F0:<br>• Repo git con prototipo aprobado.<br>• Backend mínimo FastAPI con `/api/v1/health` y `/health/ready`.<br>• Configuración fail-fast.<br>• Postgres 16 nativo con bases `ctc` y `ctc_test`.<br>• Cliente de API tipado generado desde OpenAPI.<br>• CI escrito.<br>• ADR-001 (entorno sin Docker).<br>• Checklist para el cliente. |
 | **Backend** | ✅ App mínima: health y readiness con Postgres real. Ruff (reglas de seguridad) y mypy estricto en 0 errores. |
-| **Base de datos** | ✅ Local: Postgres 16.15 nativo con `ctc` y `ctc_test`. Sin tablas todavía (llegan en F1 con Alembic). |
+| **Base de datos** | ✅ Local: Postgres 16.15 nativo con `ctc` y `ctc_test`. Tablas creadas por la migración `5721f5faa1c7`: `companies`, `company_settings`, `admin_users` y `sessions`. `alembic check` sin diferencias. |
 | **Sitio público real** | ❌ Solo el prototipo estático `site/` (HTML generado por `site/build.js`). |
 | **Admin** | ❌ No existe. |
-| **Tests** | ✅ 6 tests pytest verdes contra Postgres real. pip-audit y npm audit sin vulnerabilidades. |
+| **Tests** | ✅ 12 tests pytest verdes contra Postgres real. En cada corrida la migración va a base y de vuelta a head. pip-audit y npm audit sin vulnerabilidades. |
 | **Deploy** | ❌ No configurado. |
 | **Git** | ✅ Remoto `github.com/condecorporation-del/Cabotransportationconcierge` (push por la deploy key `~/.ssh/deploy_cabo_concierge`, alias SSH `github-cabo`). Rama `main` subida; gitleaks sin hallazgos en el historial. |
 
-**Siguiente tarea:** F1.1 (engine y sesión por request).
+**Siguiente tarea:** F1.2 (scope por empresa), luego F1.5 (modelos de reservas).
 
 **Progreso por fase**
 
 ```
 F0  Fundación y decisiones          [██████████] 9/9 ✅
-F1  Base de datos y dominio         [----------] 0/12
+F1  Base de datos y dominio         [██--------] 3/12
 F2  Motor de precios y catálogo     [----------] 0/9
 F3  Reservas públicas               [----------] 0/11
 F4  Pagos con Stripe                [----------] 0/10
@@ -732,10 +732,16 @@ Formato de cada tarea: `- [ ] ID — qué`, con **Verificar** (comando o prueba 
 
 ### F1 — Base de datos y dominio
 
-- [ ] **F1.1** — `db/` con engine async (pool 5+5, `pre_ping`, SSL si no es local), sesión por request con commit y rollback. Verificar: test de rollback cuando hay excepción.
+- [x] **F1.1** — `app/db.py`:
+  - Engine async con pool 5+5, `pre_ping` y SSL fuera de localhost.
+  - En el pooler de transacciones: NullPool y nombres únicos de prepared statements.
+  - URL normalizada a asyncpg y sin `pgbouncer`.
+  - Sesión por request. Los servicios hacen commit explícito: así un commit fallido nunca sale como una respuesta 200; lo no confirmado se descarta.
+
+  Verificar: test que muestra que una escritura sin commit no persiste.
 - [ ] **F1.2** — Scope de empresa: dependencia que resuelve `company_id` (web por dominio o slug, admin por sesión) y lo aplica en todas las consultas de servicios. Verificar: test que muestra que una empresa B no ve datos de A.
-- [ ] **F1.3** — Alembic async con `DATABASE_URL_DIRECT`; migración inicial generada y revisada a mano. Verificar: `alembic upgrade head` y luego `alembic downgrade base` funcionan en limpio.
-- [ ] **F1.4** — Modelos de empresa, settings, usuarios y sesiones. Verificar: tests de unicidad (email por empresa).
+- [x] **F1.3** — Alembic async con `DATABASE_URL_DIRECT`; migración inicial generada y revisada a mano. Verificar: `alembic upgrade head` y luego `alembic downgrade base` funcionan en limpio.
+- [x] **F1.4** — Modelos de empresa, settings, usuarios y sesiones. Verificar: tests de unicidad (email por empresa).
 - [ ] **F1.5** — Modelos de reservas: `bookings`, `booking_legs`, `booking_items`, `booking_assignments`. Verificar: test que crea una reserva con 2 tramos y extras, y la relee completa.
 - [ ] **F1.6** — Modelos de catálogo: `zones`, `hotels` (pg_trgm), `vehicle_classes`, `rates`, `extras`, `activities`, `activity_packages`, `promotions`. Verificar: constraint único de `rates`.
 - [ ] **F1.7** — Modelos de pagos y finanzas: `payments`, `stripe_events`, `client_accounts`, `account_charges`, `account_payments`. Verificar: tests de unicidad de intent y evento.

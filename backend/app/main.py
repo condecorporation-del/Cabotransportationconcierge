@@ -2,22 +2,17 @@ from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
-from sqlalchemy.ext.asyncio import create_async_engine
+from sqlalchemy.ext.asyncio import async_sessionmaker
 
 from app.api.v1 import health
 from app.core.config import get_settings
+from app.db import engine_from_url
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
-    # Pool chico: el Session Pooler de Supabase limita conexiones por proyecto (WORKPLAN D2).
-    app.state.engine = create_async_engine(
-        get_settings().database_url,
-        pool_size=5,
-        max_overflow=5,
-        pool_pre_ping=True,
-        pool_recycle=300,
-    )
+    app.state.engine = engine_from_url(get_settings().database_url)
+    app.state.sessionmaker = async_sessionmaker(app.state.engine, expire_on_commit=False)
     yield
     await app.state.engine.dispose()
 

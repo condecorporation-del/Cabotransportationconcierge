@@ -14,6 +14,8 @@ class Settings(BaseSettings):
 
     environment: Literal["development", "test", "staging", "production"] = "development"
     database_url: str = Field(repr=False)
+    # Conexión Direct de Supabase: solo para migraciones (WORKPLAN D2). Si falta, usa database_url.
+    database_url_direct: str | None = Field(default=None, repr=False)
     secret_key: str = Field(default="", repr=False)
 
     @model_validator(mode="after")

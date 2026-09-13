@@ -2,6 +2,30 @@
 
 Una entrada por sesión o tarea, la más reciente arriba (formato en `AGENTS.md` §10).
 
+## 2026-09-12 — F1.1, F1.3 y F1.4: base de datos, Alembic y primeros modelos
+
+**Qué se hizo**
+- **F1.1 `app/db.py`:**
+  - `normalize_url` (fuerza asyncpg y quita `pgbouncer`, lección de ClassVIP) y `engine_from_url`: pool 5+5, `pre_ping`, `recycle 300`, SSL fuera de localhost, y en el puerto 6543 NullPool con nombres únicos de prepared statements.
+  - `get_session` sin commit implícito.
+  - `Base` con naming convention, fechas con zona horaria, JSONB, y enums como texto con CHECK para que los downgrades no dejen tipos huérfanos.
+  - `IdMixin` y `TimestampMixin`.
+- **F1.3 Alembic:** `alembic.ini` mínimo, `env.py` async por `DATABASE_URL_DIRECT` (o `DATABASE_URL`) y plantilla tipada. En CI, `alembic upgrade head && alembic check`.
+- **F1.4 Modelos:** `companies`, `company_settings` (contacto, oficinas, políticas y horario del recargo nocturno configurables, textos bilingües), `admin_users` (roles owner, manager, dispatcher, finance y viewer; email único por empresa sin importar mayúsculas; bloqueo por intentos; TOTP) y `sessions` (hashes de token y CSRF, expiración y revocación).
+- **Tests:** la fixture de sesión hace `downgrade base` y `upgrade head` en cada corrida; cada test corre en una transacción que se revierte.
+
+**Bug encontrado y corregido antes del commit:** el índice único se generó como `lower('email')` (el texto literal, no la columna), porque el modelo usaba `func.lower("email")`. Con eso cada empresa solo habría podido tener **un** admin. Se cambió a `text("lower(email)")`, se regeneró la migración y se agregó al test el caso de dos admins distintos en la misma empresa.
+
+**Archivos:** `backend/app/db.py`, `backend/app/main.py`, `backend/app/core/config.py`, `backend/app/models/*`, `backend/alembic.ini`, `backend/alembic/*`, `backend/tests/*`, `backend/pyproject.toml`, `backend/.env.example`, `.github/workflows/ci.yml`
+
+**Verificación**
+- `uv run pytest` → 12 tests en verde.
+- `pg_indexes` → `CREATE UNIQUE INDEX uq_admin_users_company_email ON public.admin_users USING btree (company_id, lower((email)::text))`.
+- `alembic upgrade head` en `ctc` y luego `alembic check` → "No new upgrade operations detected".
+- `ruff check`, `ruff format --check` y `mypy app` → 0 errores.
+
+**Pendiente:** F1.2 (scope por empresa en consultas) y F1.5 a F1.12.
+
 ## 2026-09-12 — Vista previa en Vercel + cierre de F0
 
 **Qué se hizo**
