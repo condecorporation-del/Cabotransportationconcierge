@@ -2,6 +2,42 @@
 
 Una entrada por sesión o tarea, la más reciente arriba (formato en `AGENTS.md` §10).
 
+## 2026-09-12 — F1.8 Operación y comunicación
+
+**Qué se hizo**
+- `app/models/operations.py`:
+  - `Driver`
+  - `Vehicle`: placa única por empresa, capacidad ≥ 1, `RESTRICT` sobre la clase de vehículo.
+  - `BookingAssignment`: una por tramo; exige chofer o vehículo, que no se pueden borrar mientras estén asignados; índice por chofer para detectar choques de horario en F6.7.
+  - `AdminTask`: tareas compartidas por empresa (en ClassVIP vivían solo en localStorage), con índice por estado y fecha.
+  - `AuditLog`: actor, acción, entidad y antes/después en JSONB, con índices por entidad y por fecha para el visor.
+- `app/models/communication.py`:
+  - `EmailOutbox`: cola del worker (D7) con reintentos. El índice parcial `status = 'pending'` deja que el worker tome solo lo pendiente, sin recorrer lo ya enviado.
+  - `AiConversation` y `AiMessage`:
+    - El visitante anónimo se identifica solo por el hash de su token.
+    - El costo se guarda en `cost_micro_usd` (entero, sin errores de punto flotante).
+    - Los mensajes se borran con la conversación.
+  - `ContactMessage`: bandeja con índice por estado y fecha.
+  - `Review`: `rating BETWEEN 1 AND 5` y enlace de origen.
+- Migración `a6a95d459beb` revisada: 10 tablas, nombres de constraints claros, `ondelete` correcto y downgrade con las 19 operaciones.
+- **Con esto el modelo de datos de WORKPLAN §6 está completo.**
+
+**Archivos:** `backend/app/models/operations.py`, `backend/app/models/communication.py`, `backend/app/models/__init__.py`, `backend/alembic/versions/20260912_a6a95d459beb_operacion_y_comunicacion.py`, `backend/tests/test_models_operations.py`, `backend/tests/test_models_communication.py`, `WORKPLAN.md`
+
+**Verificación**
+- `uv run pytest` → **34 passed**. Tests nuevos:
+  - Dos asignaciones para el mismo tramo → `uq_booking_assignments_leg_id`.
+  - Asignación sin chofer ni vehículo → `ck_booking_assignments_driver_or_vehicle`.
+  - Placa repetida → `uq_vehicles_company_id_plate`.
+  - Un correo recién encolado queda `pending`, con 0 intentos y `next_attempt_at` definido.
+  - Borrar una conversación borra sus mensajes.
+  - Calificación 6 → `ck_reviews_rating_range`.
+- `alembic upgrade head` en `ctc` y luego `alembic check` → "No new upgrade operations detected".
+- `ruff check`, `ruff format` y `mypy app` → 0 errores.
+- CI del commit anterior `825bcb5` (run `34727966391`) → los 3 jobs en success.
+
+**Pendiente:** F1.9 (seed del catálogo, con la matriz de tarifas por aprobar), F1.10 (owner), F1.11 (secuencia de códigos) y F1.12 (`check_db`).
+
 ## 2026-09-12 — F1.7 Pagos, eventos de Stripe y cuentas por cobrar
 
 **Qué se hizo**

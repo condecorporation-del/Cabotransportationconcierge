@@ -28,6 +28,18 @@ from app.models.catalog import (
     VehicleClass,
     Zone,
 )
+from app.models.communication import (
+    AiConversation,
+    AiMessage,
+    ContactMessage,
+    ContactStatus,
+    ConversationStatus,
+    EmailOutbox,
+    EmailStatus,
+    MessageRole,
+    Review,
+    ReviewSource,
+)
 from app.models.company import Company, CompanySettings
 from app.models.customer import Customer
 from app.models.finance import (
@@ -42,6 +54,16 @@ from app.models.finance import (
     PaymentStatus,
     StripeEvent,
 )
+from app.models.operations import (
+    AdminTask,
+    AuditActor,
+    AuditLog,
+    BookingAssignment,
+    Driver,
+    TaskCategory,
+    TaskStatus,
+    Vehicle,
+)
 
 __all__ = [
     "AccountCharge",
@@ -52,8 +74,14 @@ __all__ = [
     "ActivityPackage",
     "AdminRole",
     "AdminSession",
+    "AdminTask",
     "AdminUser",
+    "AiConversation",
+    "AiMessage",
+    "AuditActor",
+    "AuditLog",
     "Booking",
+    "BookingAssignment",
     "BookingItem",
     "BookingLeg",
     "BookingSource",
@@ -63,14 +91,21 @@ __all__ = [
     "ClientAccount",
     "Company",
     "CompanySettings",
+    "ContactMessage",
+    "ContactStatus",
+    "ConversationStatus",
     "Customer",
     "DiscountType",
+    "Driver",
+    "EmailOutbox",
+    "EmailStatus",
     "Extra",
     "ExtraAutoRule",
     "Hotel",
     "ItemType",
     "LegStatus",
     "LegType",
+    "MessageRole",
     "Payment",
     "PaymentProvider",
     "PaymentStatus",
@@ -78,9 +113,14 @@ __all__ = [
     "Promotion",
     "PromotionScope",
     "Rate",
+    "Review",
+    "ReviewSource",
     "ServiceScope",
     "StripeEvent",
+    "TaskCategory",
+    "TaskStatus",
     "TripType",
+    "Vehicle",
     "VehicleClass",
     "Zone",
 ]

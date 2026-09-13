@@ -12,23 +12,23 @@
 
 | Indicador | Estado |
 |---|---|
-| **Fase actual** | F1 — Base de datos y dominio: 7/12 (F1.1 a F1.7). F0 ✅ 9/9. CI verde (run `34727831270`). Vista previa del prototipo en https://cabotransportationconcierge.vercel.app (noindex). |
+| **Fase actual** | F1 — Base de datos y dominio: 8/12 (F1.1 a F1.8, con el modelo de datos completo de §6). F0 ✅ 9/9. CI verde (run `34727966391`). Vista previa del prototipo en https://cabotransportationconcierge.vercel.app (noindex). |
 | **Último avance** | 12 sep 2026 — F0:<br>• Repo git con prototipo aprobado.<br>• Backend mínimo FastAPI con `/api/v1/health` y `/health/ready`.<br>• Configuración fail-fast.<br>• Postgres 16 nativo con bases `ctc` y `ctc_test`.<br>• Cliente de API tipado generado desde OpenAPI.<br>• CI escrito.<br>• ADR-001 (entorno sin Docker).<br>• Checklist para el cliente. |
 | **Backend** | ✅ App mínima: health y readiness con Postgres real. Ruff (reglas de seguridad) y mypy estricto en 0 errores. |
-| **Base de datos** | ✅ Local: Postgres 16.15 nativo con `ctc` y `ctc_test`. Migraciones:<br>• `5721f5faa1c7`: empresas, ajustes, admins y sesiones.<br>• `4b96b66d17b0`: `pg_trgm`, zonas, hoteles, clases de vehículo, tarifas, extras, actividades, paquetes, promociones y clientes.<br>• `0b3217285efc`: reservas, tramos e ítems.<br>• `56ed3ca7c373`: pagos, eventos de Stripe y cuentas por cobrar.<br>`alembic check` sin diferencias. |
+| **Base de datos** | ✅ Local: Postgres 16.15 nativo con `ctc` y `ctc_test`. Migraciones:<br>• `5721f5faa1c7`: empresas, ajustes, admins y sesiones.<br>• `4b96b66d17b0`: `pg_trgm`, zonas, hoteles, clases de vehículo, tarifas, extras, actividades, paquetes, promociones y clientes.<br>• `0b3217285efc`: reservas, tramos e ítems.<br>• `56ed3ca7c373`: pagos, eventos de Stripe y cuentas por cobrar.<br>• `a6a95d459beb`: choferes, vehículos, asignaciones, tareas, auditoría, cola de correos, IA, contacto y reseñas.<br>`alembic check` sin diferencias. |
 | **Sitio público real** | ❌ Solo el prototipo estático `site/` (HTML generado por `site/build.js`). |
 | **Admin** | ❌ No existe. |
-| **Tests** | ✅ 28 tests pytest verdes contra Postgres real, incluidos el aislamiento por empresa y los constraints del catálogo, las reservas y los pagos. En cada corrida la migración va a base y de vuelta a head. pip-audit y npm audit sin vulnerabilidades. |
+| **Tests** | ✅ 34 tests pytest verdes contra Postgres real, incluidos el aislamiento por empresa y los constraints del catálogo, reservas, pagos, operación y comunicación. En cada corrida la migración va a base y de vuelta a head. pip-audit y npm audit sin vulnerabilidades. |
 | **Deploy** | ❌ No configurado. |
 | **Git** | ✅ Remoto `github.com/condecorporation-del/Cabotransportationconcierge` (push por la deploy key `~/.ssh/deploy_cabo_concierge`, alias SSH `github-cabo`). Rama `main` subida; gitleaks sin hallazgos en el historial. |
 
-**Siguiente tarea:** F1.8, modelos de operación y comunicación: `drivers`, `vehicles`, `booking_assignments`, `admin_tasks`, `audit_logs`, `email_outbox`, `ai_conversations`, `ai_messages`, `contact_messages` y `reviews`.
+**Siguiente tarea:** F1.9, seed del catálogo desde los datos de ClassVIP. Con `--dry-run` imprime la matriz de tarifas para que Marlon la apruebe (D-P1).
 
 **Progreso por fase**
 
 ```
 F0  Fundación y decisiones          [██████████] 9/9 ✅
-F1  Base de datos y dominio         [██████----] 7/12
+F1  Base de datos y dominio         [███████---] 8/12
 F2  Motor de precios y catálogo     [----------] 0/9
 F3  Reservas públicas               [----------] 0/11
 F4  Pagos con Stripe                [----------] 0/10
@@ -773,7 +773,19 @@ Formato de cada tarea: `- [ ] ID — qué`, con **Verificar** (comando o prueba 
   - Las relaciones de `Booking` usan `passive_deletes=True`: al borrar, Postgres hace el `ON DELETE CASCADE` sin cargar tramos ni ítems.
 
   Verificar: tests de intent único, reembolso mayor al monto, evento repetido, cargo en 0 y reserva con pagos que no se puede borrar.
-- [ ] **F1.8** — Modelos de operación y comunicación: `drivers`, `vehicles`, `booking_assignments` (una asignación activa por tramo), `admin_tasks`, `audit_logs`, `email_outbox`, `ai_conversations`, `ai_messages`, `contact_messages`, `reviews`. Verificar: migración aplicada.
+- [x] **F1.8** — Modelos de operación y comunicación: `drivers`, `vehicles`, `booking_assignments`, `admin_tasks`, `audit_logs`, `email_outbox`, `ai_conversations`, `ai_messages`, `contact_messages` y `reviews`.
+  - **Despacho:** una asignación por tramo, que exige chofer o vehículo. Un chofer o vehículo asignado no se puede borrar (`RESTRICT`). Índice por chofer para detectar choques de horario (F6.7).
+  - **Flota:** placa única por empresa y capacidad ≥ 1.
+  - **Tareas:** compartidas por empresa, con índice por estado y fecha.
+  - **Auditoría:** antes y después en JSONB, con índices por entidad y por fecha.
+  - **Cola de correos:** índice parcial solo sobre los pendientes, para que el worker no recorra los ya enviados.
+  - **IA:**
+    - El visitante anónimo se identifica solo por el hash de su token.
+    - El costo se guarda en millonésimas de dólar (entero, sin punto flotante).
+    - Los mensajes se borran junto con su conversación.
+  - **Reseñas:** calificación entre 1 y 5.
+
+  Verificar: tests de una asignación por tramo, chofer o vehículo obligatorio, placa repetida, cola con valores iniciales listos, borrado en cascada de mensajes y calificación fuera de rango.
 - [ ] **F1.9** — `scripts/seed_catalog.py`: importar de ClassVIP (`backend/scripts/data/*.json`) hoteles (sin duplicados, con slug y alias), 6 zonas, matriz de tarifas corregida (sin ceros ni duplicados), 16 extras, actividades y combos. Con la bandera `--dry-run` imprime la matriz para que Marlon la apruebe (D-P1). Verificar: reporte de conteos y matriz sin huecos.
 - [ ] **F1.10** — `scripts/ensure_owner.py`: crea el usuario owner leyendo email y contraseña de variables de entorno, una sola vez. **No inventar contraseñas.** Verificar: si se corre dos veces, no duplica.
 - [ ] **F1.11** — Secuencia de código de reserva por empresa (`CTC-AAAA-NNNNNN`). Verificar: test de 50 inserts concurrentes sin colisión.
