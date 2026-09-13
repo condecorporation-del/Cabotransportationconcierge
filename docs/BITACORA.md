@@ -2,6 +2,45 @@
 
 Una entrada por sesión o tarea, la más reciente arriba (formato en `AGENTS.md` §10).
 
+## 2026-09-12 — Diferenciación de All Ways y logo oficial de CTC
+
+Marlon pidió que el diseño quede más premium y no tan igual a All Ways: otras fuentes, navbar algo distinto, zonas y textos parecidos pero diferentes, y usar su logo.
+
+**WORKPLAN §3.5.6** (commit `eaf55d2`)
+- Logo oficial en todo el sistema.
+- Tipografías Cormorant Garamond, Cinzel y Manrope (Marlon aprueba muestras en F7.2).
+- Navbar con barra superior, medallón centrado, barra compacta de vidrio y mega menú de ancho completo.
+- Nombres y slugs propios para las 10 zonas en EN y ES.
+- Regla de textos reescritos con verificación de similitud.
+- F7.2, F7.4 y F2.10 ajustadas; F7.16 nueva. AGENTS.md actualizado.
+
+**Logo aplicado**
+- Hasta hoy el header del prototipo usaba `logo-ctc.svg`, un emblema provisional dibujado por mí, no el logo del cliente. Ahora usa el medallón oficial (`Downloads\Video\Cabotransportation logo.jpg`).
+- `site/images/logo/`:
+  - `ctc-medallion-{512,192,128,64}.webp`, más `.png` en 512 y 192, con fondo transparente (recorte circular).
+  - `favicon-32.png` con el monograma CTC (el medallón completo no se lee a 32 px).
+  - `apple-touch-icon.png`.
+- Prototipo:
+  - Medallón de 56–64 px en el header y de 160 px en el footer.
+  - Favicons, manifest y `msapplication-config` de la referencia eliminados.
+  - `theme-color` obsidiana y JSON-LD `logo` con el PNG de 512 px.
+  - Se borró `logo-ctc.svg`.
+- Las fuentes `original.html` y `arrival-original.html` ya no están en el repo, así que `build.js` no se puede volver a correr. Se actualizó igual (queda como registro de las transformaciones) y los mismos cambios se aplicaron sobre `index.html` y `arrival-guide.html`.
+- Voucher PDF: el emblema dibujado a mano se reemplazó por el medallón (`backend/app/assets/ctc-medallion-192.png`).
+
+**Test intermitente corregido:** `test_altered_or_missing_token_is_rejected` alteraba el último carácter del token. En base64url ese carácter a veces solo lleva bits de relleno, así que la firma seguía siendo válida y el test fallaba en algunas corridas. Ahora altera el primero, que siempre cambia el contenido firmado.
+
+**Verificación**
+- Capturas headless con Edge a 1440 y 400 px: el medallón se ve en el header.
+- Voucher de muestra revisado a la vista.
+- `pytest` completo, `ruff` y `mypy` en verde; el test del token pasó 20 de 20 corridas.
+
+**Pendiente:**
+- En móvil (400 px), el botón "Book transfer" del header del prototipo se corta por la derecha; se resuelve con el navbar nuevo (F7.4 y F7.14).
+- SVG vectorial del logo para pantallas grandes (F7.16).
+
+**Archivos:** `site/build.js`, `site/luxe.css`, `site/index.html`, `site/arrival-guide.html`, `site/images/logo/*`, `site/images/svg/logo-ctc.svg` (borrado), `backend/app/assets/ctc-medallion-192.png`, `backend/app/services/voucher.py`, `backend/tests/test_booking_access.py`
+
 ## 2026-09-12 — WORKPLAN v1.2: réplica completa de All Ways con datos propios
 
 Marlon pidió: la página igual a All Ways (servicios, reserva, Bachelorette y City Tours con su propia área, tarifas), diseño más moderno, precios iguales y toda la información de CTC, sin que se pase ningún dato.

@@ -3,7 +3,7 @@
 fpdf2 + segno en Python puro: sin GTK/Pango del sistema, igual en Windows y en Railway.
 """
 
-import io
+from pathlib import Path
 
 import segno
 from fpdf import FPDF
@@ -13,13 +13,8 @@ from app.models import Booking, Company, CompanySettings, Customer, LegType
 GOLD = (169, 130, 63)
 INK = (24, 24, 27)
 MUTED = (113, 113, 122)
-CREST = (
-    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">'
-    '<g fill="none" stroke="#A9823F" stroke-width="4" stroke-linecap="round">'
-    '<circle cx="64" cy="64" r="54"/><path d="M34 86V62c0-18 13-30 30-30s30 12 30 30v24"/>'
-    '<path d="M50 86V66c0-9 6-15 14-15s14 6 14 15v20"/>'
-    '<path d="M26 96c10-5 19-5 28 0s19 5 28 0 19-5 28 0"/></g></svg>'
-)
+# Medallón oficial de Cabo Transportation Concierge (WORKPLAN §3.5.6).
+LOGO = Path(__file__).resolve().parents[1] / "assets" / "ctc-medallion-192.png"
 TEXT = {
     "en": {
         "title": "Booking voucher",
@@ -84,7 +79,7 @@ def render_voucher(
     pdf.set_title(f"{company.name} {booking.code}")
     pdf.add_page()
 
-    pdf.image(io.BytesIO(CREST.encode()), x=10, y=10, w=18)
+    pdf.image(str(LOGO), x=9, y=7, w=21)
     pdf.set_xy(32, 11)
     pdf.set_font("helvetica", "B", 15)
     pdf.set_text_color(*GOLD)

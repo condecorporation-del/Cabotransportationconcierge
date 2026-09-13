@@ -70,8 +70,21 @@ function transform(h, { home }) {
   swapImg(19, "sprinter-interior.jpg"); // wooden "ALL WAYS CHECK POINT" paddle
   swapImg(20, "yacht-arch.jpg"); // honeymoon sign with the old logo
 
-  /* ---------- Logo ---------- */
-  h = h.replace(/images\/svg\/logo-white\.svg/g, "images/svg/logo-ctc.svg");
+  /* ---------- Logo: medallón oficial de CTC (WORKPLAN §3.5.6) ---------- */
+  h = h.replace(/<img([^>]*?)src="images\/svg\/logo-white\.svg"([^>]*)>/g, (m, before, after) => {
+    const footer = /w-\[280px\]/.test(m);
+    const size = footer ? 160 : 64;
+    return `<img${before}src="images/logo/ctc-medallion-${footer ? 192 : 128}.webp"${after}>`
+      .replace(/width="\d+"/, `width="${size}"`)
+      .replace(/height="\d+"/, `height="${size}"`)
+      .replace("h-10 lg:h-12", "h-14 lg:h-16")
+      .replace("w-[280px]", "w-[160px]");
+  });
+  h = h.replace(/"logo":\{"@type":"ImageObject","url":"[^"]*logo-white\.svg","width":\d+,"height":\d+\}/g, '"logo":{"@type":"ImageObject","url":"https://www.cabotransportationconcierge.com/images/logo/ctc-medallion-512.png","width":512,"height":512}');
+  // Favicons y manifest de la referencia fuera; íconos propios del logo.
+  h = h.replace(/<link rel="(apple-touch-icon|icon|mask-icon|manifest|shortcut icon)"[^>]*>\s*/g, "");
+  h = h.replace(/<meta name="msapplication-config"[^>]*>\s*/g, "").replace(/<meta name="theme-color"[^>]*>/g, '<meta name="theme-color" content="#07090D">');
+  h = h.replace("</head>", '<link rel="icon" type="image/png" sizes="32x32" href="images/logo/favicon-32.png">\n<link rel="apple-touch-icon" sizes="180x180" href="images/logo/apple-touch-icon.png">\n</head>');
 
   /* ---------- Remove the previous agency / sister brands ---------- */
   h = h.replace(/<section class="cabo-brands-network[\s\S]*?<\/section>/g, "");

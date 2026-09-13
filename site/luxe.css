@@ -23,7 +23,7 @@ body, .font-sans { font-family: "Outfit", system-ui, -apple-system, "Segoe UI", 
 /* ---------- Header ---------- */
 header.fixed { transition: background-color .5s var(--ctc-ease), box-shadow .5s var(--ctc-ease), backdrop-filter .5s; }
 header.fixed.ctc-scrolled { background-color: rgba(7, 9, 13, .88) !important; backdrop-filter: blur(14px) saturate(140%); -webkit-backdrop-filter: blur(14px) saturate(140%); box-shadow: 0 1px 0 rgba(198, 161, 91, .35), 0 20px 40px -24px rgba(0, 0, 0, .8); }
-header img[src*="logo-ctc"] { filter: drop-shadow(0 2px 10px rgba(198, 161, 91, .25)); }
+header img[src*="ctc-medallion"] { border-radius: 50%; filter: drop-shadow(0 2px 12px rgba(198, 161, 91, .35)); }
 header nav a, header nav button { position: relative; }
 header nav.lg\:flex > a::after, header nav.lg\:flex > div > button::after {
   content: ""; position: absolute; left: 0; right: 0; bottom: -6px; height: 1.5px; background: var(--ctc-gold);

@@ -34,7 +34,8 @@ async def test_token_opens_its_booking(api: AsyncClient, db: AsyncSession) -> No
 async def test_altered_or_missing_token_is_rejected(api: AsyncClient, db: AsyncSession) -> None:
     created = await _book(api, db)
     token = created["token"]
-    altered = token[:-1] + ("A" if token[-1] != "A" else "B")
+    # El primer carácter siempre cambia el contenido; el último puede ser solo relleno base64.
+    altered = ("A" if token[0] != "A" else "B") + token[1:]
     for headers in (_bearer(altered), {}):
         response = await api.get(f"{URL}/{created['code']}", headers=headers)
         assert response.status_code == 401
