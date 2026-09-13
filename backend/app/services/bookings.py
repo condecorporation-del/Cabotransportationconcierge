@@ -1,7 +1,7 @@
 """Reserva pública (WORKPLAN §8.1, F3.1): el precio se recalcula aquí y queda congelado."""
 
 import uuid
-from datetime import datetime
+from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 
 from sqlalchemy import func, select
@@ -17,6 +17,7 @@ from app.models import (
     BookingStatus,
     BookingType,
     Company,
+    CompanySettings,
     Customer,
     Hotel,
     ItemType,
@@ -31,6 +32,7 @@ from app.services.booking_codes import next_booking_code
 from app.services.pricing import QuoteError, quote_activity, quote_transfer
 
 AIRPORT = "SJD Los Cabos International Airport"
+PICKUP_LEAD = {True: timedelta(hours=3), False: timedelta(hours=2)}
 
 
 async def _customer_id(
@@ -54,8 +56,12 @@ async def _customer_id(
 
 
 async def _transfer_legs(
-    session: AsyncSession, request: TransferBookingRequest, quote: Quote
+    session: AsyncSession, request: TransferBookingRequest, quote: Quote, company: Company
 ) -> list[BookingLeg]:
+    """Tramos con hora de pickup. Rechaza horarios dentro de la anticipación mínima (F3.3)."""
+    settings = await session.get(CompanySettings, company.id)
+    zone = ZoneInfo(company.timezone)
+    earliest = datetime.now(zone) + timedelta(hours=settings.min_notice_hours if settings else 24)
     hotel = (
         await session.execute(select(Hotel.name).where(Hotel.id == request.hotel_id))
     ).scalar_one()
@@ -69,21 +75,31 @@ async def _transfer_legs(
         if request.trip_type is TripType.ROUND_TRIP
         else [LegType(request.direction)]
     )
-    return [
-        BookingLeg(
-            leg_type=kind,
-            service_date=leg.service_date,
-            service_time=leg.service_time,
-            flight_number=leg.flight_number,
-            airline=leg.airline,
-            origin=AIRPORT if kind is LegType.ARRIVAL else hotel,
-            destination=hotel if kind is LegType.ARRIVAL else AIRPORT,
-            hotel_id=request.hotel_id,
-            pax_adults=request.passengers,
-            vehicle_class_id=vehicle_id,
+    legs = []
+    for kind, leg in zip(kinds, request.legs, strict=True):
+        if leg.service_time is None:
+            raise QuoteError("time_required", "Add the flight time for each transfer.")
+        flight = datetime.combine(leg.service_date, leg.service_time, zone)
+        # Salida: el chofer recoge antes del vuelo; la fecha del tramo es la del pickup.
+        pickup = flight if kind is LegType.ARRIVAL else flight - PICKUP_LEAD[leg.international]
+        if pickup < earliest:
+            raise QuoteError("too_soon", "This date is too close. Contact us by WhatsApp.")
+        legs.append(
+            BookingLeg(
+                leg_type=kind,
+                service_date=pickup.date(),
+                service_time=leg.service_time,
+                pickup_time=pickup.time(),
+                flight_number=leg.flight_number,
+                airline=leg.airline,
+                origin=AIRPORT if kind is LegType.ARRIVAL else hotel,
+                destination=hotel if kind is LegType.ARRIVAL else AIRPORT,
+                hotel_id=request.hotel_id,
+                pax_adults=request.passengers,
+                vehicle_class_id=vehicle_id,
+            )
         )
-        for kind, leg in zip(kinds, request.legs, strict=True)
-    ]
+    return legs
 
 
 async def create_booking(
@@ -107,13 +123,15 @@ async def create_booking(
     today = datetime.now(ZoneInfo(company.timezone)).date()
     legs: list[BookingLeg] = []
     if isinstance(request, ActivityBookingRequest):
+        if request.service_date <= today:
+            raise QuoteError("too_soon", "Activities are booked at least one day ahead.")
         quote = await quote_activity(session, request)
         booking_type = BookingType.ACTIVITY
     else:
         if request.service_scope is not ServiceScope.AIRPORT:
             raise QuoteError("scope_unavailable", "Local transfers are booked by WhatsApp.")
         quote = await quote_transfer(session, request, today)
-        legs = await _transfer_legs(session, request, quote)
+        legs = await _transfer_legs(session, request, quote, company)
         booking_type = BookingType.TRANSFER
 
     items = [

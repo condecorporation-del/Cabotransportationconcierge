@@ -1,14 +1,17 @@
 """Contratos de cotización. Los montos siempre salen del servidor (WORKPLAN D8)."""
 
+import re
 import uuid
 from datetime import date, time
 from typing import Annotated, Literal, Self
 
-from pydantic import BaseModel, ConfigDict, Field, PrivateAttr, model_validator
+from pydantic import BaseModel, ConfigDict, Field, PrivateAttr, field_validator, model_validator
 
 from app.models import ItemType, ServiceScope, TripType
 
 Language = Literal["en", "es"]
+# Código IATA (2) o ICAO (3) de la aerolínea + número de 1 a 4 dígitos + sufijo opcional.
+FLIGHT_NUMBER = re.compile(r"([A-Z]{3}|[A-Z0-9]{2})\d{1,4}[A-Z]?")
 
 
 class _Strict(BaseModel):
@@ -22,6 +25,17 @@ class LegIn(_Strict):
     # Solo al reservar; la cotización los ignora.
     flight_number: str | None = Field(default=None, max_length=10)
     airline: str | None = Field(default=None, max_length=60)
+    international: bool = True
+
+    @field_validator("flight_number")
+    @classmethod
+    def _flight_format(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+        normalized = value.replace(" ", "").replace("-", "").upper()
+        if not FLIGHT_NUMBER.fullmatch(normalized):
+            raise ValueError("Use the airline code and flight number, e.g. AA1245")
+        return normalized
 
 
 class ExtraIn(_Strict):
@@ -46,8 +60,16 @@ class TransferQuoteRequest(_Strict):
         expected = 2 if self.trip_type is TripType.ROUND_TRIP else 1
         if len(self.legs) != expected:
             raise ValueError(f"{self.trip_type.value} requires {expected} leg(s)")
-        if expected == 2 and self.legs[1].service_date < self.legs[0].service_date:
-            raise ValueError("The return date cannot be before the arrival date")
+        if expected == 2:
+            arrival, back = self.legs
+            same_day_earlier = (
+                back.service_date == arrival.service_date
+                and back.service_time is not None
+                and arrival.service_time is not None
+                and back.service_time <= arrival.service_time
+            )
+            if back.service_date < arrival.service_date or same_day_earlier:
+                raise ValueError("The return must be after the arrival")
         if len({extra.code for extra in self.extras}) != len(self.extras):
             raise ValueError("Each extra can appear only once")
         return self

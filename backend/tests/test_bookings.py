@@ -1,6 +1,8 @@
-from datetime import date, timedelta
+from datetime import date, datetime, time, timedelta
 from typing import Any
+from zoneinfo import ZoneInfo
 
+import pytest
 from httpx import AsyncClient
 from sqlalchemy import func, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -22,7 +24,7 @@ async def _transfer(db: AsyncSession, **changes: Any) -> dict[str, Any]:
             {
                 "service_date": ARRIVAL.isoformat(),
                 "service_time": "13:20",
-                "flight_number": "AA1245",
+                "flight_number": "aa 1245",
             },
             {"service_date": (ARRIVAL + timedelta(days=5)).isoformat(), "service_time": "11:00"},
         ],
@@ -76,11 +78,75 @@ async def test_one_way_departure(api: AsyncClient, db: AsyncSession) -> None:
         db,
         trip_type="one_way",
         direction="departure",
-        legs=[{"service_date": ARRIVAL.isoformat(), "service_time": "08:00"}],
+        legs=[
+            {"service_date": ARRIVAL.isoformat(), "service_time": "08:00", "international": False}
+        ],
     )
     assert (await api.post(URL, json=body)).status_code == 201
     [leg] = (await db.scalars(select(BookingLeg))).all()
     assert (leg.leg_type, leg.origin) == (LegType.DEPARTURE, "One and Only Palmilla")
+    assert (leg.service_date, leg.pickup_time) == (ARRIVAL, time(6, 0))
+
+
+async def test_international_pickup_can_fall_the_day_before(
+    api: AsyncClient, db: AsyncSession
+) -> None:
+    body = await _transfer(
+        db,
+        trip_type="one_way",
+        direction="departure",
+        legs=[{"service_date": ARRIVAL.isoformat(), "service_time": "01:30"}],
+    )
+    assert (await api.post(URL, json=body)).status_code == 201
+    [leg] = (await db.scalars(select(BookingLeg))).all()
+    assert (leg.service_date, leg.pickup_time, leg.service_time) == (
+        ARRIVAL - timedelta(days=1),
+        time(22, 30),
+        time(1, 30),
+    )
+
+
+async def test_schedule_rules_have_stable_codes(api: AsyncClient, db: AsyncSession) -> None:
+    soon = datetime.now(ZoneInfo("America/Mazatlan")) + timedelta(hours=2)
+    cases = {
+        "too_soon": [{"service_date": soon.date().isoformat(), "service_time": f"{soon:%H:%M}"}],
+        "time_required": [{"service_date": ARRIVAL.isoformat()}],
+    }
+    for code, legs in cases.items():
+        response = await api.post(URL, json=await _transfer(db, trip_type="one_way", legs=legs))
+        assert response.status_code == 422, code
+        assert response.json()["detail"]["code"] == code
+
+
+@pytest.mark.parametrize(
+    ("flight", "return_time"), [("12345678", "11:00"), ("AA1245", "09:00")], ids=["flight", "order"]
+)
+async def test_invalid_flight_or_return_before_arrival(
+    api: AsyncClient, db: AsyncSession, flight: str, return_time: str
+) -> None:
+    day = ARRIVAL.isoformat()
+    legs = [
+        {"service_date": day, "service_time": "13:20", "flight_number": flight},
+        {"service_date": day, "service_time": return_time},
+    ]
+    response = await api.post(URL, json=await _transfer(db, legs=legs))
+    assert response.status_code == 422
+    assert isinstance(response.json()["detail"], list)
+
+
+async def test_late_arrival_adds_night_surcharge(api: AsyncClient, db: AsyncSession) -> None:
+    """F3.4: el recargo nocturno sale del motor y queda como ítem de la reserva."""
+    body = await _transfer(
+        db,
+        trip_type="one_way",
+        legs=[{"service_date": ARRIVAL.isoformat(), "service_time": "23:10"}],
+    )
+    request = {key: value for key, value in body.items() if key != "customer"}
+    quote = (await api.post("/api/v1/quotes", json=request)).json()
+    assert "NIGHT_SURCHARGE" in [line["code"] for line in quote["lines"]]
+    created = (await api.post(URL, json=body)).json()
+    assert len(created["items"]) == len(quote["lines"])
+    assert created["total_cents"] == quote["total_cents"]
 
 
 async def test_activity_booking_keeps_park_fee_out_of_the_total(
@@ -104,6 +170,10 @@ async def test_activity_booking_keeps_park_fee_out_of_the_total(
     assert package["park_fee_cents"] > 0
     assert kinds == ["activity", "park_fee"]
     assert created["items"][1]["total_cents"] == package["park_fee_cents"] * 2
+
+    today = datetime.now(ZoneInfo("America/Mazatlan")).date().isoformat()
+    same_day = await api.post(URL, json=body | {"service_date": today})
+    assert same_day.json()["detail"]["code"] == "too_soon"
 
 
 async def test_rate_change_does_not_touch_existing_bookings(

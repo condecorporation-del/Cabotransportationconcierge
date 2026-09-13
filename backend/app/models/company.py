@@ -38,6 +38,8 @@ class CompanySettings(TimestampMixin, Base):
     social_links: Mapped[dict[str, Any]] = mapped_column(default=dict)
     cancellation_hours: Mapped[int] = mapped_column(default=24)
     change_hours: Mapped[int] = mapped_column(default=5)
+    # Anticipación mínima para reservar en la web (F3.3).
+    min_notice_hours: Mapped[int] = mapped_column(default=24, server_default="24")
     night_surcharge_start: Mapped[time] = mapped_column(default=time(23, 0))
     night_surcharge_end: Mapped[time] = mapped_column(default=time(5, 0))
     arrival_instructions: Mapped[dict[str, Any]] = mapped_column(default=dict)

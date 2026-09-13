@@ -412,6 +412,11 @@ export interface components {
             flight_number?: string | null;
             /** Airline */
             airline?: string | null;
+            /**
+             * International
+             * @default true
+             */
+            international: boolean;
         };
         /** PackageOut */
         PackageOut: {

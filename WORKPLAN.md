@@ -12,17 +12,17 @@
 
 | Indicador | Estado |
 |---|---|
-| **Fase actual** | F3 — Reservas públicas: 1/11 (F3.1). F2 8/9: solo falta F2.9 (Marlon revisa el ADR-002). F1 ✅ 12/12. F0 ✅ 9/9. CI verde (run `34736281098`). Vista previa del prototipo en https://cabotransportationconcierge.vercel.app (noindex). |
+| **Fase actual** | F3 — Reservas públicas: 4/11 (F3.1 a F3.4). F2 8/9: solo falta F2.9 (Marlon revisa el ADR-002). F1 ✅ 12/12. F0 ✅ 9/9. CI verde (run `34736281098`). Vista previa del prototipo en https://cabotransportationconcierge.vercel.app (noindex). |
 | **Último avance** | 12 sep 2026 — F0:<br>• Repo git con prototipo aprobado.<br>• Backend mínimo FastAPI con `/api/v1/health` y `/health/ready`.<br>• Configuración fail-fast.<br>• Postgres 16 nativo con bases `ctc` y `ctc_test`.<br>• Cliente de API tipado generado desde OpenAPI.<br>• CI escrito.<br>• ADR-001 (entorno sin Docker).<br>• Checklist para el cliente. |
-| **Backend** | ✅ Base lista para la lógica de negocio:<br>• Health y readiness.<br>• Engine apto para Supabase.<br>• Todos los modelos de §6 con aislamiento por empresa.<br>• Scripts `seed_catalog`, `ensure_owner` y `check_db`.<br>• Servicio de códigos de reserva.<br>• Motor único de precios.<br>• API pública: `POST /quotes` y `GET /catalog/*` (zonas, búsqueda y página de hotel, vehículos, extras, actividades, paquetes) con ETag y rate limit.<br>• `POST /bookings` con precio recalculado y congelado e `Idempotency-Key`. Ruff (reglas de seguridad) y mypy estricto en 0 errores. |
-| **Base de datos** | ✅ Local: Postgres 16.15 nativo con `ctc` y `ctc_test`. Migraciones:<br>• `5721f5faa1c7`: empresas, ajustes, admins y sesiones.<br>• `4b96b66d17b0`: `pg_trgm`, zonas, hoteles, clases de vehículo, tarifas, extras, actividades, paquetes, promociones y clientes.<br>• `0b3217285efc`: reservas, tramos e ítems.<br>• `56ed3ca7c373`: pagos, eventos de Stripe y cuentas por cobrar.<br>• `a6a95d459beb`: choferes, vehículos, asignaciones, tareas, auditoría, cola de correos, IA, contacto y reseñas.<br>• `523ec6ce4943`: contador de códigos de reserva.<br>• `9c5a8aed60e7`: clave de idempotencia en reservas.<br>`alembic check` sin diferencias y `scripts/check_db.py` en código 0.<br>Catálogo de prueba cargado en `ctc` con `scripts/seed_catalog.py`: 226 hoteles, 24 tarifas, 15 extras. |
+| **Backend** | ✅ Base lista para la lógica de negocio:<br>• Health y readiness.<br>• Engine apto para Supabase.<br>• Todos los modelos de §6 con aislamiento por empresa.<br>• Scripts `seed_catalog`, `ensure_owner` y `check_db`.<br>• Servicio de códigos de reserva.<br>• Motor único de precios.<br>• API pública: `POST /quotes` y `GET /catalog/*` (zonas, búsqueda y página de hotel, vehículos, extras, actividades, paquetes) con ETag y rate limit.<br>• `POST /bookings` con precio recalculado y congelado, `Idempotency-Key`, anticipación mínima, formato de vuelo y pickup antes del vuelo.<br>• Máquina de estados de la reserva con auditoría. Ruff (reglas de seguridad) y mypy estricto en 0 errores. |
+| **Base de datos** | ✅ Local: Postgres 16.15 nativo con `ctc` y `ctc_test`. Migraciones:<br>• `5721f5faa1c7`: empresas, ajustes, admins y sesiones.<br>• `4b96b66d17b0`: `pg_trgm`, zonas, hoteles, clases de vehículo, tarifas, extras, actividades, paquetes, promociones y clientes.<br>• `0b3217285efc`: reservas, tramos e ítems.<br>• `56ed3ca7c373`: pagos, eventos de Stripe y cuentas por cobrar.<br>• `a6a95d459beb`: choferes, vehículos, asignaciones, tareas, auditoría, cola de correos, IA, contacto y reseñas.<br>• `523ec6ce4943`: contador de códigos de reserva.<br>• `9c5a8aed60e7`: clave de idempotencia en reservas.<br>• `4e2afe533f53`: anticipación mínima (`company_settings.min_notice_hours`).<br>`alembic check` sin diferencias y `scripts/check_db.py` en código 0.<br>Catálogo de prueba cargado en `ctc` con `scripts/seed_catalog.py`: 226 hoteles, 24 tarifas, 15 extras. |
 | **Sitio público real** | ❌ Solo el prototipo estático `site/` (HTML generado por `site/build.js`). |
 | **Admin** | ❌ No existe. |
-| **Tests** | ✅ 90 tests pytest verdes contra Postgres real, incluidos el aislamiento por empresa, los constraints de todas las tablas, el seed idempotente, la creación del owner, 50 códigos de reserva concurrentes, el diagnóstico de la base, el motor de precios sobre el catálogo real, la API pública (cotización, catálogo, ETag, rate limit) y la creación de reservas (idempotencia, precio congelado). En cada corrida la migración va a base y de vuelta a head. pip-audit y npm audit sin vulnerabilidades. |
+| **Tests** | ✅ 132 tests pytest verdes contra Postgres real, incluidos el aislamiento por empresa, los constraints de todas las tablas, el seed idempotente, la creación del owner, 50 códigos de reserva concurrentes, el diagnóstico de la base, el motor de precios sobre el catálogo real, la API pública (cotización, catálogo, ETag, rate limit) la creación de reservas (idempotencia, precio congelado, horarios) y las 36 combinaciones de la máquina de estados. En cada corrida la migración va a base y de vuelta a head. pip-audit y npm audit sin vulnerabilidades. |
 | **Deploy** | ❌ No configurado. |
 | **Git** | ✅ Remoto `github.com/condecorporation-del/Cabotransportationconcierge` (push por la deploy key `~/.ssh/deploy_cabo_concierge`, alias SSH `github-cabo`). Rama `main` subida; gitleaks sin hallazgos en el historial. |
 
-**Siguiente tarea:** F3.2 (máquina de estados de la reserva, §8.2) y F3.3 (validaciones de negocio: fecha futura, vuelo, horarios).
+**Siguiente tarea:** F3.5 (tokens firmados de gestión) y F3.6 (`GET /bookings/lookup`).
 
 **Progreso por fase**
 
@@ -30,7 +30,7 @@
 F0  Fundación y decisiones          [██████████] 9/9 ✅
 F1  Base de datos y dominio         [██████████] 12/12 ✅
 F2  Motor de precios y catálogo     [████████--] 8/9
-F3  Reservas públicas               [█---------] 1/11
+F3  Reservas públicas               [████------] 4/11
 F4  Pagos con Stripe                [----------] 0/10
 F5  Emails, PDF y trabajos          [----------] 0/11
 F6  Auth y API del admin            [----------] 0/13
@@ -849,9 +849,9 @@ Formato de cada tarea: `- [ ] ID — qué`, con **Verificar** (comando o prueba 
 ### F3 — Reservas públicas
 
 - [x] **F3.1** — `POST /bookings`: valida, cotiza de nuevo en servidor, crea o actualiza el cliente, la reserva, los tramos y los items en una transacción. Acepta `Idempotency-Key`. Verificar: el mismo key dos veces crea una sola reserva.
-- [ ] **F3.2** — `services/booking_state.py` con la tabla de §8.2. Verificar: test de cada transición permitida y de rechazo (409) para las no permitidas.
-- [ ] **F3.3** — Validaciones de negocio: fecha futura (margen mínimo configurable, 24 h por defecto), vuelo con formato válido, la salida no puede ser antes de la llegada, pickup sugerido 3 h antes de un vuelo internacional. Verificar: tests.
-- [ ] **F3.4** — Recargos automáticos por horario aplicados como items. Verificar: aterrizaje a las 23:10 agrega LATE_NIGHT.
+- [x] **F3.2** — `services/booking_state.py` con la tabla de §8.2. Verificar: test de cada transición permitida y de rechazo (409) para las no permitidas.
+- [x] **F3.3** — Validaciones de negocio: fecha futura (margen mínimo configurable, 24 h por defecto), vuelo con formato válido, la salida no puede ser antes de la llegada, pickup sugerido 3 h antes de un vuelo internacional. Verificar: tests.
+- [x] **F3.4** — Recargos automáticos por horario aplicados como items. Verificar: aterrizaje a las 23:10 agrega LATE_NIGHT.
 - [ ] **F3.5** — Tokens firmados de gestión (expiración 90 días, alcance por código). Verificar: token alterado → 401; token de otra reserva → 404.
 - [ ] **F3.6** — `GET /bookings/lookup` (código + email, respuesta uniforme, rate limit). Verificar: con email incorrecto la respuesta es igual a la de "no existe".
 - [ ] **F3.7** — `GET/PATCH /bookings/{code}` y `POST /cancel` con políticas desde `company_settings` (D-P2). Verificar: un cambio fuera de la ventana responde 422 con el motivo.

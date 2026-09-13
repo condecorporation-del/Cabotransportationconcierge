@@ -2,6 +2,36 @@
 
 Una entrada por sesión o tarea, la más reciente arriba (formato en `AGENTS.md` §10).
 
+## 2026-09-12 — F3.2 máquina de estados, F3.3 validaciones y F3.4 recargo nocturno
+
+**Qué se hizo**
+- `app/services/booking_state.py`:
+  - Tabla `TRANSITIONS` de §8.2 y `transition()`, único lugar donde cambia `bookings.status`.
+  - Una transición no listada lanza `TransitionError` (`code = invalid_transition`, pensado para 409).
+  - Cada cambio agrega `audit_logs` en la misma transacción (actor, antes, después, motivo, IP). Cancelar fija `cancelled_at` y `cancel_reason`.
+- **Validaciones de F3.3** al reservar:
+  - Anticipación mínima `company_settings.min_notice_hours` (24 h por defecto; migración `4e2afe533f53`), medida en la zona horaria de la empresa → `too_soon`.
+  - Actividades desde mañana → `too_soon`.
+  - Hora obligatoria en cada tramo → `time_required`.
+  - Vuelo normalizado (`aa 1245` → `AA1245`) y validado: código IATA o ICAO + 1 a 4 dígitos → 422.
+  - Regreso después de la llegada, también el mismo día → 422.
+  - Pickup de salida 3 h antes de un vuelo internacional o 2 h si es nacional (`international`, por defecto `true`). Si cae el día anterior, la fecha del tramo es la del pickup, para que el despacho lo vea en el día correcto.
+- **F3.4:** el recargo nocturno ya lo agrega el motor (F2.1); el test confirma que una llegada a las 23:10 guarda el ítem en la reserva con el mismo total que la cotización.
+
+**Archivos:** `backend/alembic/versions/20260912_4e2afe533f53_anticipacion_minima_para_reservar.py`, `backend/app/models/company.py`, `backend/app/schemas/quotes.py`, `backend/app/services/booking_state.py`, `backend/app/services/bookings.py`, `backend/tests/test_booking_state.py`, `backend/tests/test_bookings.py`, `packages/api-client/src/schema.d.ts`, `WORKPLAN.md`
+
+**Verificación**
+- `uv run pytest` → **132 passed** (42 nuevos):
+  - Las 36 combinaciones de estados contra la tabla de §8.2, escrita a mano en el test; las no permitidas no cambian el estado.
+  - Una cancelación guarda la auditoría con actor, motivo y `cancelled_at`.
+  - Pickup 06:00 para un vuelo nacional a las 08:00; 22:30 del día anterior para un internacional a la 01:30.
+  - Reserva a 2 h → `too_soon`; sin hora → `time_required`; actividad para hoy → `too_soon`.
+  - Vuelo `12345678` o regreso a las 09:00 tras llegar a las 13:20 del mismo día → 422.
+  - Llegada 23:10 → `NIGHT_SURCHARGE` y el total de la reserva igual al de la cotización.
+- `ruff`, `mypy`, `alembic check` y `tsc` → sin errores.
+
+**Pendiente:** el 409 de `TransitionError` se conecta y se prueba en la API con F3.7 (cancelación del cliente), el primer endpoint que cambia estados.
+
 ## 2026-09-12 — F3.1 `POST /bookings` y F2.8 precio congelado
 
 **Qué se hizo**
