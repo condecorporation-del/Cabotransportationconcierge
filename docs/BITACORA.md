@@ -2,6 +2,37 @@
 
 Una entrada por sesión o tarea, la más reciente arriba (formato en `AGENTS.md` §10).
 
+## 2026-09-12 — F2.1, F2.2, F2.3 y F2.6: motor único de precios
+
+**Qué se hizo**
+- `app/schemas/quotes.py`:
+  - `TransferQuoteRequest`: estricto (campos desconocidos → 422), 1 tramo para ida y 2 para redondo, regreso no antes de la llegada, extras sin repetir.
+  - `ActivityQuoteRequest`, `QuoteLine` y `Quote`.
+- `app/services/pricing.py`, que es el único lugar donde se calcula un precio (D8):
+  - **Vehículo automático** por pasajeros; subir de clase sí, bajar no; más de 14 → `too_many_passengers`.
+  - **Tarifa base** de zona × vehículo × viaje × servicio; si no existe → `rate_unavailable`.
+  - **Extras** validados: activos, no incluidos ni automáticos, cantidad ≤ `max_qty`. Precio × cantidad, una vez por reserva.
+  - **Recargo nocturno automático** con la ventana de `company_settings`, que puede cruzar la medianoche (`in_night_window`).
+  - **Promociones:** automáticas o por código; ventanas de viaje y compra; usos disponibles. Solo la de mayor descuento, con alcance a la base o al subtotal.
+  - **Actividades:** paquete × invitados, con park fee en sitio y depósito informados aparte.
+- `docs/decisions/ADR-002-precios.md`: todas las reglas con ejemplos numéricos. **Pendiente de revisión de Marlon (F2.9).**
+
+**Archivos:** `backend/app/schemas/__init__.py`, `backend/app/schemas/quotes.py`, `backend/app/services/pricing.py`, `backend/tests/test_pricing.py`, `docs/decisions/ADR-002-precios.md`, `WORKPLAN.md`
+
+**Verificación**
+- `uv run pytest` → **63 passed**. 19 tests nuevos de precios, todos sobre el catálogo real sembrado en la sesión:
+  - Tarifa base de las 6 zonas × Suburban/Sprinter × ida/redondo = catálogo.
+  - 1 y 5 pasajeros → Suburban; 6 y 14 → Sprinter; 15 → error; Sprinter para 2 sí; Suburban para 7 no.
+  - Silla de bebé ×2 = $30. Rechazados: ×3 (máximo 2), recargo nocturno pedido a mano, kit incluido y código inexistente.
+  - Recargo nocturno: 23:00 y 04:59 cobran; 05:00, 22:59 y sin hora no cobran.
+  - 15 sep con silla de bebé → subtotal $125, descuento $11, total $114. 15 oct → sin descuento.
+  - Código `vip20` (fijo $20) gana al 10% automático, con una sola línea de descuento; código inválido → `invalid_promo_code`.
+  - Crazy Combo, 2 personas → $250, park fee $50 en sitio; conteo, repetidas o actividad inexistente → error.
+  - Validación: redondo con 1 tramo, regreso antes de la llegada o campo extra (`price_cents`) → `ValidationError`.
+- `ruff check`, `ruff format` y `mypy app scripts` → 0 errores. `alembic check` sin cambios de esquema.
+
+**Pendiente:** F2.4 (`POST /quotes`), F2.5 (búsqueda de hoteles), F2.7 (caché del catálogo), F2.8 (se prueba al crear reservas en F3.1) y F2.9 (revisión de Marlon).
+
 ## 2026-09-12 — F1.11 Códigos de reserva y F1.12 diagnóstico de la base (F1 completa)
 
 **Qué se hizo**
