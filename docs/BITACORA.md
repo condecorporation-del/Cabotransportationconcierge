@@ -2,6 +2,29 @@
 
 Una entrada por sesión o tarea, la más reciente arriba (formato en `AGENTS.md` §10).
 
+## 2026-09-12 — F1.10 Creación del owner
+
+**Qué se hizo**
+- Dependencia `pwdlib[argon2]` 0.3.1.
+- `app/core/security.py`: `hash_password` (Argon2id; rechaza contraseñas de menos de 12 caracteres) y `verify_password`. Es la base del login de F6.1.
+- `scripts/ensure_owner.py`: crea el usuario `owner` de la empresa con `OWNER_EMAIL` y `OWNER_PASSWORD` del entorno.
+  - Nunca inventa ni imprime la contraseña.
+  - El email se guarda normalizado (sin espacios y en minúsculas).
+  - Si ya existe un admin con ese email, no cambia nada. Es la regla de Marlon heredada de ClassVIP: no crear admins ni contraseñas por cuenta propia.
+  - Si la empresa no existe, falla indicando que primero hay que correr el seed.
+
+**Archivos:** `backend/app/core/security.py`, `backend/scripts/ensure_owner.py`, `backend/tests/test_ensure_owner.py`, `backend/pyproject.toml`, `backend/uv.lock`, `WORKPLAN.md`
+
+**Verificación**
+- `uv run pytest` → **40 passed**. Tests nuevos:
+  - El owner se crea una vez; la segunda llamada con el mismo email en otra capitalización devuelve `False`. Hay un solo admin, con rol owner, email en minúsculas, hash que empieza con `$argon2id$` y que `verify_password` valida.
+  - Contraseña corta → `ValueError`.
+  - Empresa inexistente → `LookupError` que menciona `seed_catalog`.
+- `uv run pip-audit` → "No known vulnerabilities found".
+- `ruff check`, `ruff format` y `mypy app scripts` → 0 errores.
+
+**Pendiente:** F1.11 (secuencia de códigos de reserva) y F1.12 (`check_db`).
+
 ## 2026-09-12 — F1.9 Seed del catálogo y depuración de hoteles
 
 **Qué se hizo**

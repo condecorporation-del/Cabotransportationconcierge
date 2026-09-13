@@ -12,23 +12,23 @@
 
 | Indicador | Estado |
 |---|---|
-| **Fase actual** | F1 — Base de datos y dominio: 9/12 (F1.1 a F1.9). Modelo de datos completo y catálogo cargable. F0 ✅ 9/9. CI verde (run `34728171656`). Vista previa del prototipo en https://cabotransportationconcierge.vercel.app (noindex). |
+| **Fase actual** | F1 — Base de datos y dominio: 10/12 (F1.1 a F1.10). Modelo de datos completo, catálogo cargable y creación del owner. F0 ✅ 9/9. CI verde (run `34728171656`). Vista previa del prototipo en https://cabotransportationconcierge.vercel.app (noindex). |
 | **Último avance** | 12 sep 2026 — F0:<br>• Repo git con prototipo aprobado.<br>• Backend mínimo FastAPI con `/api/v1/health` y `/health/ready`.<br>• Configuración fail-fast.<br>• Postgres 16 nativo con bases `ctc` y `ctc_test`.<br>• Cliente de API tipado generado desde OpenAPI.<br>• CI escrito.<br>• ADR-001 (entorno sin Docker).<br>• Checklist para el cliente. |
 | **Backend** | ✅ App mínima: health y readiness con Postgres real. Ruff (reglas de seguridad) y mypy estricto en 0 errores. |
 | **Base de datos** | ✅ Local: Postgres 16.15 nativo con `ctc` y `ctc_test`. Migraciones:<br>• `5721f5faa1c7`: empresas, ajustes, admins y sesiones.<br>• `4b96b66d17b0`: `pg_trgm`, zonas, hoteles, clases de vehículo, tarifas, extras, actividades, paquetes, promociones y clientes.<br>• `0b3217285efc`: reservas, tramos e ítems.<br>• `56ed3ca7c373`: pagos, eventos de Stripe y cuentas por cobrar.<br>• `a6a95d459beb`: choferes, vehículos, asignaciones, tareas, auditoría, cola de correos, IA, contacto y reseñas.<br>`alembic check` sin diferencias.<br>Catálogo de prueba cargado en `ctc` con `scripts/seed_catalog.py`: 226 hoteles, 24 tarifas, 15 extras. |
 | **Sitio público real** | ❌ Solo el prototipo estático `site/` (HTML generado por `site/build.js`). |
 | **Admin** | ❌ No existe. |
-| **Tests** | ✅ 37 tests pytest verdes contra Postgres real, incluidos el aislamiento por empresa, los constraints de todas las tablas y el seed idempotente del catálogo. En cada corrida la migración va a base y de vuelta a head. pip-audit y npm audit sin vulnerabilidades. |
+| **Tests** | ✅ 40 tests pytest verdes contra Postgres real, incluidos el aislamiento por empresa, los constraints de todas las tablas, el seed idempotente del catálogo y la creación del owner. En cada corrida la migración va a base y de vuelta a head. pip-audit y npm audit sin vulnerabilidades. |
 | **Deploy** | ❌ No configurado. |
 | **Git** | ✅ Remoto `github.com/condecorporation-del/Cabotransportationconcierge` (push por la deploy key `~/.ssh/deploy_cabo_concierge`, alias SSH `github-cabo`). Rama `main` subida; gitleaks sin hallazgos en el historial. |
 
-**Siguiente tarea:** F1.10 (`scripts/ensure_owner.py`), luego F1.11 (secuencia de códigos de reserva) y F1.12 (`scripts/check_db.py`).
+**Siguiente tarea:** F1.11 (secuencia de códigos de reserva), luego F1.12 (`scripts/check_db.py`).
 
 **Progreso por fase**
 
 ```
 F0  Fundación y decisiones          [██████████] 9/9 ✅
-F1  Base de datos y dominio         [████████--] 9/12
+F1  Base de datos y dominio         [█████████-] 10/12
 F2  Motor de precios y catálogo     [----------] 0/9
 F3  Reservas públicas               [----------] 0/11
 F4  Pagos con Stripe                [----------] 0/10
@@ -806,7 +806,11 @@ Formato de cada tarea: `- [ ] ID — qué`, con **Verificar** (comando o prueba 
   - Test de cada hotel una sola vez y en una zona existente.
   - Test de seed idempotente.
   - Carga real dos veces en `ctc` con los mismos conteos.
-- [ ] **F1.10** — `scripts/ensure_owner.py`: crea el usuario owner leyendo email y contraseña de variables de entorno, una sola vez. **No inventar contraseñas.** Verificar: si se corre dos veces, no duplica.
+- [x] **F1.10** — `scripts/ensure_owner.py`: crea el usuario owner leyendo `OWNER_EMAIL` y `OWNER_PASSWORD` del entorno, una sola vez. **No inventa contraseñas ni las imprime.**
+  - Si el email ya existe (sin importar mayúsculas), no cambia nada.
+  - `app/core/security.py`: Argon2id con `pwdlib` y mínimo de 12 caracteres. Lo reutiliza el login en F6.1.
+
+  Verificar: tests de owner creado una sola vez con hash Argon2id verificable, contraseña corta rechazada y empresa inexistente con mensaje claro; `pip-audit` sin vulnerabilidades.
 - [ ] **F1.11** — Secuencia de código de reserva por empresa (`CTC-AAAA-NNNNNN`). Verificar: test de 50 inserts concurrentes sin colisión.
 - [ ] **F1.12** — `scripts/check_db.py` (SELECT 1, tablas y conteos). Verificar: corre contra local y staging.
 
