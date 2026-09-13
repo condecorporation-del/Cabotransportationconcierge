@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Header, HTTPException, Path, Query, status
+from fastapi import APIRouter, Depends, Header, HTTPException, Path, Query, Request, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy import func, select
 from sqlalchemy.orm import selectinload
@@ -10,13 +10,15 @@ from app.core.rate_limit import rate_limit
 from app.core.security import booking_token, read_booking_token
 from app.models import Booking, Customer
 from app.schemas.bookings import (
+    BookingChange,
     BookingCreated,
     BookingDetail,
     BookingRequest,
     BookingSummary,
     BookingToken,
+    CancelRequest,
 )
-from app.services.bookings import create_booking
+from app.services.bookings import cancel_booking, change_booking, create_booking
 
 router = APIRouter(prefix="/bookings", tags=["bookings"], dependencies=[Depends(rate_limit(10))])
 bearer = HTTPBearer(auto_error=False)
@@ -92,4 +94,36 @@ ManagedBooking = Annotated[Booking, Depends(managed_booking)]
 
 @router.get("/{code}")
 async def detail(booking: ManagedBooking) -> BookingDetail:
+    return BookingDetail.model_validate(booking)
+
+
+def _ip(request: Request) -> str | None:
+    return request.client.host if request.client else None
+
+
+@router.patch("/{code}")
+async def change(
+    body: BookingChange,
+    booking: ManagedBooking,
+    company: CurrentCompany,
+    session: DbSession,
+    request: Request,
+) -> BookingDetail:
+    """Cambios permitidos por política: vuelo, aerolínea, hora del vuelo y notas."""
+    await change_booking(session, booking, company, body, _ip(request))
+    await session.commit()
+    return BookingDetail.model_validate(booking)
+
+
+@router.post("/{code}/cancel")
+async def cancel(
+    body: CancelRequest,
+    booking: ManagedBooking,
+    company: CurrentCompany,
+    session: DbSession,
+    request: Request,
+) -> BookingDetail:
+    """Cancelación del cliente según política; ya cancelada o completada → 409."""
+    await cancel_booking(session, booking, company, body.reason, _ip(request))
+    await session.commit()
     return BookingDetail.model_validate(booking)

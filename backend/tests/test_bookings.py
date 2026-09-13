@@ -169,6 +169,7 @@ async def test_activity_booking_keeps_park_fee_out_of_the_total(
     created = response.json()
     assert created["total_cents"] == package["price_per_person_cents"] * 2
     kinds = [item["item_type"] for item in created["items"]]
+    assert {item["service_date"] for item in created["items"]} == {ARRIVAL.isoformat()}
     assert package["park_fee_cents"] > 0
     assert kinds == ["activity", "park_fee"]
     assert created["items"][1]["total_cents"] == package["park_fee_cents"] * 2

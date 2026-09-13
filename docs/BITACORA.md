@@ -2,6 +2,35 @@
 
 Una entrada por sesión o tarea, la más reciente arriba (formato en `AGENTS.md` §10).
 
+## 2026-09-12 — F3.7 cambios y cancelación del cliente
+
+**Qué se hizo**
+- `app/core/errors.py`: `AppError(code, message)` con `status_code`. `QuoteError` (422) y `TransitionError` (409) heredan de él; un solo handler en `main.py` responde `{"detail": {"code", "message"}}`.
+- `PATCH /bookings/{code}` (Bearer): vuelo, aerolínea, hora del vuelo y notas.
+  - Solo en `pending_payment`, `offline_hold`, `confirmed` o `paid`; si no → `not_editable`.
+  - Hasta `change_hours` antes del pickup (5 h por defecto, D-P2) → si no, `change_window`.
+  - Una hora nueva mueve el pickup conservando la anticipación (3 h, 2 h o 0 en llegadas), también si cruza la medianoche.
+  - Si la hora nueva entra o sale del recargo nocturno → `price_change` (el precio congelado no se toca).
+  - Auditoría `customer_change` con el antes y el después de tramos y notas.
+- `POST /bookings/{code}/cancel` (Bearer, motivo opcional):
+  - Hasta `cancellation_hours` antes del primer servicio (24 h por defecto) → si no, `cancel_window`.
+  - Pasa por la máquina de estados (ya cancelada o completada → 409 `invalid_transition`), deja la auditoría y cancela los tramos. El reembolso llega con F4.
+- **Corrección:** las reservas de actividades no guardaban su fecha. Ahora `booking_items.service_date` (migración `43fcd1c0fe04`) y la ventana de cancelación la usa.
+- `FlightNumber`: tipo reutilizable con la validación y normalización del vuelo (reserva y cambios).
+
+**Archivos:** `backend/alembic/versions/20260912_43fcd1c0fe04_fecha_de_actividad_en_items_de_reserva.py`, `backend/app/api/v1/bookings.py`, `backend/app/core/errors.py`, `backend/app/main.py`, `backend/app/models/booking.py`, `backend/app/schemas/bookings.py`, `backend/app/schemas/quotes.py`, `backend/app/services/booking_state.py`, `backend/app/services/bookings.py`, `backend/app/services/pricing.py`, `backend/tests/test_booking_changes.py`, `backend/tests/test_bookings.py`, `packages/api-client/src/schema.d.ts`, `WORKPLAN.md`
+
+**Verificación**
+- `uv run pytest` → **143 passed** (4 nuevos):
+  - Cambio de salida de 11:00 a 12:30 con vuelo `dl 590` → pickup de 08:00 a 09:30, vuelo `DL590`, notas guardadas y auditoría con el pickup anterior.
+  - Llegada movida a las 23:30 → `price_change`.
+  - Con ventanas de un año → `change_window` y `cancel_window`.
+  - Cancelar → `cancelled` con los tramos cancelados; cancelar otra vez → 409; cambiar después → `not_editable`.
+  - La actividad guarda su fecha en los ítems.
+- `ruff`, `mypy`, `alembic check` y `tsc` → sin errores.
+
+**Pendiente:** F3.8 (voucher PDF), F3.9 (auditoría al crear), F3.10 (contacto), F3.11 (UTM); reembolso al cancelar una reserva pagada (F4).
+
 ## 2026-09-12 — F3.5 enlace de gestión firmado y F3.6 My Trip
 
 **Qué se hizo**

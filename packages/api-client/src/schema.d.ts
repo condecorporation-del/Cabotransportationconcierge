@@ -237,6 +237,30 @@ export interface paths {
         delete?: never;
         options?: never;
         head?: never;
+        /**
+         * Change
+         * @description Cambios permitidos por política: vuelo, aerolínea, hora del vuelo y notas.
+         */
+        patch: operations["change_api_v1_bookings__code__patch"];
+        trace?: never;
+    };
+    "/api/v1/bookings/{code}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Cancel
+         * @description Cancelación del cliente según política; ya cancelada o completada → 409.
+         */
+        post: operations["cancel_api_v1_bookings__code__cancel_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
         patch?: never;
         trace?: never;
     };
@@ -312,6 +336,13 @@ export interface components {
              */
             language: "en" | "es";
         };
+        /** BookingChange */
+        BookingChange: {
+            /** Legs */
+            legs?: components["schemas"]["LegChange"][];
+            /** Notes */
+            notes?: string | null;
+        };
         /** BookingCreated */
         BookingCreated: {
             /** Token */
@@ -357,6 +388,8 @@ export interface components {
         /** BookingItemOut */
         BookingItemOut: {
             item_type: components["schemas"]["ItemType"];
+            /** Service Date */
+            service_date: string | null;
             /** Description */
             description: string;
             /** Quantity */
@@ -403,6 +436,11 @@ export interface components {
         BookingToken: {
             /** Token */
             token: string;
+        };
+        /** CancelRequest */
+        CancelRequest: {
+            /** Reason */
+            reason?: string | null;
         };
         /** CustomerIn */
         CustomerIn: {
@@ -493,6 +531,16 @@ export interface components {
          * @enum {string}
          */
         ItemType: "transfer" | "extra" | "activity" | "park_fee" | "discount";
+        /** LegChange */
+        LegChange: {
+            leg_type: components["schemas"]["LegType"];
+            /** Service Time */
+            service_time?: string | null;
+            /** Flight Number */
+            flight_number?: string | null;
+            /** Airline */
+            airline?: string | null;
+        };
         /** LegIn */
         LegIn: {
             /**
@@ -1049,6 +1097,76 @@ export interface operations {
             cookie?: never;
         };
         requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BookingDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    change_api_v1_bookings__code__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                code: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BookingChange"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BookingDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    cancel_api_v1_bookings__code__cancel_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                code: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CancelRequest"];
+            };
+        };
         responses: {
             /** @description Successful Response */
             200: {

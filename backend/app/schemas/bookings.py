@@ -4,7 +4,7 @@ from typing import Annotated, Literal
 from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
 from app.models import BookingStatus, ItemType, LegType
-from app.schemas.quotes import ActivityQuoteRequest, TransferQuoteRequest, _Strict
+from app.schemas.quotes import ActivityQuoteRequest, FlightNumber, TransferQuoteRequest, _Strict
 
 
 class CustomerIn(_Strict):
@@ -36,8 +36,25 @@ class _FromOrm(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
+class LegChange(_Strict):
+    leg_type: LegType
+    service_time: time | None = None
+    flight_number: FlightNumber | None = None
+    airline: str | None = Field(default=None, max_length=60)
+
+
+class BookingChange(_Strict):
+    legs: list[LegChange] = Field(default_factory=list, max_length=2)
+    notes: str | None = Field(default=None, max_length=1000)
+
+
+class CancelRequest(_Strict):
+    reason: str | None = Field(default=None, max_length=300)
+
+
 class BookingItemOut(_FromOrm):
     item_type: ItemType
+    service_date: date | None
     description: str
     quantity: int
     unit_price_cents: int

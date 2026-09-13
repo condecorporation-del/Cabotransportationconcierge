@@ -5,7 +5,15 @@ import uuid
 from datetime import date, time
 from typing import Annotated, Literal, Self
 
-from pydantic import BaseModel, ConfigDict, Field, PrivateAttr, field_validator, model_validator
+from pydantic import (
+    AfterValidator,
+    BaseModel,
+    ConfigDict,
+    Field,
+    PrivateAttr,
+    StringConstraints,
+    model_validator,
+)
 
 from app.models import ItemType, ServiceScope, TripType
 
@@ -14,28 +22,28 @@ Language = Literal["en", "es"]
 FLIGHT_NUMBER = re.compile(r"([A-Z]{3}|[A-Z0-9]{2})\d{1,4}[A-Z]?")
 
 
+def _flight_number(value: str) -> str:
+    normalized = value.replace(" ", "").replace("-", "").upper()
+    if not FLIGHT_NUMBER.fullmatch(normalized):
+        raise ValueError("Use the airline code and flight number, e.g. AA1245")
+    return normalized
+
+
+FlightNumber = Annotated[str, StringConstraints(max_length=10), AfterValidator(_flight_number)]
+
+
 class _Strict(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
 
 class LegIn(_Strict):
     service_date: date
-    # Hora de aterrizaje en la llegada u hora de pickup en la salida; define el recargo nocturno.
+    # Hora del vuelo: aterrizaje en la llegada, despegue en la salida; define el recargo nocturno.
     service_time: time | None = None
     # Solo al reservar; la cotización los ignora.
-    flight_number: str | None = Field(default=None, max_length=10)
+    flight_number: FlightNumber | None = None
     airline: str | None = Field(default=None, max_length=60)
     international: bool = True
-
-    @field_validator("flight_number")
-    @classmethod
-    def _flight_format(cls, value: str | None) -> str | None:
-        if value is None:
-            return None
-        normalized = value.replace(" ", "").replace("-", "").upper()
-        if not FLIGHT_NUMBER.fullmatch(normalized):
-            raise ValueError("Use the airline code and flight number, e.g. AA1245")
-        return normalized
 
 
 class ExtraIn(_Strict):

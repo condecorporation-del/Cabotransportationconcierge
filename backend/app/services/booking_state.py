@@ -5,6 +5,7 @@ from datetime import UTC, datetime
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.errors import AppError
 from app.models import AuditActor, AuditLog, Booking, BookingStatus
 
 S = BookingStatus
@@ -18,13 +19,15 @@ TRANSITIONS: dict[BookingStatus, frozenset[BookingStatus]] = {
 }
 
 
-class TransitionError(Exception):
-    """Transición fuera de la tabla; la API responde 409."""
+class TransitionError(AppError):
+    """Transición fuera de la tabla de §8.2."""
 
-    code = "invalid_transition"
+    status_code = 409
 
     def __init__(self, current: BookingStatus, target: BookingStatus) -> None:
-        super().__init__(f"A {current.value} booking cannot change to {target.value}.")
+        super().__init__(
+            "invalid_transition", f"A {current.value} booking cannot change to {target.value}."
+        )
 
 
 def transition(

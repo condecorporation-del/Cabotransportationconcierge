@@ -1,14 +1,14 @@
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, Request, status
+from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from sqlalchemy.ext.asyncio import async_sessionmaker
 
 from app.api.v1 import bookings, catalog, health, quotes
 from app.core.config import get_settings
+from app.core.errors import AppError
 from app.db import engine_from_url
-from app.services.pricing import QuoteError
 
 
 @asynccontextmanager
@@ -19,11 +19,10 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     await app.state.engine.dispose()
 
 
-async def quote_error(_request: Request, exc: Exception) -> JSONResponse:
-    code = exc.code if isinstance(exc, QuoteError) else "invalid_quote"
+async def app_error(_request: Request, exc: Exception) -> JSONResponse:
+    error = exc if isinstance(exc, AppError) else AppError("error", "Unexpected error.")
     return JSONResponse(
-        {"detail": {"code": code, "message": str(exc)}},
-        status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+        {"detail": {"code": error.code, "message": str(error)}}, status_code=error.status_code
     )
 
 
@@ -38,7 +37,7 @@ def create_app() -> FastAPI:
         openapi_url="/openapi.json" if show_docs else None,
     )
     app.state.rate_limits = {}
-    app.add_exception_handler(QuoteError, quote_error)
+    app.add_exception_handler(AppError, app_error)
     for module in (health, catalog, quotes, bookings):
         app.include_router(module.router, prefix="/api/v1")
     return app

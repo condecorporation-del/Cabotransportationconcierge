@@ -15,6 +15,7 @@ from sqlalchemy import ColumnElement, and_, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import InstrumentedAttribute
 
+from app.core.errors import AppError
 from app.models import (
     Activity,
     ActivityPackage,
@@ -35,12 +36,8 @@ from app.models import (
 from app.schemas.quotes import ActivityQuoteRequest, Quote, QuoteLine, TransferQuoteRequest
 
 
-class QuoteError(ValueError):
-    """Error que el cliente puede corregir; `code` es estable para traducirlo en la web."""
-
-    def __init__(self, code: str, message: str) -> None:
-        super().__init__(message)
-        self.code = code
+class QuoteError(AppError):
+    """No se puede cotizar con estos datos (hotel, vehículo, extras, promoción)."""
 
 
 def in_night_window(moment: time, start: time, end: time) -> bool:

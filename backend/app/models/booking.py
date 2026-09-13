@@ -163,6 +163,8 @@ class BookingItem(IdMixin, TenantMixin, TimestampMixin, Base):
         ForeignKey("booking_legs.id", ondelete="CASCADE")
     )
     item_type: Mapped[ItemType]
+    # Fecha de la actividad; los traslados la llevan en sus tramos.
+    service_date: Mapped[date | None]
     ref_id: Mapped[uuid.UUID | None]
     description: Mapped[str] = mapped_column(String(200))
     quantity: Mapped[int] = mapped_column(default=1)
