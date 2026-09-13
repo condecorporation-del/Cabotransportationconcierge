@@ -30,8 +30,24 @@ from app.models.catalog import (
 )
 from app.models.company import Company, CompanySettings
 from app.models.customer import Customer
+from app.models.finance import (
+    AccountCharge,
+    AccountPayment,
+    AccountPaymentMethod,
+    AccountStatus,
+    ChargeStatus,
+    ClientAccount,
+    Payment,
+    PaymentProvider,
+    PaymentStatus,
+    StripeEvent,
+)
 
 __all__ = [
+    "AccountCharge",
+    "AccountPayment",
+    "AccountPaymentMethod",
+    "AccountStatus",
     "Activity",
     "ActivityPackage",
     "AdminRole",
@@ -43,6 +59,8 @@ __all__ = [
     "BookingSource",
     "BookingStatus",
     "BookingType",
+    "ChargeStatus",
+    "ClientAccount",
     "Company",
     "CompanySettings",
     "Customer",
@@ -53,11 +71,15 @@ __all__ = [
     "ItemType",
     "LegStatus",
     "LegType",
+    "Payment",
+    "PaymentProvider",
+    "PaymentStatus",
     "PricingMode",
     "Promotion",
     "PromotionScope",
     "Rate",
     "ServiceScope",
+    "StripeEvent",
     "TripType",
     "VehicleClass",
     "Zone",

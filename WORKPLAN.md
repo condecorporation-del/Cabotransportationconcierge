@@ -12,23 +12,23 @@
 
 | Indicador | Estado |
 |---|---|
-| **Fase actual** | F1 — Base de datos y dominio: 6/12 (F1.1 a F1.6). F0 ✅ 9/9. CI verde (run `34727673529`). Vista previa del prototipo en https://cabotransportationconcierge.vercel.app (noindex). |
+| **Fase actual** | F1 — Base de datos y dominio: 7/12 (F1.1 a F1.7). F0 ✅ 9/9. CI verde (run `34727831270`). Vista previa del prototipo en https://cabotransportationconcierge.vercel.app (noindex). |
 | **Último avance** | 12 sep 2026 — F0:<br>• Repo git con prototipo aprobado.<br>• Backend mínimo FastAPI con `/api/v1/health` y `/health/ready`.<br>• Configuración fail-fast.<br>• Postgres 16 nativo con bases `ctc` y `ctc_test`.<br>• Cliente de API tipado generado desde OpenAPI.<br>• CI escrito.<br>• ADR-001 (entorno sin Docker).<br>• Checklist para el cliente. |
 | **Backend** | ✅ App mínima: health y readiness con Postgres real. Ruff (reglas de seguridad) y mypy estricto en 0 errores. |
-| **Base de datos** | ✅ Local: Postgres 16.15 nativo con `ctc` y `ctc_test`. Migraciones:<br>• `5721f5faa1c7`: empresas, ajustes, admins y sesiones.<br>• `4b96b66d17b0`: `pg_trgm`, zonas, hoteles, clases de vehículo, tarifas, extras, actividades, paquetes, promociones y clientes.<br>• `0b3217285efc`: reservas, tramos e ítems.<br>`alembic check` sin diferencias. |
+| **Base de datos** | ✅ Local: Postgres 16.15 nativo con `ctc` y `ctc_test`. Migraciones:<br>• `5721f5faa1c7`: empresas, ajustes, admins y sesiones.<br>• `4b96b66d17b0`: `pg_trgm`, zonas, hoteles, clases de vehículo, tarifas, extras, actividades, paquetes, promociones y clientes.<br>• `0b3217285efc`: reservas, tramos e ítems.<br>• `56ed3ca7c373`: pagos, eventos de Stripe y cuentas por cobrar.<br>`alembic check` sin diferencias. |
 | **Sitio público real** | ❌ Solo el prototipo estático `site/` (HTML generado por `site/build.js`). |
 | **Admin** | ❌ No existe. |
-| **Tests** | ✅ 23 tests pytest verdes contra Postgres real, incluidos el aislamiento por empresa y los constraints del catálogo y de las reservas. En cada corrida la migración va a base y de vuelta a head. pip-audit y npm audit sin vulnerabilidades. |
+| **Tests** | ✅ 28 tests pytest verdes contra Postgres real, incluidos el aislamiento por empresa y los constraints del catálogo, las reservas y los pagos. En cada corrida la migración va a base y de vuelta a head. pip-audit y npm audit sin vulnerabilidades. |
 | **Deploy** | ❌ No configurado. |
 | **Git** | ✅ Remoto `github.com/condecorporation-del/Cabotransportationconcierge` (push por la deploy key `~/.ssh/deploy_cabo_concierge`, alias SSH `github-cabo`). Rama `main` subida; gitleaks sin hallazgos en el historial. |
 
-**Siguiente tarea:** F1.7, modelos de pagos y finanzas: `payments`, `stripe_events`, `client_accounts`, `account_charges` y `account_payments`.
+**Siguiente tarea:** F1.8, modelos de operación y comunicación: `drivers`, `vehicles`, `booking_assignments`, `admin_tasks`, `audit_logs`, `email_outbox`, `ai_conversations`, `ai_messages`, `contact_messages` y `reviews`.
 
 **Progreso por fase**
 
 ```
 F0  Fundación y decisiones          [██████████] 9/9 ✅
-F1  Base de datos y dominio         [█████-----] 6/12
+F1  Base de datos y dominio         [██████----] 7/12
 F2  Motor de precios y catálogo     [----------] 0/9
 F3  Reservas públicas               [----------] 0/11
 F4  Pagos con Stripe                [----------] 0/10
@@ -407,7 +407,7 @@ Reglas de todas las tablas: PK `id` UUID; `company_id` FK (excepto `companies`);
 | `stripe_events` | event_id (único), type, payload, processed_at | Idempotencia del webhook. |
 | `drivers` | name, phone, whatsapp, license_number, license_expires_on, languages, is_active | |
 | `vehicles` | vehicle_class_id, plate, make, model, year, color, capacity, insurance_expires_on, is_active | |
-| `client_accounts` | customer_id, name, status (OPEN, ON_HOLD, SETTLED, CLOSED), credit_limit_cents, balance_cents | Crédito para clientes frecuentes y villas. |
+| `client_accounts` | customer_id, name, status (OPEN, ON_HOLD, SETTLED, CLOSED), credit_limit_cents | Crédito para clientes frecuentes y villas. El saldo se calcula de cargos y abonos (no se guarda, para que nunca se desincronice). |
 | `account_charges` | account_id, booking_id, description, amount_cents, status (PENDING, INVOICED, PAID, VOID) | |
 | `account_payments` | account_id, method, amount_cents, reference, received_at | |
 | `admin_tasks` | title, description, due_date, due_time, category, status, assigned_to | Compartidas por empresa. |
@@ -763,7 +763,16 @@ Formato de cada tarea: `- [ ] ID — qué`, con **Verificar** (comando o prueba 
   - Reglas en la base: una tarifa por zona, vehículo, viaje y servicio; precios ≥ 0; porcentaje ≤ 100; código de promo único sin importar mayúsculas (sin código = automática); email de cliente único por empresa.
 
   Verificar: tests de cada constraint y de que `pg_trgm` está instalada.
-- [ ] **F1.7** — Modelos de pagos y finanzas: `payments`, `stripe_events`, `client_accounts`, `account_charges`, `account_payments`. Verificar: tests de unicidad de intent y evento.
+- [x] **F1.7** — Modelos de pagos y finanzas: `payments`, `stripe_events`, `client_accounts`, `account_charges` y `account_payments`.
+  - **`payments`:**
+    - Monto > 0 y reembolso entre 0 y el monto.
+    - `stripe_payment_intent_id` y `stripe_checkout_session_id` únicos (anti E9).
+    - `RESTRICT` sobre la reserva: una reserva con pagos no se borra físicamente.
+  - **`stripe_events`:** su PK es el id del evento de Stripe, así un webhook repetido no se procesa dos veces. No lleva empresa, porque el webhook llega sin ese contexto.
+  - **Cuentas por cobrar:** el saldo no se guarda, se calcula de cargos y abonos para que nunca se desincronice. Cargos y abonos siempre > 0.
+  - Las relaciones de `Booking` usan `passive_deletes=True`: al borrar, Postgres hace el `ON DELETE CASCADE` sin cargar tramos ni ítems.
+
+  Verificar: tests de intent único, reembolso mayor al monto, evento repetido, cargo en 0 y reserva con pagos que no se puede borrar.
 - [ ] **F1.8** — Modelos de operación y comunicación: `drivers`, `vehicles`, `booking_assignments` (una asignación activa por tramo), `admin_tasks`, `audit_logs`, `email_outbox`, `ai_conversations`, `ai_messages`, `contact_messages`, `reviews`. Verificar: migración aplicada.
 - [ ] **F1.9** — `scripts/seed_catalog.py`: importar de ClassVIP (`backend/scripts/data/*.json`) hoteles (sin duplicados, con slug y alias), 6 zonas, matriz de tarifas corregida (sin ceros ni duplicados), 16 extras, actividades y combos. Con la bandera `--dry-run` imprime la matriz para que Marlon la apruebe (D-P1). Verificar: reporte de conteos y matriz sin huecos.
 - [ ] **F1.10** — `scripts/ensure_owner.py`: crea el usuario owner leyendo email y contraseña de variables de entorno, una sola vez. **No inventar contraseñas.** Verificar: si se corre dos veces, no duplica.

@@ -2,6 +2,34 @@
 
 Una entrada por sesión o tarea, la más reciente arriba (formato en `AGENTS.md` §10).
 
+## 2026-09-12 — F1.7 Pagos, eventos de Stripe y cuentas por cobrar
+
+**Qué se hizo**
+- `app/models/finance.py` con enums `PaymentProvider`, `PaymentStatus`, `AccountStatus`, `ChargeStatus` y `AccountPaymentMethod`, y estos modelos:
+  - **`Payment`:**
+    - `ck_payments_amounts`: monto > 0 y reembolso entre 0 y el monto.
+    - `stripe_payment_intent_id` y `stripe_checkout_session_id` únicos, para que un intent o checkout nunca genere dos pagos (E9).
+    - `RESTRICT` sobre `bookings`.
+  - **`StripeEvent`:** la PK es el id del evento de Stripe, así un webhook repetido choca y no se procesa dos veces. Sin `company_id`, porque el webhook llega antes de saber de qué empresa es.
+  - **`ClientAccount`, `AccountCharge` y `AccountPayment`:** crédito de clientes con montos siempre > 0. **El saldo no se guarda:** se calcula de cargos y abonos para que nunca se desincronice. §6 del WORKPLAN se corrigió, porque decía `balance_cents`.
+- **Ajuste en `Booking`:** `passive_deletes=True` en `legs` e `items`. Sin esto, borrar una reserva hacía que el ORM intentara cargar los hijos, y eso chocaba con `raise_on_sql` antes de llegar a la base. Ahora Postgres aplica `ON DELETE CASCADE` sin cargar nada, que además es más rápido.
+- Migración `56ed3ca7c373` revisada a mano: nombres de constraints claros y `ondelete` correcto. `passive_deletes` no cambia el esquema.
+
+**Archivos:** `backend/app/models/finance.py`, `backend/app/models/booking.py`, `backend/app/models/__init__.py`, `backend/alembic/versions/20260912_56ed3ca7c373_pagos_y_finanzas.py`, `backend/tests/test_models_finance.py`, `WORKPLAN.md`
+
+**Verificación**
+- `uv run pytest` → **28 passed**. Tests nuevos:
+  - Mismo intent dos veces → `uq_payments_stripe_payment_intent_id`.
+  - Reembolso mayor al monto → `ck_payments_amounts`.
+  - Evento de Stripe repetido → `pk_stripe_events`.
+  - Cargo en 0 → `ck_account_charges_amount_positive`.
+  - Borrar una reserva con pagos → `fk_payments_booking_id_bookings`.
+- `alembic upgrade head` en `ctc` y luego `alembic check` → "No new upgrade operations detected".
+- `ruff check`, `ruff format` y `mypy app` → 0 errores.
+- CI del commit anterior `283543e` (run `34727831270`) → los 3 jobs en success.
+
+**Pendiente:** F1.8 (operación y comunicación, más `booking_assignments`), F1.9 (seed del catálogo), F1.10 (owner), F1.11 (secuencia de códigos) y F1.12 (`check_db`).
+
 ## 2026-09-12 — F1.5 Reservas, tramos e ítems
 
 **Qué se hizo**

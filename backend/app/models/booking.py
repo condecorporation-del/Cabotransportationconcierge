@@ -95,11 +95,15 @@ class Booking(IdMixin, TenantMixin, TimestampMixin, Base):
     deleted_at: Mapped[datetime | None]
 
     # raise_on_sql: cargar tramos o ítems exige selectinload explícito (evita N+1 silenciosos).
+    # passive_deletes: al borrar, Postgres aplica ON DELETE CASCADE sin cargar los hijos.
     legs: Mapped[list["BookingLeg"]] = relationship(
-        cascade="all, delete-orphan", lazy="raise_on_sql", order_by="BookingLeg.service_date"
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+        lazy="raise_on_sql",
+        order_by="BookingLeg.service_date",
     )
     items: Mapped[list["BookingItem"]] = relationship(
-        cascade="all, delete-orphan", lazy="raise_on_sql"
+        cascade="all, delete-orphan", passive_deletes=True, lazy="raise_on_sql"
     )
 
 
