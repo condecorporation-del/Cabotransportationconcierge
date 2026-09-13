@@ -2,6 +2,34 @@
 
 Una entrada por sesión o tarea, la más reciente arriba (formato en `AGENTS.md` §10).
 
+## 2026-09-13 — F6.1 y F6.2: login del admin con Argon2id y TOTP obligatorio
+
+Con F5 cerrado en lo que no depende de una tarea programada, seguí con F6 porque desbloquea F4.6-F4.8 y F5.9. Hice F6.1 y F6.2 juntos: no tenía sentido dejar un login sin la doble autenticación que el mismo §11 exige para `owner`/`manager`.
+
+**`app/models/admin.py`:** se agregó `totp_backup_codes` (`ARRAY(String(64))`, hashes SHA-256) a `AdminUser`. El resto del modelo (`failed_logins`, `locked_until`, `totp_secret`, y `AdminSession` con solo hashes del token y del CSRF) ya existía de F1.
+
+**`app/services/admin_auth.py`** (nuevo), login en dos pasos cuando el rol lo exige:
+- `login(email, password)`: contraseña incorrecta → `invalid_credentials` (401) y **no** revela si el email existe. Al 5.º fallo pone `locked_until` 15 min adelante; el 6.º intento ni llega a `verify_password`, lo corta `locked_until` con `account_locked` (423) — así es el 6.º intento, no el 5.º, el que sale bloqueado, tal como pide el criterio de verificación.
+- Si el rol es `owner` o `manager` y no tiene `totp_secret`: genera un secreto TOTP nuevo (`pyotp.random_base32()`) y regresa `totp_setup_required` con la URI `otpauth://` (para el QR) y un `challenge_token` firmado de 5 min que lleva el secreto **sin guardarlo todavía** — un QR nunca escaneado no deja nada a medias en la cuenta.
+- Si ya tiene `totp_secret`: `totp_required` con un `challenge_token` sin secreto (ya está guardado).
+- Roles sin TOTP obligatorio (`dispatcher`, `finance`, `viewer`): sesión de una vez.
+- `verify_totp(challenge_token, code)`: si el token traía un secreto nuevo, lo valida y recién ahí lo persiste junto con 8 códigos de respaldo (`XXXX-XXXX`, se muestran una sola vez, se guardan hasheados); si no, valida contra el secreto ya guardado o consume un código de respaldo (se borra de la lista al usarlo). Cada intento, éxito o fallo, deja un `AuditLog` (reutiliza el modelo de F1.8, actor `ADMIN`, entidad `admin_user`).
+- Sesión de servidor: token y CSRF son valores al azar (`secrets.token_urlsafe(32)`); solo sus hashes SHA-256 (`hash_token()`, nuevo en `core/security.py`) van a la tabla `sessions`. Cookie `ctc_admin_session`, `HttpOnly`, `SameSite=Lax`, `Secure` fuera de development/test, 12 h.
+
+**`app/api/v1/admin/`** (nuevo paquete): `auth.py` con `POST /admin/auth/login`, `POST /admin/auth/totp/verify`, `POST /admin/auth/logout` y `GET /admin/auth/me`; `deps.py` con `current_admin`/`CurrentAdmin`, que depende de `CurrentCompany` (fija `session.info["company_id"]` antes de buscar la sesión, igual que el resto de la API — de momento hay una sola empresa, D10).
+
+**Decisión: CSRF y roles quedan fuera de F6.1/F6.2.** El login ya entrega un `csrf_token` y la tabla `sessions` ya guarda su hash, pero nada todavía lo exige en un header ni bloquea por rol — eso es F6.3, a propósito, porque F6.1/F6.2 son sobre login y TOTP, no sobre lo que protege una vez adentro. No hay ninguna ruta de negocio del admin todavía que necesite esa protección.
+
+**Archivos:** `backend/app/models/admin.py`, `backend/app/core/security.py`, `backend/app/services/admin_auth.py`, `backend/app/schemas/admin_auth.py`, `backend/app/api/v1/admin/__init__.py`, `backend/app/api/v1/admin/deps.py`, `backend/app/api/v1/admin/auth.py`, `backend/app/main.py`, `backend/tests/test_admin_auth.py`, `backend/alembic/versions/20260913_9d88d124a402_codigos_de_respaldo_totp_del_admin.py`, `packages/api-client/src/schema.d.ts`, `WORKPLAN.md`
+
+**Verificación**
+- `uv run pytest` → **210 passed** (11 nuevos): contraseña incorrecta y email desconocido dan el mismo error; el 6.º intento fallido bloquea incluso con la contraseña correcta; `owner` sin TOTP recibe `totp_setup_required` con la URI y sin cookie; completar el alta entrega sesión y 8 códigos de respaldo; un segundo login del mismo `owner` ya solo pide `totp_required`; un código TOTP incorrecto se rechaza; un código de respaldo entra una vez y la segunda es rechazado; `/me` sin cookie es 401 y con sesión trae el email y el rol; `/logout` revoca la sesión.
+- `uv run ruff format --check . && uv run ruff check .` → sin errores. `uv run mypy app scripts` (mismo alcance que el CI) → sin errores.
+- `uv run alembic check` → sin diferencias. `uv run pip-audit` → sin vulnerabilidades.
+- `npm run gen && npm run check` en `packages/api-client` → contrato regenerado, `tsc` sin errores.
+
+**Pendiente:** F6.3 (CSRF de doble token y middleware de roles) antes de construir cualquier endpoint de negocio del admin.
+
 ## 2026-09-13 — F5.1-F5.6, F5.10 y F4.5: cola de correos con Resend
 
 Con F4 ya cobrando bien, seguí con F5 para desbloquear F4.5 (los correos que faltaban al confirmar un pago) sin esperar al admin.

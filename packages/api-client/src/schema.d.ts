@@ -361,6 +361,80 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/auth/login": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Login Route
+         * @description Contraseña correcta con owner/manager no entrega sesión: exige TOTP (F6.2).
+         */
+        post: operations["login_route_api_v1_admin_auth_login_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/auth/totp/verify": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Totp Verify Route
+         * @description Alta (secreto nuevo en el token) o login normal, según lo que traiga el `challenge_token`.
+         */
+        post: operations["totp_verify_route_api_v1_admin_auth_totp_verify_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/auth/logout": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Logout Route */
+        post: operations["logout_route_api_v1_admin_auth_logout_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/auth/me": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Me Route */
+        get: operations["me_route_api_v1_admin_auth_me_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -436,6 +510,13 @@ export interface components {
              */
             language: "en" | "es";
         };
+        /** AdminMeOut */
+        AdminMeOut: {
+            /** Email */
+            email: string;
+            /** Role */
+            role: string;
+        };
         /**
          * Attribution
          * @description Origen de la visita (F3.11): UTM y referrer que la web captura al entrar.
@@ -453,6 +534,25 @@ export interface components {
             utm_content?: string | null;
             /** Referrer */
             referrer?: string | null;
+        };
+        /**
+         * AuthOut
+         * @description Misma forma para `/login` (roles sin TOTP) y `/totp/verify`.
+         */
+        AuthOut: {
+            /**
+             * Outcome
+             * @enum {string}
+             */
+            outcome: "authenticated" | "totp_required" | "totp_setup_required";
+            /** Challenge Token */
+            challenge_token?: string | null;
+            /** Totp Uri */
+            totp_uri?: string | null;
+            /** Csrf Token */
+            csrf_token?: string | null;
+            /** Backup Codes */
+            backup_codes?: string[] | null;
         };
         /** BookingChange */
         BookingChange: {
@@ -739,6 +839,16 @@ export interface components {
          * @enum {string}
          */
         LegType: "arrival" | "departure" | "local";
+        /** LoginIn */
+        LoginIn: {
+            /**
+             * Email
+             * Format: email
+             */
+            email: string;
+            /** Password */
+            password: string;
+        };
         /** PackageOut */
         PackageOut: {
             /** Slug */
@@ -838,6 +948,13 @@ export interface components {
          * @enum {string}
          */
         ServiceScope: "airport" | "local";
+        /** TotpVerifyIn */
+        TotpVerifyIn: {
+            /** Challenge Token */
+            challenge_token: string;
+            /** Code */
+            code: string;
+        };
         /** TransferBookingRequest */
         TransferBookingRequest: {
             customer: components["schemas"]["CustomerIn"];
@@ -1568,6 +1685,110 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    login_route_api_v1_admin_auth_login_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LoginIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AuthOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    totp_verify_route_api_v1_admin_auth_totp_verify_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TotpVerifyIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AuthOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    logout_route_api_v1_admin_auth_logout_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    me_route_api_v1_admin_auth_me_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminMeOut"];
                 };
             };
         };

@@ -3,6 +3,7 @@ import uuid
 from datetime import datetime
 
 from sqlalchemy import ForeignKey, Index, String, func, text
+from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db import Base, IdMixin, TimestampMixin
@@ -29,6 +30,8 @@ class AdminUser(IdMixin, TenantMixin, TimestampMixin, Base):
     role: Mapped[AdminRole]
     is_active: Mapped[bool] = mapped_column(default=True)
     totp_secret: Mapped[str | None] = mapped_column(String(255))
+    # Hashes de un solo uso (F6.2); se consumen quitándolos de la lista.
+    totp_backup_codes: Mapped[list[str]] = mapped_column(ARRAY(String(64)), default=list)
     last_login_at: Mapped[datetime | None]
     failed_logins: Mapped[int] = mapped_column(default=0)
     locked_until: Mapped[datetime | None]
