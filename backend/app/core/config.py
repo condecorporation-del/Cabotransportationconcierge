@@ -17,6 +17,8 @@ class Settings(BaseSettings):
     # Conexión Direct de Supabase: solo para migraciones (WORKPLAN D2). Si falta, usa database_url.
     database_url_direct: str | None = Field(default=None, repr=False)
     secret_key: str = Field(default="", repr=False)
+    # Empresa que atiende el sitio público mientras haya una sola (WORKPLAN D10).
+    default_company_slug: str = "cabo-transportation-concierge"
 
     @model_validator(mode="after")
     def _fail_fast(self) -> Self:

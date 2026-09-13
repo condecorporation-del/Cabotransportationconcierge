@@ -2,7 +2,7 @@
 
 import uuid
 from datetime import date, time
-from typing import Literal, Self
+from typing import Annotated, Literal, Self
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
@@ -27,6 +27,7 @@ class ExtraIn(_Strict):
 
 
 class TransferQuoteRequest(_Strict):
+    type: Literal["transfer"] = "transfer"
     hotel_id: uuid.UUID
     trip_type: TripType
     service_scope: ServiceScope = ServiceScope.AIRPORT
@@ -50,11 +51,15 @@ class TransferQuoteRequest(_Strict):
 
 
 class ActivityQuoteRequest(_Strict):
+    type: Literal["activity"] = "activity"
     package: str = Field(min_length=1, max_length=60)
     activities: list[str] = Field(min_length=1, max_length=10)
     guests: int = Field(ge=1, le=30)
     service_date: date
     language: Language = "en"
+
+
+QuoteRequest = Annotated[TransferQuoteRequest | ActivityQuoteRequest, Field(discriminator="type")]
 
 
 class QuoteLine(BaseModel):

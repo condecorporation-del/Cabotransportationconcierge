@@ -44,10 +44,429 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/catalog/zones": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Zones */
+        get: operations["zones_api_v1_catalog_zones_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/catalog/hotels": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Hotels */
+        get: operations["hotels_api_v1_catalog_hotels_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/catalog/hotels/{slug}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Hotel */
+        get: operations["hotel_api_v1_catalog_hotels__slug__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/catalog/vehicles": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Vehicles */
+        get: operations["vehicles_api_v1_catalog_vehicles_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/catalog/extras": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Extras */
+        get: operations["extras_api_v1_catalog_extras_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/catalog/activities": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Activities */
+        get: operations["activities_api_v1_catalog_activities_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/catalog/packages": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Packages */
+        get: operations["packages_api_v1_catalog_packages_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/quotes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Create Quote
+         * @description Cotizaci�n autoritativa; los errores corregibles responden 422 con `code` estable.
+         */
+        post: operations["create_quote_api_v1_quotes_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
-    schemas: never;
+    schemas: {
+        /** ActivityOut */
+        ActivityOut: {
+            /** Slug */
+            slug: string;
+            /** Name */
+            name: {
+                [key: string]: string;
+            };
+            /** Description */
+            description: {
+                [key: string]: string;
+            };
+            /** Duration Minutes */
+            duration_minutes: number;
+        };
+        /** ActivityQuoteRequest */
+        ActivityQuoteRequest: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "activity";
+            /** Package */
+            package: string;
+            /** Activities */
+            activities: string[];
+            /** Guests */
+            guests: number;
+            /**
+             * Service Date
+             * Format: date
+             */
+            service_date: string;
+            /**
+             * Language
+             * @default en
+             * @enum {string}
+             */
+            language: "en" | "es";
+        };
+        /** ExtraIn */
+        ExtraIn: {
+            /** Code */
+            code: string;
+            /** Quantity */
+            quantity: number;
+        };
+        /** ExtraOut */
+        ExtraOut: {
+            /** Code */
+            code: string;
+            /** Name */
+            name: {
+                [key: string]: string;
+            };
+            /** Description */
+            description: {
+                [key: string]: string;
+            };
+            /** Price Cents */
+            price_cents: number;
+            pricing_mode: components["schemas"]["PricingMode"];
+            /** Max Qty */
+            max_qty: number;
+            /** Included */
+            included: boolean;
+        };
+        /** HTTPValidationError */
+        HTTPValidationError: {
+            /** Detail */
+            detail?: components["schemas"]["ValidationError"][];
+        };
+        /** HotelMatch */
+        HotelMatch: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Slug */
+            slug: string;
+            /** Name */
+            name: string;
+            /** Zone */
+            zone: string;
+            /** Zone Name */
+            zone_name: {
+                [key: string]: string;
+            };
+        };
+        /** HotelPage */
+        HotelPage: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Slug */
+            slug: string;
+            /** Name */
+            name: string;
+            zone: components["schemas"]["ZoneOut"];
+            /** Rates */
+            rates: components["schemas"]["RateOut"][];
+        };
+        /**
+         * ItemType
+         * @enum {string}
+         */
+        ItemType: "transfer" | "extra" | "activity" | "park_fee" | "discount";
+        /** LegIn */
+        LegIn: {
+            /**
+             * Service Date
+             * Format: date
+             */
+            service_date: string;
+            /** Service Time */
+            service_time?: string | null;
+        };
+        /** PackageOut */
+        PackageOut: {
+            /** Slug */
+            slug: string;
+            /** Name */
+            name: {
+                [key: string]: string;
+            };
+            /** Activity Count */
+            activity_count: number;
+            /** Price Per Person Cents */
+            price_per_person_cents: number;
+            /** Park Fee Cents */
+            park_fee_cents: number;
+            /** Deposit Cents */
+            deposit_cents: number;
+        };
+        /**
+         * PricingMode
+         * @enum {string}
+         */
+        PricingMode: "per_booking" | "per_stop" | "per_seat" | "per_hour";
+        /** Quote */
+        Quote: {
+            /** Currency */
+            currency: string;
+            /** Lines */
+            lines: components["schemas"]["QuoteLine"][];
+            /** Subtotal Cents */
+            subtotal_cents: number;
+            /** Discount Cents */
+            discount_cents: number;
+            /** Tax Cents */
+            tax_cents: number;
+            /** Total Cents */
+            total_cents: number;
+            /** Vehicle Class */
+            vehicle_class?: string | null;
+            /** Zone */
+            zone?: string | null;
+            /** Promotion */
+            promotion?: string | null;
+            /**
+             * Due On Site Cents
+             * @default 0
+             */
+            due_on_site_cents: number;
+            /**
+             * Deposit Cents
+             * @default 0
+             */
+            deposit_cents: number;
+        };
+        /** QuoteLine */
+        QuoteLine: {
+            kind: components["schemas"]["ItemType"];
+            /** Code */
+            code: string | null;
+            /** Description */
+            description: string;
+            /** Quantity */
+            quantity: number;
+            /** Unit Price Cents */
+            unit_price_cents: number;
+            /** Total Cents */
+            total_cents: number;
+        };
+        /** RateOut */
+        RateOut: {
+            /** Vehicle Class */
+            vehicle_class: string;
+            trip_type: components["schemas"]["TripType"];
+            service_scope: components["schemas"]["ServiceScope"];
+            /** Price Cents */
+            price_cents: number;
+        };
+        /**
+         * ServiceScope
+         * @enum {string}
+         */
+        ServiceScope: "airport" | "local";
+        /** TransferQuoteRequest */
+        TransferQuoteRequest: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "transfer";
+            /**
+             * Hotel Id
+             * Format: uuid
+             */
+            hotel_id: string;
+            trip_type: components["schemas"]["TripType"];
+            /** @default airport */
+            service_scope: components["schemas"]["ServiceScope"];
+            /** Passengers */
+            passengers: number;
+            /** Vehicle Class */
+            vehicle_class?: string | null;
+            /** Legs */
+            legs: components["schemas"]["LegIn"][];
+            /** Extras */
+            extras?: components["schemas"]["ExtraIn"][];
+            /** Promo Code */
+            promo_code?: string | null;
+            /**
+             * Language
+             * @default en
+             * @enum {string}
+             */
+            language: "en" | "es";
+        };
+        /**
+         * TripType
+         * @enum {string}
+         */
+        TripType: "one_way" | "round_trip";
+        /** ValidationError */
+        ValidationError: {
+            /** Location */
+            loc: (string | number)[];
+            /** Message */
+            msg: string;
+            /** Error Type */
+            type: string;
+            /** Input */
+            input?: unknown;
+            /** Context */
+            ctx?: Record<string, never>;
+        };
+        /** VehicleOut */
+        VehicleOut: {
+            /** Code */
+            code: string;
+            /** Name */
+            name: string;
+            /** Min Pax */
+            min_pax: number;
+            /** Max Pax */
+            max_pax: number;
+            /** Max Bags */
+            max_bags: number;
+        };
+        /** ZoneOut */
+        ZoneOut: {
+            /** Slug */
+            slug: string;
+            /** Name */
+            name: {
+                [key: string]: string;
+            };
+            /** Drive Minutes Min */
+            drive_minutes_min: number;
+            /** Drive Minutes Max */
+            drive_minutes_max: number;
+            /** From Price Cents */
+            from_price_cents?: number | null;
+        };
+    };
     responses: never;
     parameters: never;
     requestBodies: never;
@@ -96,6 +515,201 @@ export interface operations {
                     "application/json": {
                         [key: string]: string;
                     };
+                };
+            };
+        };
+    };
+    zones_api_v1_catalog_zones_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ZoneOut"][];
+                };
+            };
+        };
+    };
+    hotels_api_v1_catalog_hotels_get: {
+        parameters: {
+            query: {
+                q: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HotelMatch"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    hotel_api_v1_catalog_hotels__slug__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HotelPage"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    vehicles_api_v1_catalog_vehicles_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VehicleOut"][];
+                };
+            };
+        };
+    };
+    extras_api_v1_catalog_extras_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExtraOut"][];
+                };
+            };
+        };
+    };
+    activities_api_v1_catalog_activities_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ActivityOut"][];
+                };
+            };
+        };
+    };
+    packages_api_v1_catalog_packages_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PackageOut"][];
+                };
+            };
+        };
+    };
+    create_quote_api_v1_quotes_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TransferQuoteRequest"] | components["schemas"]["ActivityQuoteRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Quote"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

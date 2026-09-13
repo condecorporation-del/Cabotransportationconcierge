@@ -12,24 +12,24 @@
 
 | Indicador | Estado |
 |---|---|
-| **Fase actual** | F2 — Motor de precios: 4/9 (F2.1, F2.2, F2.3 y F2.6). El ADR-002 está escrito y espera revisión de Marlon (F2.9). F1 ✅ 12/12. F0 ✅ 9/9. CI verde (run `34728742376`). Vista previa del prototipo en https://cabotransportationconcierge.vercel.app (noindex). |
+| **Fase actual** | F2 — Motor de precios: 7/9. Faltan F2.8 (se prueba con la primera reserva en F3.1) y F2.9 (Marlon revisa el ADR-002). F1 ✅ 12/12. F0 ✅ 9/9. CI verde (run `34735926428`). Vista previa del prototipo en https://cabotransportationconcierge.vercel.app (noindex). |
 | **Último avance** | 12 sep 2026 — F0:<br>• Repo git con prototipo aprobado.<br>• Backend mínimo FastAPI con `/api/v1/health` y `/health/ready`.<br>• Configuración fail-fast.<br>• Postgres 16 nativo con bases `ctc` y `ctc_test`.<br>• Cliente de API tipado generado desde OpenAPI.<br>• CI escrito.<br>• ADR-001 (entorno sin Docker).<br>• Checklist para el cliente. |
-| **Backend** | ✅ Base lista para la lógica de negocio:<br>• Health y readiness.<br>• Engine apto para Supabase.<br>• Todos los modelos de §6 con aislamiento por empresa.<br>• Scripts `seed_catalog`, `ensure_owner` y `check_db`.<br>• Servicio de códigos de reserva.<br>Todavía no hay endpoints de negocio (empiezan en F2). Ruff (reglas de seguridad) y mypy estricto en 0 errores. |
+| **Backend** | ✅ Base lista para la lógica de negocio:<br>• Health y readiness.<br>• Engine apto para Supabase.<br>• Todos los modelos de §6 con aislamiento por empresa.<br>• Scripts `seed_catalog`, `ensure_owner` y `check_db`.<br>• Servicio de códigos de reserva.<br>• Motor único de precios.<br>• API pública: `POST /quotes` y `GET /catalog/*` (zonas, búsqueda y página de hotel, vehículos, extras, actividades, paquetes) con ETag y rate limit. Ruff (reglas de seguridad) y mypy estricto en 0 errores. |
 | **Base de datos** | ✅ Local: Postgres 16.15 nativo con `ctc` y `ctc_test`. Migraciones:<br>• `5721f5faa1c7`: empresas, ajustes, admins y sesiones.<br>• `4b96b66d17b0`: `pg_trgm`, zonas, hoteles, clases de vehículo, tarifas, extras, actividades, paquetes, promociones y clientes.<br>• `0b3217285efc`: reservas, tramos e ítems.<br>• `56ed3ca7c373`: pagos, eventos de Stripe y cuentas por cobrar.<br>• `a6a95d459beb`: choferes, vehículos, asignaciones, tareas, auditoría, cola de correos, IA, contacto y reseñas.<br>• `523ec6ce4943`: contador de códigos de reserva.<br>`alembic check` sin diferencias y `scripts/check_db.py` en código 0.<br>Catálogo de prueba cargado en `ctc` con `scripts/seed_catalog.py`: 226 hoteles, 24 tarifas, 15 extras. |
 | **Sitio público real** | ❌ Solo el prototipo estático `site/` (HTML generado por `site/build.js`). |
 | **Admin** | ❌ No existe. |
-| **Tests** | ✅ 63 tests pytest verdes contra Postgres real, incluidos el aislamiento por empresa, los constraints de todas las tablas, el seed idempotente, la creación del owner, 50 códigos de reserva concurrentes, el diagnóstico de la base y el motor de precios sobre el catálogo real. En cada corrida la migración va a base y de vuelta a head. pip-audit y npm audit sin vulnerabilidades. |
+| **Tests** | ✅ 83 tests pytest verdes contra Postgres real, incluidos el aislamiento por empresa, los constraints de todas las tablas, el seed idempotente, la creación del owner, 50 códigos de reserva concurrentes, el diagnóstico de la base, el motor de precios sobre el catálogo real y la API pública (cotización, catálogo, ETag, rate limit). En cada corrida la migración va a base y de vuelta a head. pip-audit y npm audit sin vulnerabilidades. |
 | **Deploy** | ❌ No configurado. |
 | **Git** | ✅ Remoto `github.com/condecorporation-del/Cabotransportationconcierge` (push por la deploy key `~/.ssh/deploy_cabo_concierge`, alias SSH `github-cabo`). Rama `main` subida; gitleaks sin hallazgos en el historial. |
 
-**Siguiente tarea:** F2.4 (`POST /api/v1/quotes` con rate limit y dependencia `get_company`), luego F2.5 (búsqueda de hoteles) y F2.7 (catálogo con ETag).
+**Siguiente tarea:** F3 — Reservas públicas, empezando por F3.1 (crear la reserva con el snapshot de precios de F2.8).
 
 **Progreso por fase**
 
 ```
 F0  Fundación y decisiones          [██████████] 9/9 ✅
 F1  Base de datos y dominio         [██████████] 12/12 ✅
-F2  Motor de precios y catálogo     [████------] 4/9
+F2  Motor de precios y catálogo     [███████---] 7/9
 F3  Reservas públicas               [----------] 0/11
 F4  Pagos con Stripe                [----------] 0/10
 F5  Emails, PDF y trabajos          [----------] 0/11
@@ -837,12 +837,12 @@ Formato de cada tarea: `- [ ] ID — qué`, con **Verificar** (comando o prueba 
   - 15 oct: sin descuento.
   - Código `vip20` gana a la promo automática y solo hay una línea de descuento.
   - Código inválido: `invalid_promo_code`.
-- [ ] **F2.4** — `POST /quotes` con schema estricto y rate limit. Incluye la dependencia `get_company`, que resuelve la empresa por `DEFAULT_COMPANY_SLUG` y fija `session.info["company_id"]` (F1.2). Verificar: test de API más un payload inválido que responde 422 con mensajes claros.
-- [ ] **F2.5** — `GET /catalog/hotels?q=` con trigram, alias y acentos. Verificar: "riu pal", "zadun" y "one only" encuentran el hotel correcto.
+- [x] **F2.4** — `POST /quotes` con schema estricto y rate limit. Incluye la dependencia `get_company`, que resuelve la empresa por `DEFAULT_COMPANY_SLUG` y fija `session.info["company_id"]` (F1.2). Verificar: test de API más un payload inválido que responde 422 con mensajes claros.
+- [x] **F2.5** — `GET /catalog/hotels?q=` con trigram, alias y acentos. Verificar: "riu pal", "zadun" y "one only" encuentran el hotel correcto.
 - [x] **F2.6** — Precios de actividades y combos en el mismo motor. Verificar:
   - 3 actividades × 2 personas = $250, con park fee de $50 en `due_on_site_cents`.
   - Número incorrecto de actividades, actividades repetidas o actividad inexistente se rechazan.
-- [ ] **F2.7** — `GET /catalog/*` con caché `ETag`. Verificar: la segunda llamada responde 304.
+- [x] **F2.7** — `GET /catalog/*` con caché `ETag`. Verificar: la segunda llamada responde 304.
 - [ ] **F2.8** — Snapshot de precios en `booking_items`: si cambia una tarifa, las reservas existentes no cambian. Verificar: test.
 - [ ] **F2.9** — Documentar las reglas de precio con ejemplos numéricos. **Escrito** en `docs/decisions/ADR-002-precios.md`; queda abierta hasta que Marlon revise los ejemplos. Verificar: Marlon revisa los ejemplos.
 

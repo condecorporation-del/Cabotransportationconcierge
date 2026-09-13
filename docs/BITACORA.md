@@ -2,6 +2,30 @@
 
 Una entrada por sesión o tarea, la más reciente arriba (formato en `AGENTS.md` §10).
 
+## 2026-09-12 — F2.4, F2.5 y F2.7: API pública de cotización y catálogo
+
+**Qué se hizo**
+- `app/api/deps.py`:
+  - `get_company`: resuelve la empresa por `DEFAULT_COMPANY_SLUG` y fija `session.info["company_id"]`; si no existe → 503.
+  - `cached_json`: respuesta con `ETag` (blake2b del cuerpo) y `Cache-Control: public, max-age=60`; con `If-None-Match` igual → 304 sin cuerpo.
+- `app/core/rate_limit.py`: ventana fija por ruta e IP en `app.state` (quotes 60/min, catálogo 120/min) con `Retry-After`. En memoria hasta F13.3.
+- `POST /api/v1/quotes`: unión discriminada por `type` (`transfer` | `activity`). La fecha "hoy" de las promociones sale de la zona horaria de la empresa (se agregó `tzdata`). `QuoteError` → 422 con `{"detail": {"code", "message"}}`.
+- `GET /api/v1/catalog/zones` (con precio "desde"), `/hotels?q=`, `/hotels/{slug}` (tarifas de su zona), `/vehicles`, `/extras`, `/activities`, `/packages`. Textos en ambos idiomas para que la respuesta sea cacheable.
+- Búsqueda de hoteles (`app/services/catalog.py`): nombre + alias sin acentos ni mayúsculas; primero los que empiezan con lo escrito, luego `word_similarity` de pg_trgm. Comodines escapados y máximo 10.
+- Cliente tipado regenerado (`packages/api-client/src/schema.d.ts`).
+
+**Archivos:** `backend/app/api/deps.py`, `backend/app/api/v1/catalog.py`, `backend/app/api/v1/quotes.py`, `backend/app/core/config.py`, `backend/app/core/rate_limit.py`, `backend/app/main.py`, `backend/app/schemas/catalog.py`, `backend/app/schemas/quotes.py`, `backend/app/services/catalog.py`, `backend/tests/test_api_public.py`, `backend/tests/test_hotel_search.py`, `backend/.env.example`, `backend/pyproject.toml`, `backend/uv.lock`, `packages/api-client/src/schema.d.ts`, `WORKPLAN.md`
+
+**Verificación**
+- `uv run pytest` → **83 passed** (20 nuevos):
+  - Búsqueda: "riu pal", "Zadún", "one only", "golf & spa" y "BREATHLESS" encuentran su hotel; nunca devuelve hoteles de otra empresa; "r" y "%%" → vacío.
+  - API: cotización de traslado y de actividades; payload inválido → 422 con el campo; hotel inexistente → `hotel_not_found`; zonas con precio "desde" y segunda llamada con ETag → 304; listas del catálogo; página de hotel y 404; la petición 61 a quotes → 429; empresa no configurada → 503.
+- `ruff`, `mypy app scripts`, `alembic check`, `pip-audit` y `tsc` del cliente → sin errores.
+
+**Nota de rendimiento:** la búsqueda recorre los ~230 hoteles de la empresa (milisegundos). Si el catálogo crece a miles, agregar una columna normalizada con índice GIN trigram.
+
+**Pendiente:** F2.8 (se prueba al crear reservas en F3.1) y F2.9 (revisión de Marlon del ADR-002).
+
 ## 2026-09-12 — F2.1, F2.2, F2.3 y F2.6: motor único de precios
 
 **Qué se hizo**
