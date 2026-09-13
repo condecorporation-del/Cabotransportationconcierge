@@ -10,7 +10,9 @@ from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
+from app.core.config import get_settings
 from app.core.errors import AppError
+from app.core.security import booking_manage_url
 from app.models import (
     AuditActor,
     AuditLog,
@@ -41,6 +43,7 @@ from app.schemas.bookings import (
 from app.schemas.quotes import Language, Quote
 from app.services.booking_codes import next_booking_code
 from app.services.booking_state import TRANSITIONS, transition
+from app.services.email import enqueue
 from app.services.pricing import night_hours, quote_activity, quote_transfer
 
 AIRPORT = "SJD Los Cabos International Airport"
@@ -255,7 +258,55 @@ async def create_booking(
             ip=ip,
         )
     )
+    await _notify_created(session, booking, request.customer, payment_method)
     return booking
+
+
+async def _notify_created(
+    session: AsyncSession, booking: Booking, customer: CustomerIn, payment_method: str | None
+) -> None:
+    """F5.4, F5.5: al cliente según el estado con el que nació; a la empresa, siempre."""
+    manage_url = booking_manage_url(booking.company_id, booking.code)
+    if booking.status is BookingStatus.CONFIRMED:
+        template, context = (
+            "booking_confirmed",
+            {
+                "code": booking.code,
+                "manage_url": manage_url,
+                "voucher_url": manage_url,
+                "balance_note": None,
+            },
+        )
+    else:
+        template, context = (
+            "booking_pending_payment",
+            {"code": booking.code, "manage_url": manage_url},
+        )
+    await enqueue(
+        session,
+        booking.company_id,
+        template,
+        [customer.email],
+        context,
+        booking.language,
+        booking.id,
+    )
+    settings = get_settings()
+    if settings.email_ops_to:
+        total = f"${booking.total_cents / 100:,.2f} {booking.currency}"
+        await enqueue(
+            session,
+            booking.company_id,
+            "booking_new",
+            [settings.email_ops_to],
+            {
+                "code": booking.code,
+                "customer_name": customer.name,
+                "total_display": total,
+                "payment_method": payment_method or "activity",
+            },
+            booking_id=booking.id,
+        )
 
 
 def _snapshot(booking: Booking) -> dict[str, Any]:
@@ -324,6 +375,39 @@ async def change_booking(
             ip=ip,
         )
     )
+    await _notify(session, booking, "booking_changed", "booking_changed_ops", {})
+
+
+async def _notify(
+    session: AsyncSession, booking: Booking, customer_template: str, ops_template: str, extra: Any
+) -> None:
+    """F5.6: mismo patrón para cambios y cancelaciones, al cliente y a la empresa."""
+    customer = await session.get(Customer, booking.customer_id)
+    context = {
+        "code": booking.code,
+        "manage_url": booking_manage_url(booking.company_id, booking.code),
+    }
+    context |= extra
+    if customer:
+        await enqueue(
+            session,
+            booking.company_id,
+            customer_template,
+            [customer.email],
+            context,
+            booking.language,
+            booking.id,
+        )
+    settings = get_settings()
+    if settings.email_ops_to:
+        await enqueue(
+            session,
+            booking.company_id,
+            ops_template,
+            [settings.email_ops_to],
+            context,
+            booking_id=booking.id,
+        )
 
 
 async def cancel_booking(
@@ -348,3 +432,6 @@ async def cancel_booking(
     )
     for leg in booking.legs:
         leg.status = LegStatus.CANCELLED
+    await _notify(
+        session, booking, "booking_cancelled", "booking_cancelled_ops", {"reason": reason}
+    )

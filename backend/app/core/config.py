@@ -23,6 +23,12 @@ class Settings(BaseSettings):
     stripe_webhook_secret: str = Field(default="", repr=False)
     # Cloudflare Turnstile en formularios públicos; vacía en local = no se exige.
     turnstile_secret_key: str = Field(default="", repr=False)
+    # Correos (D7): la API solo encola en email_outbox; app/worker/send_emails.py los envía.
+    resend_api_key: str = Field(default="", repr=False)
+    email_from: str = "no-reply@cabotransportationconcierge.com"
+    email_ops_to: str = ""
+    # Enlaces firmados de la reserva (voucher, My Trip) en los correos.
+    public_web_url: str = "https://www.cabotransportationconcierge.com"
     # Empresa que atiende el sitio público mientras haya una sola (WORKPLAN D10).
     default_company_slug: str = "cabo-transportation-concierge"
 
@@ -41,6 +47,8 @@ class Settings(BaseSettings):
             "TURNSTILE_SECRET_KEY": self.turnstile_secret_key,
             "STRIPE_SECRET_KEY": self.stripe_secret_key,
             "STRIPE_WEBHOOK_SECRET": self.stripe_webhook_secret,
+            "RESEND_API_KEY": self.resend_api_key,
+            "EMAIL_OPS_TO": self.email_ops_to,
         }
         errors += [f"{name} es obligatoria" for name, value in required.items() if not value]
         if errors:

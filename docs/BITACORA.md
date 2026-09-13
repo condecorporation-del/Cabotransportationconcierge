@@ -2,6 +2,36 @@
 
 Una entrada por sesión o tarea, la más reciente arriba (formato en `AGENTS.md` §10).
 
+## 2026-09-13 — F5.1-F5.6, F5.10 y F4.5: cola de correos con Resend
+
+Con F4 ya cobrando bien, seguí con F5 para desbloquear F4.5 (los correos que faltaban al confirmar un pago) sin esperar al admin.
+
+**`app/services/resend_gateway.py`** (nuevo), igual de fino que `stripe_gateway.py`: un `POST /emails` con `from`, `to`, `subject`, `html` y `text`; error de red o rechazo de Resend → `EmailSendError`.
+
+**`app/services/email.py`** (F5.2): `enqueue(session, company_id, template, to, context, language, booking_id)` inserta en `email_outbox`. `company_id` explícito porque el webhook de Stripe no pasa por `get_company` (no hay `session.info` con la empresa ahí).
+
+**`app/templates/emails.py`** (F5.3): diez plantillas en `f-strings` (sin Jinja ni MJML, son correos cortos): `booking_pending_payment`, `booking_confirmed`, `booking_changed`, `booking_cancelled` y `contact_ack` bilingües para el cliente; `booking_new`, `booking_paid_ops`, `booking_changed_ops`, `booking_cancelled_ops` y `contact_lead` en inglés para el equipo de CTC (decisión: los correos internos no necesitan español). Cada una da `(asunto, html, texto plano)`.
+
+**`app/worker/send_emails.py`** (F5.1): `SELECT ... FOR UPDATE SKIP LOCKED` (20 a la vez, por `next_attempt_at`), reintento exponencial (1, 5, 15, 60, 240 min) y `FAILED` al quinto intento. `uv run python -m app.worker.send_emails` procesa una vez; `--loop` para producción.
+
+**Dónde se encola (F5.4-F5.6, F5.10):**
+- Reserva creada: `booking_pending_payment` (tarjeta) o `booking_confirmed` (efectivo sin depósito) al cliente; `booking_new` a `EMAIL_OPS_TO`.
+- Pago confirmado o depósito pagado (`_settle()`, compartido por F4.3 y F4.4 — llegar por cualquiera de los dos no duplica el correo): `booking_confirmed` al cliente, `booking_paid_ops` a la empresa. **Esto era F4.5.**
+- Cambio y cancelación: `booking_changed`/`_ops` y `booking_cancelled`/`_ops` (con el motivo).
+- Formulario de contacto: `contact_ack` al remitente y `contact_lead` a la empresa.
+
+**Decisión: enlace en vez de adjunto (F5.4).** El voucher PDF (F3.8) ya vive detrás del token de la reserva; generarlo de nuevo para adjuntarlo exigiría cargar cliente y `company_settings` en tres lugares distintos (creación, confirmación de pago, webhook sin request), y el webhook ni siquiera tiene esos datos a la mano. El correo de confirmación lleva un link a `/my-trip?code=&token=` (todavía no existe la página; F8.4 la construye) en vez del PDF adjunto.
+
+**Config nueva** (fail-fast en staging/producción, igual que Stripe y Turnstile): `RESEND_API_KEY`, `EMAIL_FROM`, `EMAIL_OPS_TO`, `PUBLIC_WEB_URL`.
+
+**Archivos:** `backend/app/core/config.py`, `backend/app/core/security.py` (`booking_manage_url`), `backend/app/services/email.py`, `backend/app/services/resend_gateway.py`, `backend/app/services/bookings.py`, `backend/app/services/payments.py`, `backend/app/api/v1/contact.py`, `backend/app/templates/__init__.py`, `backend/app/templates/emails.py`, `backend/app/worker/__init__.py`, `backend/app/worker/send_emails.py`, `backend/tests/test_email_workflow.py`, `backend/tests/test_worker_send_emails.py`, `backend/tests/test_config.py`, `backend/tests/test_contact.py`, `backend/.env.example`, `WORKPLAN.md`
+
+**Verificación**
+- `uv run pytest` → **199 passed** (17 nuevos): las diez plantillas renderizan en los dos idiomas; una reserva con tarjeta encola `booking_pending_payment` + `booking_new`; en efectivo sin depósito, `booking_confirmed` de una vez; confirmar el pago encola `booking_confirmed` + `booking_paid_ops`; cambiar y cancelar encolan sus cuatro correos (con el motivo en la cancelación); el contacto encola acuse y lead; sin `EMAIL_OPS_TO` solo se encola el del cliente; el worker: envío exitoso marca `SENT` con el id de Resend, un rechazo agenda el reintento con el error guardado, al quinto intento pasa a `FAILED`, un correo que no vence todavía no se toca, un error de red también reintenta, y los correos ya `SENT`/`FAILED`/`SENDING` nunca se vuelven a tomar.
+- `ruff`, `mypy`, `alembic check`, `pip-audit` y `tsc` del cliente → sin errores.
+
+**Pendiente:** F5.7 (recordatorio 24 h) y F5.8 (solicitud de reseña) piden una tarea programada; F5.9 (aviso al chofer) espera el despacho del admin (F6); F5.11 (webhooks de Resend) para marcar entregado o rebotado.
+
 ## 2026-09-13 — F4.4: webhook de Stripe
 
 **`POST /api/v1/webhooks/stripe`** (nuevo router `app/api/v1/webhooks.py`):

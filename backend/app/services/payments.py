@@ -12,17 +12,21 @@ from typing import Any
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.config import get_settings
 from app.core.errors import AppError
+from app.core.security import booking_manage_url
 from app.models import (
     AuditActor,
     Booking,
     BookingStatus,
     Company,
+    Customer,
     Payment,
     PaymentProvider,
     PaymentStatus,
 )
 from app.services.booking_state import transition
+from app.services.email import enqueue
 from app.services.stripe_gateway import StripeGateway
 
 
@@ -39,6 +43,42 @@ async def _settle(
     if booking.payment_method == "cash":
         # El depósito confirma la reserva; el saldo lo cobra el chofer (§8.2: PAID -> CONFIRMED).
         transition(session, booking, BookingStatus.CONFIRMED, actor=AuditActor.SYSTEM, ip=ip)
+    await _notify_paid(session, booking)
+
+
+async def _notify_paid(session: AsyncSession, booking: Booking) -> None:
+    """F5.4, F5.5: mismo correo de confirmación tanto si el pago fue completo como depósito."""
+    customer = await session.get(Customer, booking.customer_id)
+    if customer is None:
+        return
+    settings = get_settings()
+    manage_url = booking_manage_url(booking.company_id, booking.code)
+    balance = None
+    if booking.payment_method == "cash":
+        balance = f"Balance due on arrival: ${booking.total_cents / 100:,.2f} {booking.currency}"
+    await enqueue(
+        session,
+        booking.company_id,
+        "booking_confirmed",
+        [customer.email],
+        {
+            "code": booking.code,
+            "manage_url": manage_url,
+            "voucher_url": manage_url,
+            "balance_note": balance,
+        },
+        booking.language,
+        booking.id,
+    )
+    if settings.email_ops_to:
+        await enqueue(
+            session,
+            booking.company_id,
+            "booking_paid_ops",
+            [settings.email_ops_to],
+            {"code": booking.code, "status": booking.status.value},
+            booking_id=booking.id,
+        )
 
 
 def _amount(booking: Booking) -> int:

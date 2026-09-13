@@ -32,6 +32,12 @@ def booking_token(company_id: uuid.UUID, code: str) -> str:
     return _booking_signer().dumps([str(company_id), code])
 
 
+def booking_manage_url(company_id: uuid.UUID, code: str) -> str:
+    """My Trip con el token ya puesto (F5.4-F5.6): lo que llevan los enlaces de los correos."""
+    token = booking_token(company_id, code)
+    return f"{get_settings().public_web_url}/my-trip?code={code}&token={token}"
+
+
 def read_booking_token(token: str, company_id: uuid.UUID) -> str | None:
     """Código de la reserva del token; None si fue alterado, expiró o es de otra empresa."""
     try:
