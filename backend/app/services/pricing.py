@@ -1,10 +1,13 @@
 """Motor único de precios (WORKPLAN D8): web, admin, IA y Stripe cotizan solo aquí.
 
-Reglas (detalle y ejemplos en docs/decisions/ADR-002-precios.md):
-- Vehículo automático por pasajeros; se permite subir de clase, nunca bajar.
-- Extras una vez por reserva: precio unitario por cantidad, dentro de su máximo.
-- Recargo nocturno automático si alguna hora cae en la ventana de la empresa.
-- Una sola promoción (la de mayor descuento), evaluada con la fecha del primer tramo.
+Reglas iguales a la referencia (WORKPLAN §3.5.4 y §3.5.5; ejemplos en ADR-002):
+- Unidades = ceil(pasajeros / capacidad). Nunca se rechaza por capacidad; se cotizan varias.
+- Sin vehículo elegido ("Any type of Vehicle") se toma el de menor total.
+- Pasajeros arriba de `included_pax` pagan `extra_pax_cents` por unidad y por tramo (limusina).
+- Extras con unidades gratis, precio por vehículo y la regla "una por vehículo".
+- Recargo nocturno: horas nocturnas de cada tramo por `extra_hour_cents` del vehículo.
+- Una sola promoción (la de mayor descuento), sobre la tarifa base de todas las unidades.
+- IVA con tarjeta sobre el total con descuento; en efectivo o salidas al aeropuerto no aplica.
 """
 
 import uuid
@@ -23,26 +26,41 @@ from app.models import (
     CompanySettings,
     DiscountType,
     Extra,
-    ExtraAutoRule,
     Hotel,
     ItemType,
     Promotion,
     PromotionScope,
     Rate,
+    ServiceScope,
     TripType,
     VehicleClass,
     Zone,
 )
 from app.schemas.quotes import ActivityQuoteRequest, Quote, QuoteLine, TransferQuoteRequest
 
+# La primera hora nocturna cubre 75 minutos; después se cobra cada hora iniciada.
+FIRST_NIGHT_BLOCK_MINUTES = 75
+
 
 class QuoteError(AppError):
     """No se puede cotizar con estos datos (hotel, vehículo, extras, promoción)."""
 
 
-def in_night_window(moment: time, start: time, end: time) -> bool:
-    """Ventana [start, end); si start > end cruza la medianoche (23:00 a 05:00)."""
-    return (moment >= start or moment < end) if start > end else start <= moment < end
+def night_hours(moment: time | None, start: time, end: time) -> int:
+    """Horas de recargo de un servicio a esa hora: 23:00 → 1, 00:15 → 2, 04:59 → 6, 05:00 → 0."""
+    if moment is None:
+        return 0
+
+    def minutes(value: time) -> int:
+        return value.hour * 60 + value.minute
+
+    span = (minutes(end) - minutes(start)) % 1440
+    elapsed = (minutes(moment) - minutes(start)) % 1440
+    if elapsed >= span:
+        return 0
+    if elapsed < FIRST_NIGHT_BLOCK_MINUTES:
+        return 1
+    return (elapsed - FIRST_NIGHT_BLOCK_MINUTES) // 60 + 2
 
 
 def _text(i18n: dict[str, Any], language: str) -> str:
@@ -56,25 +74,34 @@ def _company_id(session: AsyncSession) -> uuid.UUID:
     return company_id
 
 
-async def _vehicle(session: AsyncSession, passengers: int, requested: str | None) -> VehicleClass:
-    classes = (
-        await session.scalars(
-            select(VehicleClass).where(VehicleClass.is_active).order_by(VehicleClass.max_pax)
+def _units(passengers: int, vehicle: VehicleClass) -> int:
+    return -(-passengers // vehicle.max_pax)
+
+
+async def _vehicle_and_rate(
+    session: AsyncSession, zone_id: uuid.UUID, request: TransferQuoteRequest
+) -> tuple[VehicleClass, Rate, int]:
+    query = (
+        select(VehicleClass, Rate)
+        .join(Rate, Rate.vehicle_class_id == VehicleClass.id)
+        .where(
+            VehicleClass.is_active,
+            Rate.is_active,
+            Rate.zone_id == zone_id,
+            Rate.trip_type == request.trip_type,
+            Rate.service_scope == request.service_scope,
         )
-    ).all()
-    if requested:
-        chosen = next((v for v in classes if v.code == requested), None)
-        if chosen is None:
-            raise QuoteError("vehicle_unavailable", f"Vehicle {requested} is not available.")
-        if passengers > chosen.max_pax:
-            raise QuoteError("vehicle_too_small", f"{chosen.name} fits up to {chosen.max_pax}.")
-        return chosen
-    chosen = next((v for v in classes if v.min_pax <= passengers <= v.max_pax), None)
-    if chosen is None:
-        raise QuoteError(
-            "too_many_passengers", "This group needs more than one vehicle. Contact us to book it."
-        )
-    return chosen
+    )
+    if request.vehicle_class:
+        query = query.where(VehicleClass.code == request.vehicle_class)
+    options = (await session.execute(query)).tuples().all()
+    if not options:
+        raise QuoteError("rate_unavailable", "Rate unavailable. Try another vehicle or contact us.")
+    vehicle, rate = min(
+        options,
+        key=lambda row: (row[1].price_cents * _units(request.passengers, row[0]), row[0].sort),
+    )
+    return vehicle, rate, _units(request.passengers, vehicle)
 
 
 def _window(
@@ -120,8 +147,17 @@ async def _promotion(
     return best, discount(best) if best else 0
 
 
-def _total(lines: list[QuoteLine]) -> int:
-    return sum(line.total_cents for line in lines)
+def _line(
+    kind: ItemType, code: str | None, description: str, quantity: int, unit: int
+) -> QuoteLine:
+    return QuoteLine(
+        kind=kind,
+        code=code,
+        description=description,
+        quantity=quantity,
+        unit_price_cents=unit,
+        total_cents=quantity * unit,
+    )
 
 
 async def quote_transfer(
@@ -138,104 +174,96 @@ async def quote_transfer(
     if row is None:
         raise QuoteError("hotel_not_found", "We could not find that hotel.")
     hotel, zone_slug = row
-
-    vehicle = await _vehicle(session, request.passengers, request.vehicle_class)
-    rate = await session.scalar(
-        select(Rate).where(
-            Rate.zone_id == hotel.zone_id,
-            Rate.vehicle_class_id == vehicle.id,
-            Rate.trip_type == request.trip_type,
-            Rate.service_scope == request.service_scope,
-            Rate.is_active,
-        )
+    departure_only = (
+        request.service_scope is ServiceScope.AIRPORT
+        and request.trip_type is TripType.ONE_WAY
+        and request.direction == "departure"
     )
-    if rate is None:
-        raise QuoteError("rate_unavailable", "Rate unavailable. Try another vehicle or contact us.")
-
-    trip = "round trip" if request.trip_type is TripType.ROUND_TRIP else "one way"
-    lines = [
-        QuoteLine(
-            kind=ItemType.TRANSFER,
-            code=vehicle.code,
-            description=f"{vehicle.name}, {trip}",
-            quantity=1,
-            unit_price_cents=rate.price_cents,
-            total_cents=rate.price_cents,
+    if request.payment == "cash" and departure_only:
+        raise QuoteError(
+            "cash_unavailable", "Cash payment is not available for airport departures."
         )
+
+    vehicle, rate, units = await _vehicle_and_rate(session, hotel.zone_id, request)
+    legs = len(request.legs)
+    es = request.language == "es"
+    trip = {
+        (TripType.ONE_WAY, False): "one way",
+        (TripType.ROUND_TRIP, False): "round trip",
+        (TripType.ONE_WAY, True): "sencillo",
+        (TripType.ROUND_TRIP, True): "redondo",
+    }[(request.trip_type, es)]
+    base = rate.price_cents * units
+    lines = [
+        _line(ItemType.TRANSFER, vehicle.code, f"{vehicle.name}, {trip}", units, rate.price_cents)
     ]
+
+    if vehicle.included_pax and vehicle.extra_pax_cents:
+        extra_pax = request.passengers - vehicle.included_pax * units
+        if extra_pax > 0:
+            label = "Pasajeros adicionales" if es else "Additional passengers"
+            count = extra_pax * units * legs
+            lines.append(
+                _line(ItemType.EXTRA, "EXTRA_PASSENGERS", label, count, vehicle.extra_pax_cents)
+            )
 
     requested = {extra.code: extra.quantity for extra in request.extras}
     extras = (
-        await session.scalars(
-            select(Extra).where(
-                Extra.is_active,
-                or_(Extra.code.in_(requested), Extra.auto_rule.is_not(None)),
-            )
-        )
+        await session.scalars(select(Extra).where(Extra.is_active, Extra.code.in_(requested)))
     ).all()
     by_code = {extra.code: extra for extra in extras}
     for code, quantity in requested.items():
         extra = by_code.get(code)
         if extra is None or extra.included or extra.auto_rule is not None:
             raise QuoteError("extra_unavailable", f"The extra {code} is not available.")
+        name = _text(extra.name, request.language)
         if quantity > extra.max_qty:
             raise QuoteError("extra_quantity", f"{_text(extra.name, 'en')}: up to {extra.max_qty}.")
-        lines.append(
-            QuoteLine(
-                kind=ItemType.EXTRA,
-                code=code,
-                description=_text(extra.name, request.language),
-                quantity=quantity,
-                unit_price_cents=extra.price_cents,
-                total_cents=extra.price_cents * quantity,
+        if extra.one_per_vehicle and quantity < units:
+            raise QuoteError(
+                "extra_per_vehicle", f"{_text(extra.name, 'en')}: choose one for each vehicle."
             )
-        )
+        free = min(quantity, extra.free_qty)
+        if free:
+            label = f"{name} ({'cortesía' if es else 'complimentary'})"
+            lines.append(_line(ItemType.EXTRA, code, label, free, 0))
+        if quantity > free:
+            price = int(extra.vehicle_prices.get(vehicle.code, extra.price_cents))
+            lines.append(_line(ItemType.EXTRA, code, name, quantity - free, price))
 
     settings = await session.get(CompanySettings, company_id)
-    night = next((e for e in extras if e.auto_rule is ExtraAutoRule.NIGHT_SURCHARGE), None)
-    if (
-        night
-        and settings
-        and any(
-            leg.service_time
-            and in_night_window(
+    if settings and vehicle.extra_hour_cents:
+        hours = sum(
+            night_hours(
                 leg.service_time, settings.night_surcharge_start, settings.night_surcharge_end
             )
             for leg in request.legs
         )
-    ):
-        lines.append(
-            QuoteLine(
-                kind=ItemType.EXTRA,
-                code=night.code,
-                description=_text(night.name, request.language),
-                quantity=1,
-                unit_price_cents=night.price_cents,
-                total_cents=night.price_cents,
+        if hours:
+            label = "Recargo nocturno (por hora)" if es else "Night surcharge (per hour)"
+            lines.append(
+                _line(ItemType.EXTRA, "NIGHT_SURCHARGE", label, hours, vehicle.extra_hour_cents)
             )
-        )
 
-    subtotal = _total(lines)
+    subtotal = sum(line.total_cents for line in lines)
     promotion, discount = await _promotion(
-        session,
-        request.promo_code,
-        request.legs[0].service_date,
-        today,
-        rate.price_cents,
-        subtotal,
+        session, request.promo_code, request.legs[0].service_date, today, base, subtotal
     )
     if promotion and discount:
         lines.append(
-            QuoteLine(
-                kind=ItemType.DISCOUNT,
-                code=promotion.code,
-                description=_text(promotion.name, request.language),
-                quantity=1,
-                unit_price_cents=-discount,
-                total_cents=-discount,
+            _line(
+                ItemType.DISCOUNT,
+                promotion.code,
+                _text(promotion.name, request.language),
+                1,
+                -discount,
             )
         )
 
+    tax_percent = settings.card_tax_percent if settings else 0
+    taxed = request.payment == "card" and not departure_only
+    tax = ((subtotal - discount) * tax_percent + 50) // 100 if taxed else 0
+    total = subtotal - discount + tax
     company = await session.get(Company, company_id)
     applied = promotion if promotion and discount else None
     quote = Quote(
@@ -243,11 +271,13 @@ async def quote_transfer(
         lines=lines,
         subtotal_cents=subtotal,
         discount_cents=discount,
-        tax_cents=0,
-        total_cents=subtotal - discount,
+        tax_cents=tax,
+        total_cents=total,
         vehicle_class=vehicle.code,
+        vehicle_count=units,
         zone=zone_slug,
         promotion=_text(applied.name, request.language) if applied else None,
+        deposit_cents=min(vehicle.cash_deposit_cents, total) if request.payment == "cash" else 0,
     )
     quote._promotion_id = applied.id if applied else None
     return quote
@@ -281,13 +311,12 @@ async def quote_activity(session: AsyncSession, request: ActivityQuoteRequest) -
     return Quote(
         currency=company.currency if company else "USD",
         lines=[
-            QuoteLine(
-                kind=ItemType.ACTIVITY,
-                code=package.slug,
-                description=f"{_text(package.name, request.language)}: {names}",
-                quantity=request.guests,
-                unit_price_cents=package.price_per_person_cents,
-                total_cents=total,
+            _line(
+                ItemType.ACTIVITY,
+                package.slug,
+                f"{_text(package.name, request.language)}: {names}",
+                request.guests,
+                package.price_per_person_cents,
             )
         ],
         subtotal_cents=total,

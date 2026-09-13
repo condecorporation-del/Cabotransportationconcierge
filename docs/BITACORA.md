@@ -2,6 +2,39 @@
 
 Una entrada por sesión o tarea, la más reciente arriba (formato en `AGENTS.md` §10).
 
+## 2026-09-13 — F2.10 y F2.11: catálogo y motor de precios iguales a All Ways
+
+Marlon confirmó "todo igual, adelante": se reemplaza el catálogo de ClassVIP por el de allwayscabotransportation.com (D-P1, D-P8, D-P14 ya decididas en el WORKPLAN) y el motor cotiza por unidades en vez de rechazar grupos grandes.
+
+**Catálogo (`scripts/data/catalog.json`, `scripts/gen_catalog.py` en el scratchpad de la sesión, no versionado)**
+- 10 zonas con nombres y slugs propios (§3.5.6), reemplazando las 6 de ClassVIP.
+- 5 vehículos con los campos nuevos de la referencia: `included_pax`, `extra_pax_cents` (limusina), `extra_hour_cents` (recargo nocturno) y `cash_deposit_cents`.
+- 180 tarifas (10 zonas × 5 vehículos × ida/redondo × aeropuerto/local, menos la limusina fuera de las zonas 1–5).
+- 8 extras con `free_qty` (primera silla y primer booster gratis), `vehicle_prices` (parada en súper distinta en Escalade) y `one_per_vehicle`.
+- 226 hoteles reasignados a las 10 zonas: se descargó `/api/booking/places` de la referencia (520 lugares) y se cruzó por nombre normalizado — 76 coincidencias exactas, 58 por nombre corto sin palabras de relleno (hotel, resort, spa…) y 8 por similitud ≥ 0.86; los 84 restantes por la zona real del hotel (documentado en `meta.hotel_zone_decisions`).
+- `seed_catalog.py` ahora desactiva (`is_active=False`) zonas, vehículos y extras que salen del JSON en vez de dejarlos huérfanos.
+
+**Motor de precios (`app/services/pricing.py`, reescrito)**
+- `_vehicle_and_rate`: si no se pide un vehículo, se cotizan todos los que tengan tarifa en esa zona/viaje y se toma el de menor total (no el de menor capacidad).
+- `_units`: `ceil(pasajeros / max_pax)`; ya no hay `too_many_passengers` ni `vehicle_too_small`. El límite de pasajeros bajó de 50 a 20 en el schema, igual que el stepper de la referencia.
+- Pasajeros extra de limusina después de `included_pax` (6), por unidad y por tramo.
+- Extras: unidades gratis primero, luego precio por vehículo si existe, y `extra_per_vehicle` si `one_per_vehicle` no alcanza para las unidades pedidas.
+- `night_hours()` reemplaza a `in_night_window()`: cuenta horas nocturnas exactas (75 min el primer bloque, luego una hora por cada hora iniciada) en vez de un sí/no; se multiplica por `extra_hour_cents` del vehículo. **Decisión propia, documentada en ADR-002:** en redondo se suman las horas nocturnas de los dos tramos, aunque el código de la referencia solo cuenta el regreso cuando ambos son nocturnos (parece un error de ellos).
+- IVA 16% (`company_settings.card_tax_percent`) con tarjeta sobre subtotal − descuento; sin IVA en efectivo ni en salidas al aeropuerto (`cash_unavailable` si se pide efectivo en una salida).
+- Depósito con tarjeta al pagar en efectivo en Escalade y Limousine.
+
+**Esquema:** `booking_legs.vehicle_count` y `booking_assignments.unit_index` (única por `leg_id, unit_index`; antes era única solo por `leg_id`, lo que impedía dos choferes en el mismo tramo). Migración `a669171fe543`.
+
+**Investigación:** las fórmulas de recargo nocturno, pasajeros extra de limusina y depósito no estaban en el HTML visible; se sacaron leyendo `dep_BlockConflictModal-*.js`, el chunk que de verdad calcula el precio en el frontend de la referencia (descargado con curl y un User-Agent de navegador, igual que en la sesión anterior).
+
+**Archivos:** `backend/app/models/catalog.py`, `backend/app/models/company.py`, `backend/app/models/booking.py`, `backend/app/models/operations.py`, `backend/app/schemas/catalog.py`, `backend/app/schemas/quotes.py`, `backend/app/schemas/bookings.py`, `backend/app/services/pricing.py`, `backend/app/services/bookings.py`, `backend/scripts/seed_catalog.py`, `backend/scripts/data/catalog.json`, `backend/alembic/versions/20260912_a669171fe543_*.py`, `backend/tests/test_pricing.py` (reescrito), `backend/tests/test_bookings.py`, `backend/tests/test_seed_catalog.py`, `backend/tests/test_api_public.py`, `backend/tests/test_hotel_search.py`, `backend/tests/test_models_operations.py`, `docs/decisions/ADR-002-precios.md` (reescrito), `packages/api-client/src/schema.d.ts`, `WORKPLAN.md`
+
+**Verificación**
+- `uv run pytest` → **163 passed**: cada celda de la matriz de tarifas contra el catálogo (con `rate_unavailable` donde la limusina no opera), "Any type of Vehicle" toma el menor total, 8 y 20 pasajeros piden 2 unidades y cobran el doble, 21 pasajeros → `ValidationError`, limusina cobra pasajeros extra por tramo, sillas de auto gratis y de pago, parada en súper con precio de Escalade y la regla de una por vehículo, horas nocturnas exactas (23:00→1, 00:15→2, 04:59→6, 05:00→0) multiplicadas por la tarifa del vehículo, promo de septiembre sobre la base de todas las unidades, IVA con tarjeta y depósito en efectivo, el seed retira lo que ya no está en el catálogo.
+- `ruff`, `ruff format`, `mypy`, `alembic check`, `pip-audit` y `tsc` del cliente → sin errores.
+
+**Pendiente:** F2.9 (Marlon revisa el ADR-002), F2.12 (chofer por hora y activity transfers como tipos de servicio cotizables — piden un schema nuevo porque no tienen hotel de origen/destino) y F3.12/F3.13 (campos del formulario de reserva y flujo de pago en efectivo iguales a la referencia).
+
 ## 2026-09-12 — Diferenciación de All Ways y logo oficial de CTC
 
 Marlon pidió que el diseño quede más premium y no tan igual a All Ways: otras fuentes, navbar algo distinto, zonas y textos parecidos pero diferentes, y usar su logo.

@@ -93,6 +93,13 @@ class VehicleClass(IdMixin, TenantMixin, TimestampMixin, Base):
     min_pax: Mapped[int] = mapped_column(default=1)
     max_pax: Mapped[int]
     max_bags: Mapped[int]
+    # WORKPLAN §3.5.4. Si hay más pasajeros que `max_pax` se cotizan varias unidades.
+    # `included_pax`: pasajeros sin cargo; arriba de eso se cobra `extra_pax_cents` (limusina).
+    included_pax: Mapped[int | None]
+    extra_pax_cents: Mapped[int] = mapped_column(default=0, server_default="0")
+    # Recargo nocturno por hora y depósito con tarjeta al pagar en efectivo.
+    extra_hour_cents: Mapped[int] = mapped_column(default=0, server_default="0")
+    cash_deposit_cents: Mapped[int] = mapped_column(default=0, server_default="0")
     sort: Mapped[int] = mapped_column(default=0)
     is_active: Mapped[bool] = mapped_column(default=True)
 
@@ -137,6 +144,13 @@ class Extra(IdMixin, TenantMixin, TimestampMixin, Base):
     pricing_mode: Mapped[PricingMode]
     max_qty: Mapped[int] = mapped_column(default=1)
     included: Mapped[bool] = mapped_column(default=False)
+    # Unidades sin costo (primera silla de auto), precio distinto por vehículo ({"ESCALADE": 12000})
+    # y regla "una por vehículo pedido" (parada en súper).
+    free_qty: Mapped[int] = mapped_column(default=0, server_default="0")
+    vehicle_prices: Mapped[dict[str, Any]] = mapped_column(
+        default=dict, server_default=text("'{}'::jsonb")
+    )
+    one_per_vehicle: Mapped[bool] = mapped_column(default=False, server_default=text("false"))
     auto_rule: Mapped[ExtraAutoRule | None]
     sort: Mapped[int] = mapped_column(default=0)
     is_active: Mapped[bool] = mapped_column(default=True)

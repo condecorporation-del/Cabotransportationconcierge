@@ -14,7 +14,7 @@ from datetime import date
 from pathlib import Path
 from typing import Any
 
-from sqlalchemy import select
+from sqlalchemy import select, update
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
@@ -72,7 +72,7 @@ async def seed(session: AsyncSession, catalog: dict[str, Any]) -> dict[str, int]
     )
 
     def owned(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
-        return [{**row, "company_id": company_id} for row in rows]
+        return [{**row, "company_id": company_id, "is_active": True} for row in rows]
 
     zone_ids = await _upsert(session, Zone, owned(catalog["zones"]), ["company_id", "slug"])
     vehicle_ids = await _upsert(
@@ -103,6 +103,18 @@ async def seed(session: AsyncSession, catalog: dict[str, Any]) -> dict[str, int]
         ["company_id", "zone_id", "vehicle_class_id", "trip_type", "service_scope"],
     )
     await _upsert(session, Extra, owned(catalog["extras"]), ["company_id", "code"])
+    # Lo que salió del catálogo se desactiva (no se borra: puede tener reservas).
+    retired: list[tuple[Any, Any, list[str]]] = [
+        (Zone, Zone.slug, [z["slug"] for z in catalog["zones"]]),
+        (VehicleClass, VehicleClass.code, [v["code"] for v in catalog["vehicle_classes"]]),
+        (Extra, Extra.code, [e["code"] for e in catalog["extras"]]),
+    ]
+    for model, column, present in retired:
+        await session.execute(
+            update(model)
+            .where(model.company_id == company_id, column.not_in(present))
+            .values(is_active=False)
+        )
     await _upsert(session, Activity, owned(catalog["activities"]), ["company_id", "slug"])
     await _upsert(
         session, ActivityPackage, owned(catalog["activity_packages"]), ["company_id", "slug"]
@@ -129,20 +141,25 @@ async def seed(session: AsyncSession, catalog: dict[str, Any]) -> dict[str, int]
 
 
 def rate_matrix(catalog: dict[str, Any]) -> str:
+    """Tarifas de aeropuerto (ida / redondo) por zona y vehículo; "—" donde no hay servicio."""
     cents = {
-        (r["zone"], r["vehicle_class"], r["trip_type"]): r["price_cents"] for r in catalog["rates"]
+        (r["zone"], r["vehicle_class"], r["trip_type"]): r["price_cents"]
+        for r in catalog["rates"]
+        if r["service_scope"] == "airport"
     }
     codes = [v["code"] for v in catalog["vehicle_classes"]]
 
     def pair(zone: str, code: str) -> str:
+        if (zone, code, "one_way") not in cents:
+            return "—"
         one_way, round_trip = (
             cents[(zone, code, trip)] // 100 for trip in ("one_way", "round_trip")
         )
         return f"${one_way:,} / ${round_trip:,}"
 
-    header = f"{'Zona':<28}" + "".join(f"{code + ' ida / redondo':>30}" for code in codes)
+    header = f"{'Zona':<40}" + "".join(f"{code:>18}" for code in codes)
     rows = [
-        f"{z['name']['es']:<28}" + "".join(f"{pair(z['slug'], c):>30}" for c in codes)
+        f"{z['name']['es']:<40}" + "".join(f"{pair(z['slug'], c):>18}" for c in codes)
         for z in catalog["zones"]
     ]
     return "\n".join([header, "-" * len(header), *rows])

@@ -36,7 +36,7 @@ async def test_finds_hotels_ignoring_accents_case_and_aliases(
 async def test_returns_zone_in_both_languages(seeded: AsyncSession) -> None:
     [first, *_] = await search_hotels(seeded, "marina fiesta")
     assert first.name == "Marina Fiesta Resort and Spa"
-    assert first.zone == "cabo-san-lucas"
+    assert first.zone == "cabo-san-lucas-marina"
     assert set(first.zone_name) == {"en", "es"}
 
 

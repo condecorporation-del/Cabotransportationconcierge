@@ -40,6 +40,8 @@ class CompanySettings(TimestampMixin, Base):
     change_hours: Mapped[int] = mapped_column(default=5)
     # Anticipación mínima para reservar en la web (F3.3).
     min_notice_hours: Mapped[int] = mapped_column(default=24, server_default="24")
+    # IVA que se suma al pagar con tarjeta; en efectivo no aplica (D-P5, confirmar con el contador).
+    card_tax_percent: Mapped[int] = mapped_column(default=16, server_default="16")
     night_surcharge_start: Mapped[time] = mapped_column(default=time(23, 0))
     night_surcharge_end: Mapped[time] = mapped_column(default=time(5, 0))
     arrival_instructions: Mapped[dict[str, Any]] = mapped_column(default=dict)

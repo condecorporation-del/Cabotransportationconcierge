@@ -1,5 +1,5 @@
 from datetime import date, time
-from typing import Annotated, Literal
+from typing import Annotated
 
 from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
@@ -33,8 +33,7 @@ class _BookingFields(_Strict):
 
 
 class TransferBookingRequest(TransferQuoteRequest, _BookingFields):
-    # Solo para one way: llegada (aeropuerto → hotel) o salida (hotel → aeropuerto).
-    direction: Literal["arrival", "departure"] = "arrival"
+    pass
 
 
 class ActivityBookingRequest(ActivityQuoteRequest, _BookingFields):

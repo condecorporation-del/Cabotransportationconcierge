@@ -41,7 +41,7 @@ from app.schemas.bookings import (
 from app.schemas.quotes import Language, Quote
 from app.services.booking_codes import next_booking_code
 from app.services.booking_state import TRANSITIONS, transition
-from app.services.pricing import in_night_window, quote_activity, quote_transfer
+from app.services.pricing import night_hours, quote_activity, quote_transfer
 
 AIRPORT = "SJD Los Cabos International Airport"
 PICKUP_LEAD = {True: timedelta(hours=3), False: timedelta(hours=2)}
@@ -128,6 +128,7 @@ async def _transfer_legs(
                 hotel_id=request.hotel_id,
                 pax_adults=request.passengers,
                 vehicle_class_id=vehicle_id,
+                vehicle_count=quote.vehicle_count,
             )
         )
     return legs
@@ -269,9 +270,7 @@ async def change_booking(
         if pickup < limit:
             raise window
         if update.service_time and leg.service_time and update.service_time != leg.service_time:
-            if in_night_window(update.service_time, *night) != in_night_window(
-                leg.service_time, *night
-            ):
+            if night_hours(update.service_time, *night) != night_hours(leg.service_time, *night):
                 raise AppError("price_change", "That time changes the price. Contact us.")
             flight = datetime.combine(leg.service_date, leg.service_time, zone)
             flight += timedelta(days=1) if flight < pickup else timedelta()

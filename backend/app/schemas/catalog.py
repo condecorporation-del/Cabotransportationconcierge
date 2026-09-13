@@ -50,6 +50,10 @@ class VehicleOut(_FromOrm):
     min_pax: int
     max_pax: int
     max_bags: int
+    included_pax: int | None
+    extra_pax_cents: int
+    extra_hour_cents: int
+    cash_deposit_cents: int
 
 
 class ExtraOut(_FromOrm):
@@ -60,6 +64,9 @@ class ExtraOut(_FromOrm):
     pricing_mode: PricingMode
     max_qty: int
     included: bool
+    free_qty: int
+    vehicle_prices: dict[str, int]
+    one_per_vehicle: bool
 
 
 class ActivityOut(_FromOrm):

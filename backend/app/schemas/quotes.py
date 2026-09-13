@@ -56,7 +56,11 @@ class TransferQuoteRequest(_Strict):
     hotel_id: uuid.UUID
     trip_type: TripType
     service_scope: ServiceScope = ServiceScope.AIRPORT
-    passengers: int = Field(ge=1, le=50)
+    # Como la referencia: de 1 a 20; si no caben en un vehículo se cotizan varias unidades.
+    passengers: int = Field(ge=1, le=20)
+    # Solo para one way: llegada (aeropuerto → hotel) o salida (hotel → aeropuerto).
+    direction: Literal["arrival", "departure"] = "arrival"
+    payment: Literal["card", "cash"] = "card"
     vehicle_class: str | None = Field(default=None, max_length=30)
     legs: list[LegIn] = Field(min_length=1, max_length=2)
     extras: list[ExtraIn] = Field(default_factory=list, max_length=20)
@@ -112,6 +116,7 @@ class Quote(BaseModel):
     tax_cents: int
     total_cents: int
     vehicle_class: str | None = None
+    vehicle_count: int = 1
     zone: str | None = None
     promotion: str | None = None
     # Actividades: se pagan en sitio (park fee) o se retienen como depósito; no suman al total.

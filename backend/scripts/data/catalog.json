@@ -1,8 +1,8 @@
 {
   "meta": {
-    "status": "pending_approval",
-    "note": "Tarifas de ClassVIP (6 zonas); round trip de Sprinter = 1.8 x one way. Pendiente de aprobación de Marlon (WORKPLAN D-P1, D-P12).",
-    "source": "ClassVIP backend/scripts/data/hotels.json, agrupado por nombre normalizado",
+    "status": "approved",
+    "note": "Tarifas de All Ways (D-P1 decidido por Marlon, 12 sep 2026): 10 zonas × 5 vehículos, aeropuerto y local. Zonas con nombres propios de CTC (WORKPLAN §3.5.6).",
+    "source": "Hoteles de ClassVIP; zona por coincidencia de nombre con los lugares públicos de la referencia y, si no hay coincidencia, por ubicación.",
     "hotel_zone_decisions": [
       {
         "hotel": "Hard Rock Hotel Los Cabos",
@@ -148,307 +148,1483 @@
   },
   "zones": [
     {
-      "slug": "san-jose-del-cabo",
+      "slug": "san-jose-del-cabo-estuary",
       "name": {
-        "en": "San José del Cabo",
-        "es": "San José del Cabo"
+        "en": "San José del Cabo & Estuary",
+        "es": "San José del Cabo y el Estero"
       },
-      "drive_minutes_min": 10,
-      "drive_minutes_max": 20,
+      "drive_minutes_min": 16,
+      "drive_minutes_max": 22,
       "sort": 0
     },
     {
-      "slug": "puerto-los-cabos",
+      "slug": "the-corridor",
       "name": {
-        "en": "Puerto Los Cabos",
-        "es": "Puerto Los Cabos"
+        "en": "The Corridor & Puerto Los Cabos",
+        "es": "El Corredor y Puerto Los Cabos"
       },
-      "drive_minutes_min": 20,
-      "drive_minutes_max": 30,
+      "drive_minutes_min": 24,
+      "drive_minutes_max": 34,
       "sort": 1
     },
     {
-      "slug": "tourist-corridor",
+      "slug": "cabo-san-lucas-marina",
       "name": {
-        "en": "Tourist Corridor",
-        "es": "Corredor Turístico"
+        "en": "Cabo San Lucas & Marina",
+        "es": "Cabo San Lucas y la Marina"
       },
-      "drive_minutes_min": 20,
-      "drive_minutes_max": 35,
+      "drive_minutes_min": 44,
+      "drive_minutes_max": 52,
       "sort": 2
     },
     {
-      "slug": "cabo-san-lucas",
+      "slug": "pacific-coast",
       "name": {
-        "en": "Cabo San Lucas",
-        "es": "Cabo San Lucas"
+        "en": "Pacific Coast & Pedregal",
+        "es": "Costa del Pacífico y Pedregal"
       },
-      "drive_minutes_min": 40,
-      "drive_minutes_max": 50,
+      "drive_minutes_min": 48,
+      "drive_minutes_max": 65,
       "sort": 3
     },
     {
-      "slug": "pacific-side",
+      "slug": "pacific-north",
       "name": {
-        "en": "Pacific Side",
-        "es": "Lado Pacífico"
+        "en": "Pacific North · Diamante",
+        "es": "Pacífico Norte · Diamante"
       },
-      "drive_minutes_min": 50,
-      "drive_minutes_max": 65,
+      "drive_minutes_min": 55,
+      "drive_minutes_max": 70,
       "sort": 4
     },
     {
-      "slug": "east-cape-todos-santos",
+      "slug": "el-pescadero-cerritos",
       "name": {
-        "en": "East Cape & Todos Santos",
-        "es": "East Cape y Todos Santos"
+        "en": "El Pescadero & Cerritos",
+        "es": "El Pescadero y Cerritos"
+      },
+      "drive_minutes_min": 65,
+      "drive_minutes_max": 85,
+      "sort": 5
+    },
+    {
+      "slug": "todos-santos",
+      "name": {
+        "en": "Todos Santos, Pueblo Mágico",
+        "es": "Todos Santos, Pueblo Mágico"
+      },
+      "drive_minutes_min": 75,
+      "drive_minutes_max": 95,
+      "sort": 6
+    },
+    {
+      "slug": "la-paz-balandra",
+      "name": {
+        "en": "La Paz & Balandra",
+        "es": "La Paz y Balandra"
+      },
+      "drive_minutes_min": 120,
+      "drive_minutes_max": 150,
+      "sort": 7
+    },
+    {
+      "slug": "los-barriles-east-cape",
+      "name": {
+        "en": "Los Barriles · East Cape",
+        "es": "Los Barriles · East Cape"
       },
       "drive_minutes_min": 70,
-      "drive_minutes_max": 95,
-      "sort": 5
+      "drive_minutes_max": 80,
+      "sort": 8
+    },
+    {
+      "slug": "cabo-pulmo",
+      "name": {
+        "en": "Cabo Pulmo Marine Park",
+        "es": "Parque Marino Cabo Pulmo"
+      },
+      "drive_minutes_min": 85,
+      "drive_minutes_max": 100,
+      "sort": 9
     }
   ],
   "vehicle_classes": [
     {
+      "min_pax": 1,
+      "included_pax": null,
+      "extra_pax_cents": 0,
+      "cash_deposit_cents": 0,
       "code": "SUBURBAN",
       "name": "Chevrolet Suburban",
-      "min_pax": 1,
       "max_pax": 5,
       "max_bags": 5,
+      "extra_hour_cents": 8500,
       "sort": 0
     },
     {
+      "min_pax": 1,
+      "included_pax": null,
+      "extra_pax_cents": 0,
+      "cash_deposit_cents": 10000,
+      "code": "ESCALADE",
+      "name": "Cadillac Escalade",
+      "max_pax": 5,
+      "max_bags": 5,
+      "extra_hour_cents": 15000,
+      "sort": 1
+    },
+    {
+      "min_pax": 1,
+      "included_pax": null,
+      "extra_pax_cents": 0,
+      "cash_deposit_cents": 0,
+      "code": "VAN",
+      "name": "Passenger Van",
+      "max_pax": 10,
+      "max_bags": 10,
+      "extra_hour_cents": 11000,
+      "sort": 2
+    },
+    {
+      "min_pax": 1,
+      "included_pax": 6,
+      "extra_pax_cents": 1000,
+      "cash_deposit_cents": 11000,
+      "code": "LIMOUSINE",
+      "name": "Stretch Limousine",
+      "max_pax": 10,
+      "max_bags": 4,
+      "extra_hour_cents": 19500,
+      "sort": 3
+    },
+    {
+      "min_pax": 1,
+      "included_pax": null,
+      "extra_pax_cents": 0,
+      "cash_deposit_cents": 0,
       "code": "SPRINTER",
       "name": "Mercedes-Benz Sprinter",
-      "min_pax": 6,
-      "max_pax": 14,
-      "max_bags": 14,
-      "sort": 1
+      "max_pax": 17,
+      "max_bags": 17,
+      "extra_hour_cents": 11500,
+      "sort": 4
     }
   ],
   "rates": [
     {
-      "zone": "san-jose-del-cabo",
+      "zone": "san-jose-del-cabo-estuary",
       "vehicle_class": "SUBURBAN",
       "trip_type": "one_way",
       "service_scope": "airport",
       "price_cents": 9000
     },
     {
-      "zone": "san-jose-del-cabo",
+      "zone": "san-jose-del-cabo-estuary",
       "vehicle_class": "SUBURBAN",
       "trip_type": "round_trip",
       "service_scope": "airport",
-      "price_cents": 16200
+      "price_cents": 16000
     },
     {
-      "zone": "san-jose-del-cabo",
-      "vehicle_class": "SPRINTER",
-      "trip_type": "one_way",
-      "service_scope": "airport",
-      "price_cents": 13000
-    },
-    {
-      "zone": "san-jose-del-cabo",
-      "vehicle_class": "SPRINTER",
-      "trip_type": "round_trip",
-      "service_scope": "airport",
-      "price_cents": 23400
-    },
-    {
-      "zone": "puerto-los-cabos",
+      "zone": "san-jose-del-cabo-estuary",
       "vehicle_class": "SUBURBAN",
       "trip_type": "one_way",
-      "service_scope": "airport",
-      "price_cents": 9500
+      "service_scope": "local",
+      "price_cents": 8000
     },
     {
-      "zone": "puerto-los-cabos",
+      "zone": "san-jose-del-cabo-estuary",
       "vehicle_class": "SUBURBAN",
       "trip_type": "round_trip",
-      "service_scope": "airport",
-      "price_cents": 17100
+      "service_scope": "local",
+      "price_cents": 14000
     },
     {
-      "zone": "puerto-los-cabos",
-      "vehicle_class": "SPRINTER",
-      "trip_type": "one_way",
-      "service_scope": "airport",
-      "price_cents": 13500
-    },
-    {
-      "zone": "puerto-los-cabos",
-      "vehicle_class": "SPRINTER",
-      "trip_type": "round_trip",
-      "service_scope": "airport",
-      "price_cents": 24300
-    },
-    {
-      "zone": "tourist-corridor",
+      "zone": "the-corridor",
       "vehicle_class": "SUBURBAN",
       "trip_type": "one_way",
       "service_scope": "airport",
       "price_cents": 10000
     },
     {
-      "zone": "tourist-corridor",
+      "zone": "the-corridor",
       "vehicle_class": "SUBURBAN",
       "trip_type": "round_trip",
       "service_scope": "airport",
-      "price_cents": 18000
+      "price_cents": 18500
     },
     {
-      "zone": "tourist-corridor",
-      "vehicle_class": "SPRINTER",
+      "zone": "the-corridor",
+      "vehicle_class": "SUBURBAN",
       "trip_type": "one_way",
-      "service_scope": "airport",
-      "price_cents": 14500
+      "service_scope": "local",
+      "price_cents": 8000
     },
     {
-      "zone": "tourist-corridor",
-      "vehicle_class": "SPRINTER",
+      "zone": "the-corridor",
+      "vehicle_class": "SUBURBAN",
       "trip_type": "round_trip",
-      "service_scope": "airport",
-      "price_cents": 26100
+      "service_scope": "local",
+      "price_cents": 14000
     },
     {
-      "zone": "cabo-san-lucas",
+      "zone": "cabo-san-lucas-marina",
       "vehicle_class": "SUBURBAN",
       "trip_type": "one_way",
       "service_scope": "airport",
       "price_cents": 11000
     },
     {
-      "zone": "cabo-san-lucas",
+      "zone": "cabo-san-lucas-marina",
       "vehicle_class": "SUBURBAN",
       "trip_type": "round_trip",
       "service_scope": "airport",
-      "price_cents": 19800
+      "price_cents": 19500
     },
     {
-      "zone": "cabo-san-lucas",
+      "zone": "cabo-san-lucas-marina",
+      "vehicle_class": "SUBURBAN",
+      "trip_type": "one_way",
+      "service_scope": "local",
+      "price_cents": 8000
+    },
+    {
+      "zone": "cabo-san-lucas-marina",
+      "vehicle_class": "SUBURBAN",
+      "trip_type": "round_trip",
+      "service_scope": "local",
+      "price_cents": 14000
+    },
+    {
+      "zone": "pacific-coast",
+      "vehicle_class": "SUBURBAN",
+      "trip_type": "one_way",
+      "service_scope": "airport",
+      "price_cents": 11500
+    },
+    {
+      "zone": "pacific-coast",
+      "vehicle_class": "SUBURBAN",
+      "trip_type": "round_trip",
+      "service_scope": "airport",
+      "price_cents": 20500
+    },
+    {
+      "zone": "pacific-coast",
+      "vehicle_class": "SUBURBAN",
+      "trip_type": "one_way",
+      "service_scope": "local",
+      "price_cents": 8000
+    },
+    {
+      "zone": "pacific-coast",
+      "vehicle_class": "SUBURBAN",
+      "trip_type": "round_trip",
+      "service_scope": "local",
+      "price_cents": 14000
+    },
+    {
+      "zone": "pacific-north",
+      "vehicle_class": "SUBURBAN",
+      "trip_type": "one_way",
+      "service_scope": "airport",
+      "price_cents": 12500
+    },
+    {
+      "zone": "pacific-north",
+      "vehicle_class": "SUBURBAN",
+      "trip_type": "round_trip",
+      "service_scope": "airport",
+      "price_cents": 23000
+    },
+    {
+      "zone": "pacific-north",
+      "vehicle_class": "SUBURBAN",
+      "trip_type": "one_way",
+      "service_scope": "local",
+      "price_cents": 9000
+    },
+    {
+      "zone": "pacific-north",
+      "vehicle_class": "SUBURBAN",
+      "trip_type": "round_trip",
+      "service_scope": "local",
+      "price_cents": 14000
+    },
+    {
+      "zone": "el-pescadero-cerritos",
+      "vehicle_class": "SUBURBAN",
+      "trip_type": "one_way",
+      "service_scope": "airport",
+      "price_cents": 22000
+    },
+    {
+      "zone": "el-pescadero-cerritos",
+      "vehicle_class": "SUBURBAN",
+      "trip_type": "round_trip",
+      "service_scope": "airport",
+      "price_cents": 40000
+    },
+    {
+      "zone": "el-pescadero-cerritos",
+      "vehicle_class": "SUBURBAN",
+      "trip_type": "one_way",
+      "service_scope": "local",
+      "price_cents": 22000
+    },
+    {
+      "zone": "el-pescadero-cerritos",
+      "vehicle_class": "SUBURBAN",
+      "trip_type": "round_trip",
+      "service_scope": "local",
+      "price_cents": 40000
+    },
+    {
+      "zone": "todos-santos",
+      "vehicle_class": "SUBURBAN",
+      "trip_type": "one_way",
+      "service_scope": "airport",
+      "price_cents": 22000
+    },
+    {
+      "zone": "todos-santos",
+      "vehicle_class": "SUBURBAN",
+      "trip_type": "round_trip",
+      "service_scope": "airport",
+      "price_cents": 40000
+    },
+    {
+      "zone": "todos-santos",
+      "vehicle_class": "SUBURBAN",
+      "trip_type": "one_way",
+      "service_scope": "local",
+      "price_cents": 22000
+    },
+    {
+      "zone": "todos-santos",
+      "vehicle_class": "SUBURBAN",
+      "trip_type": "round_trip",
+      "service_scope": "local",
+      "price_cents": 40000
+    },
+    {
+      "zone": "la-paz-balandra",
+      "vehicle_class": "SUBURBAN",
+      "trip_type": "one_way",
+      "service_scope": "airport",
+      "price_cents": 39000
+    },
+    {
+      "zone": "la-paz-balandra",
+      "vehicle_class": "SUBURBAN",
+      "trip_type": "round_trip",
+      "service_scope": "airport",
+      "price_cents": 75000
+    },
+    {
+      "zone": "la-paz-balandra",
+      "vehicle_class": "SUBURBAN",
+      "trip_type": "one_way",
+      "service_scope": "local",
+      "price_cents": 40000
+    },
+    {
+      "zone": "la-paz-balandra",
+      "vehicle_class": "SUBURBAN",
+      "trip_type": "round_trip",
+      "service_scope": "local",
+      "price_cents": 75000
+    },
+    {
+      "zone": "los-barriles-east-cape",
+      "vehicle_class": "SUBURBAN",
+      "trip_type": "one_way",
+      "service_scope": "airport",
+      "price_cents": 22000
+    },
+    {
+      "zone": "los-barriles-east-cape",
+      "vehicle_class": "SUBURBAN",
+      "trip_type": "round_trip",
+      "service_scope": "airport",
+      "price_cents": 40000
+    },
+    {
+      "zone": "los-barriles-east-cape",
+      "vehicle_class": "SUBURBAN",
+      "trip_type": "one_way",
+      "service_scope": "local",
+      "price_cents": 22000
+    },
+    {
+      "zone": "los-barriles-east-cape",
+      "vehicle_class": "SUBURBAN",
+      "trip_type": "round_trip",
+      "service_scope": "local",
+      "price_cents": 40000
+    },
+    {
+      "zone": "cabo-pulmo",
+      "vehicle_class": "SUBURBAN",
+      "trip_type": "one_way",
+      "service_scope": "airport",
+      "price_cents": 22000
+    },
+    {
+      "zone": "cabo-pulmo",
+      "vehicle_class": "SUBURBAN",
+      "trip_type": "round_trip",
+      "service_scope": "airport",
+      "price_cents": 40000
+    },
+    {
+      "zone": "cabo-pulmo",
+      "vehicle_class": "SUBURBAN",
+      "trip_type": "one_way",
+      "service_scope": "local",
+      "price_cents": 22000
+    },
+    {
+      "zone": "cabo-pulmo",
+      "vehicle_class": "SUBURBAN",
+      "trip_type": "round_trip",
+      "service_scope": "local",
+      "price_cents": 40000
+    },
+    {
+      "zone": "san-jose-del-cabo-estuary",
+      "vehicle_class": "ESCALADE",
+      "trip_type": "one_way",
+      "service_scope": "airport",
+      "price_cents": 14500
+    },
+    {
+      "zone": "san-jose-del-cabo-estuary",
+      "vehicle_class": "ESCALADE",
+      "trip_type": "round_trip",
+      "service_scope": "airport",
+      "price_cents": 28000
+    },
+    {
+      "zone": "san-jose-del-cabo-estuary",
+      "vehicle_class": "ESCALADE",
+      "trip_type": "one_way",
+      "service_scope": "local",
+      "price_cents": 20000
+    },
+    {
+      "zone": "san-jose-del-cabo-estuary",
+      "vehicle_class": "ESCALADE",
+      "trip_type": "round_trip",
+      "service_scope": "local",
+      "price_cents": 36500
+    },
+    {
+      "zone": "the-corridor",
+      "vehicle_class": "ESCALADE",
+      "trip_type": "one_way",
+      "service_scope": "airport",
+      "price_cents": 15500
+    },
+    {
+      "zone": "the-corridor",
+      "vehicle_class": "ESCALADE",
+      "trip_type": "round_trip",
+      "service_scope": "airport",
+      "price_cents": 29500
+    },
+    {
+      "zone": "the-corridor",
+      "vehicle_class": "ESCALADE",
+      "trip_type": "one_way",
+      "service_scope": "local",
+      "price_cents": 20000
+    },
+    {
+      "zone": "the-corridor",
+      "vehicle_class": "ESCALADE",
+      "trip_type": "round_trip",
+      "service_scope": "local",
+      "price_cents": 36500
+    },
+    {
+      "zone": "cabo-san-lucas-marina",
+      "vehicle_class": "ESCALADE",
+      "trip_type": "one_way",
+      "service_scope": "airport",
+      "price_cents": 16500
+    },
+    {
+      "zone": "cabo-san-lucas-marina",
+      "vehicle_class": "ESCALADE",
+      "trip_type": "round_trip",
+      "service_scope": "airport",
+      "price_cents": 31500
+    },
+    {
+      "zone": "cabo-san-lucas-marina",
+      "vehicle_class": "ESCALADE",
+      "trip_type": "one_way",
+      "service_scope": "local",
+      "price_cents": 20000
+    },
+    {
+      "zone": "cabo-san-lucas-marina",
+      "vehicle_class": "ESCALADE",
+      "trip_type": "round_trip",
+      "service_scope": "local",
+      "price_cents": 36500
+    },
+    {
+      "zone": "pacific-coast",
+      "vehicle_class": "ESCALADE",
+      "trip_type": "one_way",
+      "service_scope": "airport",
+      "price_cents": 17500
+    },
+    {
+      "zone": "pacific-coast",
+      "vehicle_class": "ESCALADE",
+      "trip_type": "round_trip",
+      "service_scope": "airport",
+      "price_cents": 33500
+    },
+    {
+      "zone": "pacific-coast",
+      "vehicle_class": "ESCALADE",
+      "trip_type": "one_way",
+      "service_scope": "local",
+      "price_cents": 20000
+    },
+    {
+      "zone": "pacific-coast",
+      "vehicle_class": "ESCALADE",
+      "trip_type": "round_trip",
+      "service_scope": "local",
+      "price_cents": 36500
+    },
+    {
+      "zone": "pacific-north",
+      "vehicle_class": "ESCALADE",
+      "trip_type": "one_way",
+      "service_scope": "airport",
+      "price_cents": 19500
+    },
+    {
+      "zone": "pacific-north",
+      "vehicle_class": "ESCALADE",
+      "trip_type": "round_trip",
+      "service_scope": "airport",
+      "price_cents": 37500
+    },
+    {
+      "zone": "pacific-north",
+      "vehicle_class": "ESCALADE",
+      "trip_type": "one_way",
+      "service_scope": "local",
+      "price_cents": 20000
+    },
+    {
+      "zone": "pacific-north",
+      "vehicle_class": "ESCALADE",
+      "trip_type": "round_trip",
+      "service_scope": "local",
+      "price_cents": 36500
+    },
+    {
+      "zone": "el-pescadero-cerritos",
+      "vehicle_class": "ESCALADE",
+      "trip_type": "one_way",
+      "service_scope": "airport",
+      "price_cents": 37000
+    },
+    {
+      "zone": "el-pescadero-cerritos",
+      "vehicle_class": "ESCALADE",
+      "trip_type": "round_trip",
+      "service_scope": "airport",
+      "price_cents": 72000
+    },
+    {
+      "zone": "el-pescadero-cerritos",
+      "vehicle_class": "ESCALADE",
+      "trip_type": "one_way",
+      "service_scope": "local",
+      "price_cents": 37000
+    },
+    {
+      "zone": "el-pescadero-cerritos",
+      "vehicle_class": "ESCALADE",
+      "trip_type": "round_trip",
+      "service_scope": "local",
+      "price_cents": 72000
+    },
+    {
+      "zone": "todos-santos",
+      "vehicle_class": "ESCALADE",
+      "trip_type": "one_way",
+      "service_scope": "airport",
+      "price_cents": 37000
+    },
+    {
+      "zone": "todos-santos",
+      "vehicle_class": "ESCALADE",
+      "trip_type": "round_trip",
+      "service_scope": "airport",
+      "price_cents": 72000
+    },
+    {
+      "zone": "todos-santos",
+      "vehicle_class": "ESCALADE",
+      "trip_type": "one_way",
+      "service_scope": "local",
+      "price_cents": 37000
+    },
+    {
+      "zone": "todos-santos",
+      "vehicle_class": "ESCALADE",
+      "trip_type": "round_trip",
+      "service_scope": "local",
+      "price_cents": 72000
+    },
+    {
+      "zone": "la-paz-balandra",
+      "vehicle_class": "ESCALADE",
+      "trip_type": "one_way",
+      "service_scope": "airport",
+      "price_cents": 50000
+    },
+    {
+      "zone": "la-paz-balandra",
+      "vehicle_class": "ESCALADE",
+      "trip_type": "round_trip",
+      "service_scope": "airport",
+      "price_cents": 95000
+    },
+    {
+      "zone": "la-paz-balandra",
+      "vehicle_class": "ESCALADE",
+      "trip_type": "one_way",
+      "service_scope": "local",
+      "price_cents": 50000
+    },
+    {
+      "zone": "la-paz-balandra",
+      "vehicle_class": "ESCALADE",
+      "trip_type": "round_trip",
+      "service_scope": "local",
+      "price_cents": 95000
+    },
+    {
+      "zone": "los-barriles-east-cape",
+      "vehicle_class": "ESCALADE",
+      "trip_type": "one_way",
+      "service_scope": "airport",
+      "price_cents": 37000
+    },
+    {
+      "zone": "los-barriles-east-cape",
+      "vehicle_class": "ESCALADE",
+      "trip_type": "round_trip",
+      "service_scope": "airport",
+      "price_cents": 72000
+    },
+    {
+      "zone": "los-barriles-east-cape",
+      "vehicle_class": "ESCALADE",
+      "trip_type": "one_way",
+      "service_scope": "local",
+      "price_cents": 37000
+    },
+    {
+      "zone": "los-barriles-east-cape",
+      "vehicle_class": "ESCALADE",
+      "trip_type": "round_trip",
+      "service_scope": "local",
+      "price_cents": 72000
+    },
+    {
+      "zone": "cabo-pulmo",
+      "vehicle_class": "ESCALADE",
+      "trip_type": "one_way",
+      "service_scope": "airport",
+      "price_cents": 37000
+    },
+    {
+      "zone": "cabo-pulmo",
+      "vehicle_class": "ESCALADE",
+      "trip_type": "round_trip",
+      "service_scope": "airport",
+      "price_cents": 72000
+    },
+    {
+      "zone": "cabo-pulmo",
+      "vehicle_class": "ESCALADE",
+      "trip_type": "one_way",
+      "service_scope": "local",
+      "price_cents": 37000
+    },
+    {
+      "zone": "cabo-pulmo",
+      "vehicle_class": "ESCALADE",
+      "trip_type": "round_trip",
+      "service_scope": "local",
+      "price_cents": 72000
+    },
+    {
+      "zone": "san-jose-del-cabo-estuary",
+      "vehicle_class": "VAN",
+      "trip_type": "one_way",
+      "service_scope": "airport",
+      "price_cents": 11000
+    },
+    {
+      "zone": "san-jose-del-cabo-estuary",
+      "vehicle_class": "VAN",
+      "trip_type": "round_trip",
+      "service_scope": "airport",
+      "price_cents": 20000
+    },
+    {
+      "zone": "san-jose-del-cabo-estuary",
+      "vehicle_class": "VAN",
+      "trip_type": "one_way",
+      "service_scope": "local",
+      "price_cents": 9500
+    },
+    {
+      "zone": "san-jose-del-cabo-estuary",
+      "vehicle_class": "VAN",
+      "trip_type": "round_trip",
+      "service_scope": "local",
+      "price_cents": 17000
+    },
+    {
+      "zone": "the-corridor",
+      "vehicle_class": "VAN",
+      "trip_type": "one_way",
+      "service_scope": "airport",
+      "price_cents": 12500
+    },
+    {
+      "zone": "the-corridor",
+      "vehicle_class": "VAN",
+      "trip_type": "round_trip",
+      "service_scope": "airport",
+      "price_cents": 23000
+    },
+    {
+      "zone": "the-corridor",
+      "vehicle_class": "VAN",
+      "trip_type": "one_way",
+      "service_scope": "local",
+      "price_cents": 9500
+    },
+    {
+      "zone": "the-corridor",
+      "vehicle_class": "VAN",
+      "trip_type": "round_trip",
+      "service_scope": "local",
+      "price_cents": 17000
+    },
+    {
+      "zone": "cabo-san-lucas-marina",
+      "vehicle_class": "VAN",
+      "trip_type": "one_way",
+      "service_scope": "airport",
+      "price_cents": 13000
+    },
+    {
+      "zone": "cabo-san-lucas-marina",
+      "vehicle_class": "VAN",
+      "trip_type": "round_trip",
+      "service_scope": "airport",
+      "price_cents": 24000
+    },
+    {
+      "zone": "cabo-san-lucas-marina",
+      "vehicle_class": "VAN",
+      "trip_type": "one_way",
+      "service_scope": "local",
+      "price_cents": 9500
+    },
+    {
+      "zone": "cabo-san-lucas-marina",
+      "vehicle_class": "VAN",
+      "trip_type": "round_trip",
+      "service_scope": "local",
+      "price_cents": 17000
+    },
+    {
+      "zone": "pacific-coast",
+      "vehicle_class": "VAN",
+      "trip_type": "one_way",
+      "service_scope": "airport",
+      "price_cents": 14000
+    },
+    {
+      "zone": "pacific-coast",
+      "vehicle_class": "VAN",
+      "trip_type": "round_trip",
+      "service_scope": "airport",
+      "price_cents": 26500
+    },
+    {
+      "zone": "pacific-coast",
+      "vehicle_class": "VAN",
+      "trip_type": "one_way",
+      "service_scope": "local",
+      "price_cents": 9500
+    },
+    {
+      "zone": "pacific-coast",
+      "vehicle_class": "VAN",
+      "trip_type": "round_trip",
+      "service_scope": "local",
+      "price_cents": 17000
+    },
+    {
+      "zone": "pacific-north",
+      "vehicle_class": "VAN",
+      "trip_type": "one_way",
+      "service_scope": "airport",
+      "price_cents": 16000
+    },
+    {
+      "zone": "pacific-north",
+      "vehicle_class": "VAN",
+      "trip_type": "round_trip",
+      "service_scope": "airport",
+      "price_cents": 30500
+    },
+    {
+      "zone": "pacific-north",
+      "vehicle_class": "VAN",
+      "trip_type": "one_way",
+      "service_scope": "local",
+      "price_cents": 10000
+    },
+    {
+      "zone": "pacific-north",
+      "vehicle_class": "VAN",
+      "trip_type": "round_trip",
+      "service_scope": "local",
+      "price_cents": 17000
+    },
+    {
+      "zone": "el-pescadero-cerritos",
+      "vehicle_class": "VAN",
+      "trip_type": "one_way",
+      "service_scope": "airport",
+      "price_cents": 27000
+    },
+    {
+      "zone": "el-pescadero-cerritos",
+      "vehicle_class": "VAN",
+      "trip_type": "round_trip",
+      "service_scope": "airport",
+      "price_cents": 50000
+    },
+    {
+      "zone": "el-pescadero-cerritos",
+      "vehicle_class": "VAN",
+      "trip_type": "one_way",
+      "service_scope": "local",
+      "price_cents": 27000
+    },
+    {
+      "zone": "el-pescadero-cerritos",
+      "vehicle_class": "VAN",
+      "trip_type": "round_trip",
+      "service_scope": "local",
+      "price_cents": 50000
+    },
+    {
+      "zone": "todos-santos",
+      "vehicle_class": "VAN",
+      "trip_type": "one_way",
+      "service_scope": "airport",
+      "price_cents": 27000
+    },
+    {
+      "zone": "todos-santos",
+      "vehicle_class": "VAN",
+      "trip_type": "round_trip",
+      "service_scope": "airport",
+      "price_cents": 50000
+    },
+    {
+      "zone": "todos-santos",
+      "vehicle_class": "VAN",
+      "trip_type": "one_way",
+      "service_scope": "local",
+      "price_cents": 27000
+    },
+    {
+      "zone": "todos-santos",
+      "vehicle_class": "VAN",
+      "trip_type": "round_trip",
+      "service_scope": "local",
+      "price_cents": 50000
+    },
+    {
+      "zone": "la-paz-balandra",
+      "vehicle_class": "VAN",
+      "trip_type": "one_way",
+      "service_scope": "airport",
+      "price_cents": 49000
+    },
+    {
+      "zone": "la-paz-balandra",
+      "vehicle_class": "VAN",
+      "trip_type": "round_trip",
+      "service_scope": "airport",
+      "price_cents": 95000
+    },
+    {
+      "zone": "la-paz-balandra",
+      "vehicle_class": "VAN",
+      "trip_type": "one_way",
+      "service_scope": "local",
+      "price_cents": 49000
+    },
+    {
+      "zone": "la-paz-balandra",
+      "vehicle_class": "VAN",
+      "trip_type": "round_trip",
+      "service_scope": "local",
+      "price_cents": 95000
+    },
+    {
+      "zone": "los-barriles-east-cape",
+      "vehicle_class": "VAN",
+      "trip_type": "one_way",
+      "service_scope": "airport",
+      "price_cents": 27000
+    },
+    {
+      "zone": "los-barriles-east-cape",
+      "vehicle_class": "VAN",
+      "trip_type": "round_trip",
+      "service_scope": "airport",
+      "price_cents": 50000
+    },
+    {
+      "zone": "los-barriles-east-cape",
+      "vehicle_class": "VAN",
+      "trip_type": "one_way",
+      "service_scope": "local",
+      "price_cents": 27000
+    },
+    {
+      "zone": "los-barriles-east-cape",
+      "vehicle_class": "VAN",
+      "trip_type": "round_trip",
+      "service_scope": "local",
+      "price_cents": 50000
+    },
+    {
+      "zone": "cabo-pulmo",
+      "vehicle_class": "VAN",
+      "trip_type": "one_way",
+      "service_scope": "airport",
+      "price_cents": 27000
+    },
+    {
+      "zone": "cabo-pulmo",
+      "vehicle_class": "VAN",
+      "trip_type": "round_trip",
+      "service_scope": "airport",
+      "price_cents": 50000
+    },
+    {
+      "zone": "cabo-pulmo",
+      "vehicle_class": "VAN",
+      "trip_type": "one_way",
+      "service_scope": "local",
+      "price_cents": 27000
+    },
+    {
+      "zone": "cabo-pulmo",
+      "vehicle_class": "VAN",
+      "trip_type": "round_trip",
+      "service_scope": "local",
+      "price_cents": 50000
+    },
+    {
+      "zone": "san-jose-del-cabo-estuary",
+      "vehicle_class": "LIMOUSINE",
+      "trip_type": "one_way",
+      "service_scope": "airport",
+      "price_cents": 23000
+    },
+    {
+      "zone": "san-jose-del-cabo-estuary",
+      "vehicle_class": "LIMOUSINE",
+      "trip_type": "round_trip",
+      "service_scope": "airport",
+      "price_cents": 44500
+    },
+    {
+      "zone": "san-jose-del-cabo-estuary",
+      "vehicle_class": "LIMOUSINE",
+      "trip_type": "one_way",
+      "service_scope": "local",
+      "price_cents": 17000
+    },
+    {
+      "zone": "san-jose-del-cabo-estuary",
+      "vehicle_class": "LIMOUSINE",
+      "trip_type": "round_trip",
+      "service_scope": "local",
+      "price_cents": 32000
+    },
+    {
+      "zone": "the-corridor",
+      "vehicle_class": "LIMOUSINE",
+      "trip_type": "one_way",
+      "service_scope": "airport",
+      "price_cents": 23500
+    },
+    {
+      "zone": "the-corridor",
+      "vehicle_class": "LIMOUSINE",
+      "trip_type": "round_trip",
+      "service_scope": "airport",
+      "price_cents": 45500
+    },
+    {
+      "zone": "the-corridor",
+      "vehicle_class": "LIMOUSINE",
+      "trip_type": "one_way",
+      "service_scope": "local",
+      "price_cents": 17000
+    },
+    {
+      "zone": "the-corridor",
+      "vehicle_class": "LIMOUSINE",
+      "trip_type": "round_trip",
+      "service_scope": "local",
+      "price_cents": 32000
+    },
+    {
+      "zone": "cabo-san-lucas-marina",
+      "vehicle_class": "LIMOUSINE",
+      "trip_type": "one_way",
+      "service_scope": "airport",
+      "price_cents": 24000
+    },
+    {
+      "zone": "cabo-san-lucas-marina",
+      "vehicle_class": "LIMOUSINE",
+      "trip_type": "round_trip",
+      "service_scope": "airport",
+      "price_cents": 46500
+    },
+    {
+      "zone": "cabo-san-lucas-marina",
+      "vehicle_class": "LIMOUSINE",
+      "trip_type": "one_way",
+      "service_scope": "local",
+      "price_cents": 17000
+    },
+    {
+      "zone": "cabo-san-lucas-marina",
+      "vehicle_class": "LIMOUSINE",
+      "trip_type": "round_trip",
+      "service_scope": "local",
+      "price_cents": 32000
+    },
+    {
+      "zone": "pacific-coast",
+      "vehicle_class": "LIMOUSINE",
+      "trip_type": "one_way",
+      "service_scope": "airport",
+      "price_cents": 27500
+    },
+    {
+      "zone": "pacific-coast",
+      "vehicle_class": "LIMOUSINE",
+      "trip_type": "round_trip",
+      "service_scope": "airport",
+      "price_cents": 53000
+    },
+    {
+      "zone": "pacific-coast",
+      "vehicle_class": "LIMOUSINE",
+      "trip_type": "one_way",
+      "service_scope": "local",
+      "price_cents": 17000
+    },
+    {
+      "zone": "pacific-coast",
+      "vehicle_class": "LIMOUSINE",
+      "trip_type": "round_trip",
+      "service_scope": "local",
+      "price_cents": 32000
+    },
+    {
+      "zone": "pacific-north",
+      "vehicle_class": "LIMOUSINE",
+      "trip_type": "one_way",
+      "service_scope": "airport",
+      "price_cents": 30000
+    },
+    {
+      "zone": "pacific-north",
+      "vehicle_class": "LIMOUSINE",
+      "trip_type": "round_trip",
+      "service_scope": "airport",
+      "price_cents": 59000
+    },
+    {
+      "zone": "pacific-north",
+      "vehicle_class": "LIMOUSINE",
+      "trip_type": "one_way",
+      "service_scope": "local",
+      "price_cents": 17000
+    },
+    {
+      "zone": "pacific-north",
+      "vehicle_class": "LIMOUSINE",
+      "trip_type": "round_trip",
+      "service_scope": "local",
+      "price_cents": 32000
+    },
+    {
+      "zone": "san-jose-del-cabo-estuary",
+      "vehicle_class": "SPRINTER",
+      "trip_type": "one_way",
+      "service_scope": "airport",
+      "price_cents": 13000
+    },
+    {
+      "zone": "san-jose-del-cabo-estuary",
+      "vehicle_class": "SPRINTER",
+      "trip_type": "round_trip",
+      "service_scope": "airport",
+      "price_cents": 24500
+    },
+    {
+      "zone": "san-jose-del-cabo-estuary",
+      "vehicle_class": "SPRINTER",
+      "trip_type": "one_way",
+      "service_scope": "local",
+      "price_cents": 14000
+    },
+    {
+      "zone": "san-jose-del-cabo-estuary",
+      "vehicle_class": "SPRINTER",
+      "trip_type": "round_trip",
+      "service_scope": "local",
+      "price_cents": 26500
+    },
+    {
+      "zone": "the-corridor",
+      "vehicle_class": "SPRINTER",
+      "trip_type": "one_way",
+      "service_scope": "airport",
+      "price_cents": 14500
+    },
+    {
+      "zone": "the-corridor",
+      "vehicle_class": "SPRINTER",
+      "trip_type": "round_trip",
+      "service_scope": "airport",
+      "price_cents": 27500
+    },
+    {
+      "zone": "the-corridor",
+      "vehicle_class": "SPRINTER",
+      "trip_type": "one_way",
+      "service_scope": "local",
+      "price_cents": 14000
+    },
+    {
+      "zone": "the-corridor",
+      "vehicle_class": "SPRINTER",
+      "trip_type": "round_trip",
+      "service_scope": "local",
+      "price_cents": 26500
+    },
+    {
+      "zone": "cabo-san-lucas-marina",
       "vehicle_class": "SPRINTER",
       "trip_type": "one_way",
       "service_scope": "airport",
       "price_cents": 15500
     },
     {
-      "zone": "cabo-san-lucas",
+      "zone": "cabo-san-lucas-marina",
       "vehicle_class": "SPRINTER",
       "trip_type": "round_trip",
       "service_scope": "airport",
-      "price_cents": 27900
+      "price_cents": 29500
     },
     {
-      "zone": "pacific-side",
-      "vehicle_class": "SUBURBAN",
+      "zone": "cabo-san-lucas-marina",
+      "vehicle_class": "SPRINTER",
       "trip_type": "one_way",
-      "service_scope": "airport",
-      "price_cents": 13000
+      "service_scope": "local",
+      "price_cents": 14000
     },
     {
-      "zone": "pacific-side",
-      "vehicle_class": "SUBURBAN",
+      "zone": "cabo-san-lucas-marina",
+      "vehicle_class": "SPRINTER",
       "trip_type": "round_trip",
-      "service_scope": "airport",
-      "price_cents": 23400
+      "service_scope": "local",
+      "price_cents": 26500
     },
     {
-      "zone": "pacific-side",
+      "zone": "pacific-coast",
       "vehicle_class": "SPRINTER",
       "trip_type": "one_way",
       "service_scope": "airport",
-      "price_cents": 17500
+      "price_cents": 16500
     },
     {
-      "zone": "pacific-side",
+      "zone": "pacific-coast",
       "vehicle_class": "SPRINTER",
       "trip_type": "round_trip",
       "service_scope": "airport",
       "price_cents": 31500
     },
     {
-      "zone": "east-cape-todos-santos",
-      "vehicle_class": "SUBURBAN",
+      "zone": "pacific-coast",
+      "vehicle_class": "SPRINTER",
       "trip_type": "one_way",
-      "service_scope": "airport",
-      "price_cents": 15000
+      "service_scope": "local",
+      "price_cents": 14000
     },
     {
-      "zone": "east-cape-todos-santos",
-      "vehicle_class": "SUBURBAN",
+      "zone": "pacific-coast",
+      "vehicle_class": "SPRINTER",
       "trip_type": "round_trip",
-      "service_scope": "airport",
-      "price_cents": 27000
+      "service_scope": "local",
+      "price_cents": 26500
     },
     {
-      "zone": "east-cape-todos-santos",
+      "zone": "pacific-north",
       "vehicle_class": "SPRINTER",
       "trip_type": "one_way",
       "service_scope": "airport",
-      "price_cents": 20500
+      "price_cents": 19000
     },
     {
-      "zone": "east-cape-todos-santos",
+      "zone": "pacific-north",
       "vehicle_class": "SPRINTER",
       "trip_type": "round_trip",
       "service_scope": "airport",
-      "price_cents": 36900
+      "price_cents": 35500
+    },
+    {
+      "zone": "pacific-north",
+      "vehicle_class": "SPRINTER",
+      "trip_type": "one_way",
+      "service_scope": "local",
+      "price_cents": 14500
+    },
+    {
+      "zone": "pacific-north",
+      "vehicle_class": "SPRINTER",
+      "trip_type": "round_trip",
+      "service_scope": "local",
+      "price_cents": 26500
+    },
+    {
+      "zone": "el-pescadero-cerritos",
+      "vehicle_class": "SPRINTER",
+      "trip_type": "one_way",
+      "service_scope": "airport",
+      "price_cents": 31000
+    },
+    {
+      "zone": "el-pescadero-cerritos",
+      "vehicle_class": "SPRINTER",
+      "trip_type": "round_trip",
+      "service_scope": "airport",
+      "price_cents": 60000
+    },
+    {
+      "zone": "el-pescadero-cerritos",
+      "vehicle_class": "SPRINTER",
+      "trip_type": "one_way",
+      "service_scope": "local",
+      "price_cents": 31000
+    },
+    {
+      "zone": "el-pescadero-cerritos",
+      "vehicle_class": "SPRINTER",
+      "trip_type": "round_trip",
+      "service_scope": "local",
+      "price_cents": 60000
+    },
+    {
+      "zone": "todos-santos",
+      "vehicle_class": "SPRINTER",
+      "trip_type": "one_way",
+      "service_scope": "airport",
+      "price_cents": 31000
+    },
+    {
+      "zone": "todos-santos",
+      "vehicle_class": "SPRINTER",
+      "trip_type": "round_trip",
+      "service_scope": "airport",
+      "price_cents": 60000
+    },
+    {
+      "zone": "todos-santos",
+      "vehicle_class": "SPRINTER",
+      "trip_type": "one_way",
+      "service_scope": "local",
+      "price_cents": 31000
+    },
+    {
+      "zone": "todos-santos",
+      "vehicle_class": "SPRINTER",
+      "trip_type": "round_trip",
+      "service_scope": "local",
+      "price_cents": 60000
+    },
+    {
+      "zone": "la-paz-balandra",
+      "vehicle_class": "SPRINTER",
+      "trip_type": "one_way",
+      "service_scope": "airport",
+      "price_cents": 65000
+    },
+    {
+      "zone": "la-paz-balandra",
+      "vehicle_class": "SPRINTER",
+      "trip_type": "round_trip",
+      "service_scope": "airport",
+      "price_cents": 120000
+    },
+    {
+      "zone": "la-paz-balandra",
+      "vehicle_class": "SPRINTER",
+      "trip_type": "one_way",
+      "service_scope": "local",
+      "price_cents": 65000
+    },
+    {
+      "zone": "la-paz-balandra",
+      "vehicle_class": "SPRINTER",
+      "trip_type": "round_trip",
+      "service_scope": "local",
+      "price_cents": 120000
+    },
+    {
+      "zone": "los-barriles-east-cape",
+      "vehicle_class": "SPRINTER",
+      "trip_type": "one_way",
+      "service_scope": "airport",
+      "price_cents": 31000
+    },
+    {
+      "zone": "los-barriles-east-cape",
+      "vehicle_class": "SPRINTER",
+      "trip_type": "round_trip",
+      "service_scope": "airport",
+      "price_cents": 60000
+    },
+    {
+      "zone": "los-barriles-east-cape",
+      "vehicle_class": "SPRINTER",
+      "trip_type": "one_way",
+      "service_scope": "local",
+      "price_cents": 31000
+    },
+    {
+      "zone": "los-barriles-east-cape",
+      "vehicle_class": "SPRINTER",
+      "trip_type": "round_trip",
+      "service_scope": "local",
+      "price_cents": 60000
+    },
+    {
+      "zone": "cabo-pulmo",
+      "vehicle_class": "SPRINTER",
+      "trip_type": "one_way",
+      "service_scope": "airport",
+      "price_cents": 31000
+    },
+    {
+      "zone": "cabo-pulmo",
+      "vehicle_class": "SPRINTER",
+      "trip_type": "round_trip",
+      "service_scope": "airport",
+      "price_cents": 60000
+    },
+    {
+      "zone": "cabo-pulmo",
+      "vehicle_class": "SPRINTER",
+      "trip_type": "one_way",
+      "service_scope": "local",
+      "price_cents": 31000
+    },
+    {
+      "zone": "cabo-pulmo",
+      "vehicle_class": "SPRINTER",
+      "trip_type": "round_trip",
+      "service_scope": "local",
+      "price_cents": 60000
     }
   ],
   "hotels": [
     {
       "slug": "acre-resort",
       "name": "Acre Resort",
-      "zone": "puerto-los-cabos",
+      "zone": "the-corridor",
       "aliases": []
     },
     {
       "slug": "araiza-palmira-hotel",
       "name": "Araiza Palmira Hotel",
-      "zone": "east-cape-todos-santos",
+      "zone": "los-barriles-east-cape",
       "aliases": []
     },
     {
       "slug": "bahia-hotel-and-beach-house",
       "name": "Bahia Hotel & Beach House",
-      "zone": "cabo-san-lucas",
+      "zone": "cabo-san-lucas-marina",
       "aliases": []
     },
     {
       "slug": "bahia-hotel-and-beach-club",
       "name": "Bahia Hotel and Beach Club",
-      "zone": "cabo-san-lucas",
+      "zone": "cabo-san-lucas-marina",
       "aliases": []
     },
     {
       "slug": "baja-camp",
       "name": "Baja Camp",
-      "zone": "east-cape-todos-santos",
+      "zone": "los-barriles-east-cape",
       "aliases": []
     },
     {
       "slug": "baja-point",
       "name": "Baja Point",
-      "zone": "tourist-corridor",
+      "zone": "the-corridor",
       "aliases": []
     },
     {
       "slug": "barcelo-grand-faro-los-cabos",
       "name": "Barceló Grand Faro Los Cabos",
-      "zone": "san-jose-del-cabo",
+      "zone": "san-jose-del-cabo-estuary",
       "aliases": []
     },
     {
       "slug": "blarney-castle-inn",
       "name": "Blarney Castle Inn",
-      "zone": "cabo-san-lucas",
+      "zone": "cabo-san-lucas-marina",
       "aliases": []
     },
     {
       "slug": "breathless-cabo-san-lucas-resort-and-spa",
       "name": "Breathless Cabo San Lucas Resort and Spa",
-      "zone": "cabo-san-lucas",
+      "zone": "cabo-san-lucas-marina",
       "aliases": [
         "Breathless Cabo San Lucas"
       ]
@@ -456,79 +1632,79 @@
     {
       "slug": "brisas-del-mar",
       "name": "Brisas del Mar",
-      "zone": "san-jose-del-cabo",
+      "zone": "san-jose-del-cabo-estuary",
       "aliases": []
     },
     {
       "slug": "cabo-azul-resort",
       "name": "Cabo Azul Resort",
-      "zone": "san-jose-del-cabo",
+      "zone": "san-jose-del-cabo-estuary",
       "aliases": []
     },
     {
       "slug": "cabo-del-sol-oceanfront",
       "name": "Cabo del Sol Oceanfront",
-      "zone": "tourist-corridor",
+      "zone": "the-corridor",
       "aliases": []
     },
     {
       "slug": "cabo-del-sol-residential-area",
       "name": "Cabo Del Sol Residential Area",
-      "zone": "tourist-corridor",
+      "zone": "the-corridor",
       "aliases": []
     },
     {
       "slug": "cabo-inn",
       "name": "Cabo Inn",
-      "zone": "cabo-san-lucas",
+      "zone": "cabo-san-lucas-marina",
       "aliases": []
     },
     {
       "slug": "cabo-san-lucas-downtown-centro",
       "name": "Cabo San Lucas Downtown/Centro",
-      "zone": "cabo-san-lucas",
+      "zone": "cabo-san-lucas-marina",
       "aliases": []
     },
     {
       "slug": "cabo-surf-hotel-and-spa",
       "name": "Cabo Surf Hotel and Spa",
-      "zone": "tourist-corridor",
+      "zone": "the-corridor",
       "aliases": []
     },
     {
       "slug": "cabo-vista-hotel",
       "name": "Cabo Vista Hotel",
-      "zone": "cabo-san-lucas",
+      "zone": "the-corridor",
       "aliases": []
     },
     {
       "slug": "cabo-vista-hotel-san-jose",
       "name": "Cabo Vista Hotel San Jose",
-      "zone": "san-jose-del-cabo",
+      "zone": "san-jose-del-cabo-estuary",
       "aliases": []
     },
     {
       "slug": "cachet-beach-hotel-los-cabos",
       "name": "Cachet Beach Hotel Los Cabos",
-      "zone": "cabo-san-lucas",
+      "zone": "cabo-san-lucas-marina",
       "aliases": []
     },
     {
       "slug": "casa-costa-azul",
       "name": "Casa Costa Azul",
-      "zone": "san-jose-del-cabo",
+      "zone": "san-jose-del-cabo-estuary",
       "aliases": []
     },
     {
       "slug": "casa-del-mar-golf-resort-and-spa",
       "name": "Casa del Mar Golf Resort & Spa",
-      "zone": "san-jose-del-cabo",
+      "zone": "the-corridor",
       "aliases": []
     },
     {
       "slug": "casa-dorada-los-cabos-resort-and-spa",
       "name": "Casa Dorada Los Cabos, Resort and Spa",
-      "zone": "cabo-san-lucas",
+      "zone": "cabo-san-lucas-marina",
       "aliases": [
         "Casa Dorada Los Cabos"
       ]
@@ -536,25 +1712,25 @@
     {
       "slug": "casa-florencia",
       "name": "Casa Florencia",
-      "zone": "tourist-corridor",
+      "zone": "the-corridor",
       "aliases": []
     },
     {
       "slug": "casa-natalia",
       "name": "Casa Natalia",
-      "zone": "san-jose-del-cabo",
+      "zone": "san-jose-del-cabo-estuary",
       "aliases": []
     },
     {
       "slug": "casa-pablito",
       "name": "Casa Pablito",
-      "zone": "cabo-san-lucas",
+      "zone": "cabo-san-lucas-marina",
       "aliases": []
     },
     {
       "slug": "chileno-bay-resort-and-residences",
       "name": "Chileno Bay Resort and Residences",
-      "zone": "tourist-corridor",
+      "zone": "the-corridor",
       "aliases": [
         "Chileno Bay Resort & Residences"
       ]
@@ -562,67 +1738,67 @@
     {
       "slug": "city-express-by-marriott-la-paz",
       "name": "City Express by Marriott La Paz",
-      "zone": "east-cape-todos-santos",
+      "zone": "la-paz-balandra",
       "aliases": []
     },
     {
       "slug": "city-express-plus-by-marriott-cabo-san-lucas",
       "name": "City Express Plus by Marriott Cabo San Lucas",
-      "zone": "cabo-san-lucas",
+      "zone": "cabo-san-lucas-marina",
       "aliases": []
     },
     {
       "slug": "city-express-suites-by-marriott-cabo-san-lucas",
       "name": "City Express Suites by Marriott Cabo San Lucas",
-      "zone": "cabo-san-lucas",
+      "zone": "cabo-san-lucas-marina",
       "aliases": []
     },
     {
       "slug": "club-cascadas-de-baja",
       "name": "Club Cascadas de Baja",
-      "zone": "cabo-san-lucas",
+      "zone": "cabo-san-lucas-marina",
       "aliases": []
     },
     {
       "slug": "club-el-moro",
       "name": "Club El Moro",
-      "zone": "east-cape-todos-santos",
+      "zone": "los-barriles-east-cape",
       "aliases": []
     },
     {
       "slug": "club-hotel-cantamar",
       "name": "Club Hotel Cantamar",
-      "zone": "east-cape-todos-santos",
+      "zone": "los-barriles-east-cape",
       "aliases": []
     },
     {
       "slug": "club-la-costa",
       "name": "Club La Costa",
-      "zone": "san-jose-del-cabo",
+      "zone": "san-jose-del-cabo-estuary",
       "aliases": []
     },
     {
       "slug": "club-regina-los-cabos",
       "name": "Club Regina Los Cabos",
-      "zone": "tourist-corridor",
+      "zone": "the-corridor",
       "aliases": []
     },
     {
       "slug": "comfort-inn-and-suites-los-cabos",
       "name": "Comfort Inn and Suites Los Cabos",
-      "zone": "cabo-san-lucas",
+      "zone": "cabo-san-lucas-marina",
       "aliases": []
     },
     {
       "slug": "corazon-cabo-resort-and-spa",
       "name": "Corazón Cabo Resort and Spa",
-      "zone": "cabo-san-lucas",
+      "zone": "cabo-san-lucas-marina",
       "aliases": []
     },
     {
       "slug": "costa-palmas-resort",
       "name": "Costa Palmas Resort",
-      "zone": "east-cape-todos-santos",
+      "zone": "los-barriles-east-cape",
       "aliases": [
         "Costa Palmas"
       ]
@@ -630,19 +1806,19 @@
     {
       "slug": "crown-paradise-club",
       "name": "Crown Paradise Club",
-      "zone": "san-jose-del-cabo",
+      "zone": "san-jose-del-cabo-estuary",
       "aliases": []
     },
     {
       "slug": "diamante-cabo-san-lucas-resort",
       "name": "Diamante Cabo San Lucas Resort",
-      "zone": "pacific-side",
+      "zone": "pacific-north",
       "aliases": []
     },
     {
       "slug": "dreams-los-cabos-suites-golf-resort-and-spa",
       "name": "Dreams Los Cabos Suites Golf Resort and Spa",
-      "zone": "tourist-corridor",
+      "zone": "the-corridor",
       "aliases": [
         "Dreams Los Cabos Suites Golf & Spa"
       ]
@@ -650,199 +1826,199 @@
     {
       "slug": "drift-san-jose",
       "name": "Drift San José",
-      "zone": "san-jose-del-cabo",
+      "zone": "san-jose-del-cabo-estuary",
       "aliases": []
     },
     {
       "slug": "el-ameyal",
       "name": "El Ameyal",
-      "zone": "cabo-san-lucas",
+      "zone": "cabo-san-lucas-marina",
       "aliases": []
     },
     {
       "slug": "el-dorado-residential-area",
       "name": "El Dorado Residential Area",
-      "zone": "tourist-corridor",
+      "zone": "the-corridor",
       "aliases": []
     },
     {
       "slug": "el-encanto-in-and-suites-hotel-boutique",
       "name": "El Encanto In and Suites Hotel Boutique",
-      "zone": "san-jose-del-cabo",
+      "zone": "san-jose-del-cabo-estuary",
       "aliases": []
     },
     {
       "slug": "el-encanto-inn",
       "name": "El Encanto Inn",
-      "zone": "san-jose-del-cabo",
+      "zone": "the-corridor",
       "aliases": []
     },
     {
       "slug": "el-zalate-rentals",
       "name": "El Zalate Rentals",
-      "zone": "san-jose-del-cabo",
+      "zone": "san-jose-del-cabo-estuary",
       "aliases": []
     },
     {
       "slug": "esperanza-an-auberge-resort",
       "name": "Esperanza an Auberge Resort",
-      "zone": "cabo-san-lucas",
+      "zone": "cabo-san-lucas-marina",
       "aliases": []
     },
     {
       "slug": "esperanza-resort",
       "name": "Esperanza Resort",
-      "zone": "cabo-san-lucas",
+      "zone": "cabo-san-lucas-marina",
       "aliases": []
     },
     {
       "slug": "estancia-real-los-cabos",
       "name": "Estancia Real Los Cabos",
-      "zone": "cabo-san-lucas",
+      "zone": "cabo-san-lucas-marina",
       "aliases": []
     },
     {
       "slug": "fairfield-inn-los-cabos",
       "name": "Fairfield Inn Los Cabos",
-      "zone": "cabo-san-lucas",
+      "zone": "cabo-san-lucas-marina",
       "aliases": []
     },
     {
       "slug": "fiesta-americana-grand-los-cabos",
       "name": "Fiesta Americana Grand Los Cabos",
-      "zone": "cabo-san-lucas",
+      "zone": "cabo-san-lucas-marina",
       "aliases": []
     },
     {
       "slug": "four-seasons-resort-and-residences-cabo-san-lucas-at-cabo-del-sol",
       "name": "Four Seasons Resort and Residences Cabo San Lucas at Cabo Del Sol",
-      "zone": "tourist-corridor",
+      "zone": "the-corridor",
       "aliases": []
     },
     {
       "slug": "four-seasons-resort-cabo-del-sol",
       "name": "Four Seasons Resort Cabo del Sol",
-      "zone": "cabo-san-lucas",
+      "zone": "the-corridor",
       "aliases": []
     },
     {
       "slug": "four-seasons-resort-los-cabos-at-costa-palmas",
       "name": "Four Seasons Resort Los Cabos at Costa Palmas",
-      "zone": "east-cape-todos-santos",
+      "zone": "los-barriles-east-cape",
       "aliases": []
     },
     {
       "slug": "garza-blanca-resort-and-spa-los-cabos",
       "name": "Garza Blanca Resort and Spa Los Cabos",
-      "zone": "tourist-corridor",
+      "zone": "the-corridor",
       "aliases": []
     },
     {
       "slug": "gr-solaris-lighthouse-los-cabos",
       "name": "GR Solaris Lighthouse Los Cabos",
-      "zone": "san-jose-del-cabo",
+      "zone": "san-jose-del-cabo-estuary",
       "aliases": []
     },
     {
       "slug": "grand-fiesta-americana-los-cabos",
       "name": "Grand Fiesta Americana Los Cabos",
-      "zone": "tourist-corridor",
+      "zone": "the-corridor",
       "aliases": []
     },
     {
       "slug": "grand-plaza-la-paz",
       "name": "Grand Plaza La Paz",
-      "zone": "east-cape-todos-santos",
+      "zone": "la-paz-balandra",
       "aliases": []
     },
     {
       "slug": "grand-solmar-at-rancho-san-lucas",
       "name": "Grand Solmar at Rancho San Lucas",
-      "zone": "pacific-side",
+      "zone": "pacific-north",
       "aliases": []
     },
     {
       "slug": "grand-solmar-land-s-end",
       "name": "Grand Solmar Land's End",
-      "zone": "cabo-san-lucas",
+      "zone": "cabo-san-lucas-marina",
       "aliases": []
     },
     {
       "slug": "grand-solmar-lands-end-resort-and-spa",
       "name": "Grand Solmar Lands End Resort and Spa",
-      "zone": "cabo-san-lucas",
+      "zone": "cabo-san-lucas-marina",
       "aliases": []
     },
     {
       "slug": "grand-solmar-pacific-dunes-golf-and-spa",
       "name": "Grand Solmar Pacific Dunes Golf and Spa",
-      "zone": "pacific-side",
+      "zone": "pacific-north",
       "aliases": []
     },
     {
       "slug": "grand-solmar-pacific-resort-and-spa",
       "name": "Grand Solmar Pacific Resort & Spa",
-      "zone": "pacific-side",
+      "zone": "pacific-coast",
       "aliases": []
     },
     {
       "slug": "grand-velas-boutique",
       "name": "Grand Velas Boutique",
-      "zone": "tourist-corridor",
+      "zone": "the-corridor",
       "aliases": []
     },
     {
       "slug": "grand-velas-los-cabos",
       "name": "Grand Velas Los Cabos",
-      "zone": "tourist-corridor",
+      "zone": "the-corridor",
       "aliases": []
     },
     {
       "slug": "guaycura-boutique-hotel-beach-club-and-spa",
       "name": "Guaycura Boutique Hotel Beach Club and Spa",
-      "zone": "east-cape-todos-santos",
+      "zone": "todos-santos",
       "aliases": []
     },
     {
       "slug": "hacienda-beach-club-and-residences",
       "name": "Hacienda Beach Club and Residences",
-      "zone": "cabo-san-lucas",
+      "zone": "cabo-san-lucas-marina",
       "aliases": []
     },
     {
       "slug": "hacienda-del-mar",
       "name": "Hacienda Del Mar",
-      "zone": "tourist-corridor",
+      "zone": "the-corridor",
       "aliases": []
     },
     {
       "slug": "hacienda-encantada-resort-and-spa",
       "name": "Hacienda Encantada Resort & Spa",
-      "zone": "cabo-san-lucas",
+      "zone": "cabo-san-lucas-marina",
       "aliases": []
     },
     {
       "slug": "hacienda-encantada-resort-and-residences",
       "name": "Hacienda Encantada Resort and Residences",
-      "zone": "cabo-san-lucas",
+      "zone": "cabo-san-lucas-marina",
       "aliases": []
     },
     {
       "slug": "hampton-inn-and-suites-by-hilton-los-cabos",
       "name": "Hampton Inn and Suites by Hilton Los Cabos",
-      "zone": "puerto-los-cabos",
+      "zone": "the-corridor",
       "aliases": []
     },
     {
       "slug": "hampton-inn-los-cabos",
       "name": "Hampton Inn Los Cabos",
-      "zone": "san-jose-del-cabo",
+      "zone": "the-corridor",
       "aliases": []
     },
     {
       "slug": "hard-rock-hotel-los-cabos",
       "name": "Hard Rock Hotel Los Cabos",
-      "zone": "pacific-side",
+      "zone": "pacific-north",
       "aliases": [
         "Hard Rock Los Cabos"
       ]
@@ -850,7 +2026,7 @@
     {
       "slug": "hilton-los-cabos-beach-and-golf-resort",
       "name": "Hilton Los Cabos Beach & Golf Resort",
-      "zone": "tourist-corridor",
+      "zone": "the-corridor",
       "aliases": [
         "Hilton Los Cabos"
       ]
@@ -858,49 +2034,49 @@
     {
       "slug": "hilton-los-cabos-beach-and-golf-resort-corridor",
       "name": "Hilton Los Cabos Beach & Golf Resort Corridor",
-      "zone": "tourist-corridor",
+      "zone": "the-corridor",
       "aliases": []
     },
     {
       "slug": "holiday-inn",
       "name": "Holiday Inn",
-      "zone": "san-jose-del-cabo",
+      "zone": "san-jose-del-cabo-estuary",
       "aliases": []
     },
     {
       "slug": "holiday-inn-express-cabo-san-lucas",
       "name": "Holiday Inn Express Cabo San Lucas",
-      "zone": "cabo-san-lucas",
+      "zone": "cabo-san-lucas-marina",
       "aliases": []
     },
     {
       "slug": "hotel-and-suites-las-palmas",
       "name": "Hotel and Suites Las Palmas",
-      "zone": "san-jose-del-cabo",
+      "zone": "san-jose-del-cabo-estuary",
       "aliases": []
     },
     {
       "slug": "hotel-california",
       "name": "Hotel California",
-      "zone": "east-cape-todos-santos",
+      "zone": "todos-santos",
       "aliases": []
     },
     {
       "slug": "hotel-california-todos-santos",
       "name": "Hotel California Todos Santos",
-      "zone": "east-cape-todos-santos",
+      "zone": "todos-santos",
       "aliases": []
     },
     {
       "slug": "hotel-el-encanto",
       "name": "Hotel El Encanto",
-      "zone": "san-jose-del-cabo",
+      "zone": "san-jose-del-cabo-estuary",
       "aliases": []
     },
     {
       "slug": "hotel-el-ganzo",
       "name": "Hotel El Ganzo",
-      "zone": "puerto-los-cabos",
+      "zone": "the-corridor",
       "aliases": [
         "El Ganzo"
       ]
@@ -908,49 +2084,49 @@
     {
       "slug": "hotel-indigo-la-paz-puerta-cortes",
       "name": "Hotel Indigo La Paz Puerta Cortés",
-      "zone": "east-cape-todos-santos",
+      "zone": "la-paz-balandra",
       "aliases": []
     },
     {
       "slug": "hotel-palmas-de-cortez",
       "name": "Hotel Palmas de Cortez",
-      "zone": "east-cape-todos-santos",
+      "zone": "los-barriles-east-cape",
       "aliases": []
     },
     {
       "slug": "hotel-perla",
       "name": "Hotel Perla",
-      "zone": "east-cape-todos-santos",
+      "zone": "los-barriles-east-cape",
       "aliases": []
     },
     {
       "slug": "hyatt-place-la-paz",
       "name": "Hyatt Place La Paz",
-      "zone": "east-cape-todos-santos",
+      "zone": "la-paz-balandra",
       "aliases": []
     },
     {
       "slug": "hyatt-place-los-cabos",
       "name": "Hyatt Place Los Cabos",
-      "zone": "san-jose-del-cabo",
+      "zone": "san-jose-del-cabo-estuary",
       "aliases": []
     },
     {
       "slug": "hyatt-ziva-los-cabos",
       "name": "Hyatt Ziva Los Cabos",
-      "zone": "san-jose-del-cabo",
+      "zone": "san-jose-del-cabo-estuary",
       "aliases": []
     },
     {
       "slug": "hyatt-ziva-puerto-los-cabos",
       "name": "Hyatt Ziva Puerto Los Cabos",
-      "zone": "puerto-los-cabos",
+      "zone": "the-corridor",
       "aliases": []
     },
     {
       "slug": "jw-marriott-los-cabos-beach-resort-and-spa",
       "name": "JW Marriott Los Cabos Beach Resort and Spa",
-      "zone": "puerto-los-cabos",
+      "zone": "the-corridor",
       "aliases": [
         "JW Marriott Los Cabos Beach Resort & Spa"
       ]
@@ -958,145 +2134,145 @@
     {
       "slug": "kadun-hotel-boutique",
       "name": "Kadun Hotel Boutique",
-      "zone": "cabo-san-lucas",
+      "zone": "cabo-san-lucas-marina",
       "aliases": []
     },
     {
       "slug": "kimpton-mas-olas-resort-and-spa",
       "name": "Kimpton Mas Olas Resort and Spa",
-      "zone": "east-cape-todos-santos",
+      "zone": "todos-santos",
       "aliases": []
     },
     {
       "slug": "krystal",
       "name": "Krystal",
-      "zone": "san-jose-del-cabo",
+      "zone": "san-jose-del-cabo-estuary",
       "aliases": []
     },
     {
       "slug": "la-concha-beach-resort",
       "name": "La Concha Beach Resort",
-      "zone": "east-cape-todos-santos",
+      "zone": "los-barriles-east-cape",
       "aliases": []
     },
     {
       "slug": "la-jolla",
       "name": "La Jolla",
-      "zone": "san-jose-del-cabo",
+      "zone": "san-jose-del-cabo-estuary",
       "aliases": []
     },
     {
       "slug": "la-marina-inn",
       "name": "La Marina Inn",
-      "zone": "tourist-corridor",
+      "zone": "the-corridor",
       "aliases": []
     },
     {
       "slug": "la-paz",
       "name": "La Paz",
-      "zone": "east-cape-todos-santos",
+      "zone": "la-paz-balandra",
       "aliases": []
     },
     {
       "slug": "las-mananitas",
       "name": "Las Mañanitas",
-      "zone": "san-jose-del-cabo",
+      "zone": "san-jose-del-cabo-estuary",
       "aliases": []
     },
     {
       "slug": "las-olas",
       "name": "Las Olas",
-      "zone": "san-jose-del-cabo",
+      "zone": "san-jose-del-cabo-estuary",
       "aliases": []
     },
     {
       "slug": "las-ventanas-al-paraiso",
       "name": "Las Ventanas al Paraíso",
-      "zone": "tourist-corridor",
+      "zone": "the-corridor",
       "aliases": []
     },
     {
       "slug": "le-blanc-spa-resort-los-cabos",
       "name": "Le Blanc Spa Resort Los Cabos",
-      "zone": "tourist-corridor",
+      "zone": "the-corridor",
       "aliases": []
     },
     {
       "slug": "live-aqua-private-residences-los-cabos",
       "name": "Live Aqua Private Residences Los Cabos",
-      "zone": "tourist-corridor",
+      "zone": "the-corridor",
       "aliases": []
     },
     {
       "slug": "los-barriles",
       "name": "Los Barriles",
-      "zone": "east-cape-todos-santos",
+      "zone": "los-barriles-east-cape",
       "aliases": []
     },
     {
       "slug": "los-barriles-hotels",
       "name": "Los Barriles Hotels",
-      "zone": "east-cape-todos-santos",
+      "zone": "los-barriles-east-cape",
       "aliases": []
     },
     {
       "slug": "los-cabos-golf-resort",
       "name": "Los Cabos Golf Resort",
-      "zone": "cabo-san-lucas",
+      "zone": "cabo-san-lucas-marina",
       "aliases": []
     },
     {
       "slug": "los-milagros",
       "name": "Los Milagros",
-      "zone": "cabo-san-lucas",
+      "zone": "cabo-san-lucas-marina",
       "aliases": []
     },
     {
       "slug": "los-patios",
       "name": "Los Patios",
-      "zone": "cabo-san-lucas",
+      "zone": "cabo-san-lucas-marina",
       "aliases": []
     },
     {
       "slug": "mar-de-cortez",
       "name": "Mar De Cortez",
-      "zone": "cabo-san-lucas",
+      "zone": "pacific-coast",
       "aliases": []
     },
     {
       "slug": "mar-del-cabo-by-velas-resorts",
       "name": "Mar Del Cabo by VELAS RESORTS",
-      "zone": "tourist-corridor",
+      "zone": "the-corridor",
       "aliases": []
     },
     {
       "slug": "maravilla-los-cabos",
       "name": "Maravilla Los Cabos",
-      "zone": "tourist-corridor",
+      "zone": "the-corridor",
       "aliases": []
     },
     {
       "slug": "marbella-suites-en-la-playa",
       "name": "Marbella Suites en la Playa",
-      "zone": "tourist-corridor",
+      "zone": "the-corridor",
       "aliases": []
     },
     {
       "slug": "marella-cabo",
       "name": "Marella Cabo",
-      "zone": "tourist-corridor",
+      "zone": "the-corridor",
       "aliases": []
     },
     {
       "slug": "marina-cabo-plaza",
       "name": "Marina Cabo Plaza",
-      "zone": "cabo-san-lucas",
+      "zone": "cabo-san-lucas-marina",
       "aliases": []
     },
     {
       "slug": "marina-fiesta-resort-and-spa",
       "name": "Marina Fiesta Resort and Spa",
-      "zone": "cabo-san-lucas",
+      "zone": "cabo-san-lucas-marina",
       "aliases": [
         "Marina Fiesta Resort & Spa",
         "Marina Fiesta Resort"
@@ -1105,37 +2281,37 @@
     {
       "slug": "marina-resort-cabo-san-lucas",
       "name": "Marina Resort Cabo San Lucas",
-      "zone": "cabo-san-lucas",
+      "zone": "cabo-san-lucas-marina",
       "aliases": []
     },
     {
       "slug": "marina-sol-resort",
       "name": "Marina Sol Resort",
-      "zone": "cabo-san-lucas",
+      "zone": "cabo-san-lucas-marina",
       "aliases": []
     },
     {
       "slug": "marina-view-villas",
       "name": "Marina View Villas",
-      "zone": "cabo-san-lucas",
+      "zone": "cabo-san-lucas-marina",
       "aliases": []
     },
     {
       "slug": "marisol",
       "name": "Marisol",
-      "zone": "san-jose-del-cabo",
+      "zone": "san-jose-del-cabo-estuary",
       "aliases": []
     },
     {
       "slug": "marquis-los-cabos-all-inclusive",
       "name": "Marquis Los Cabos All Inclusive",
-      "zone": "tourist-corridor",
+      "zone": "the-corridor",
       "aliases": []
     },
     {
       "slug": "marquis-los-cabos-resort-and-spa",
       "name": "Marquis Los Cabos Resort and Spa",
-      "zone": "tourist-corridor",
+      "zone": "the-corridor",
       "aliases": [
         "Marquis Los Cabos"
       ]
@@ -1143,73 +2319,73 @@
     {
       "slug": "marriott-puerto-los-cabos-beach-resort-and-spa",
       "name": "Marriott Puerto Los Cabos Beach Resort & Spa",
-      "zone": "puerto-los-cabos",
+      "zone": "the-corridor",
       "aliases": []
     },
     {
       "slug": "mayan-monkey-los-cabos",
       "name": "Mayan Monkey Los Cabos",
-      "zone": "cabo-san-lucas",
+      "zone": "cabo-san-lucas-marina",
       "aliases": []
     },
     {
       "slug": "me-cabo",
       "name": "Me Cabo",
-      "zone": "cabo-san-lucas",
+      "zone": "cabo-san-lucas-marina",
       "aliases": []
     },
     {
       "slug": "medano-hotel-and-suites",
       "name": "Medano Hotel and Suites",
-      "zone": "cabo-san-lucas",
+      "zone": "cabo-san-lucas-marina",
       "aliases": []
     },
     {
       "slug": "mikonos",
       "name": "Mikonos",
-      "zone": "san-jose-del-cabo",
+      "zone": "san-jose-del-cabo-estuary",
       "aliases": []
     },
     {
       "slug": "mira-vista",
       "name": "Mira Vista",
-      "zone": "san-jose-del-cabo",
+      "zone": "san-jose-del-cabo-estuary",
       "aliases": []
     },
     {
       "slug": "misiones-del-cabo",
       "name": "Misiones Del Cabo",
-      "zone": "cabo-san-lucas",
+      "zone": "cabo-san-lucas-marina",
       "aliases": []
     },
     {
       "slug": "montage-los-cabos",
       "name": "Montage Los Cabos",
-      "zone": "tourist-corridor",
+      "zone": "the-corridor",
       "aliases": []
     },
     {
       "slug": "montage-los-cabos-twin-dolphin",
       "name": "Montage Los Cabos (Twin Dolphin)",
-      "zone": "tourist-corridor",
+      "zone": "the-corridor",
       "aliases": []
     },
     {
       "slug": "montecristo-estates-by-pueblo-bonito",
       "name": "Montecristo Estates by Pueblo Bonito",
-      "zone": "pacific-side",
+      "zone": "pacific-coast",
       "aliases": []
     },
     {
       "slug": "montecristo-residential-area",
       "name": "Montecristo Residential Area",
-      "zone": "cabo-san-lucas",
+      "zone": "cabo-san-lucas-marina",
       "aliases": []
     },
     {
       "slug": "nobu-hotel-los-cabos",
       "name": "Nobu Hotel Los Cabos",
-      "zone": "pacific-side",
+      "zone": "pacific-north",
       "aliases": [
         "Nobu Los Cabos"
       ]
@@ -1217,13 +2393,13 @@
     {
       "slug": "nobu-hotel-los-cabos-pacific",
       "name": "Nobu Hotel Los Cabos Pacific",
-      "zone": "pacific-side",
+      "zone": "pacific-coast",
       "aliases": []
     },
     {
       "slug": "one-and-only-palmilla",
       "name": "One and Only Palmilla",
-      "zone": "tourist-corridor",
+      "zone": "the-corridor",
       "aliases": [
         "One&Only Palmilla"
       ]
@@ -1231,91 +2407,91 @@
     {
       "slug": "one-la-paz",
       "name": "One La Paz",
-      "zone": "east-cape-todos-santos",
+      "zone": "la-paz-balandra",
       "aliases": []
     },
     {
       "slug": "palmas-del-cortez",
       "name": "Palmas del Cortez",
-      "zone": "east-cape-todos-santos",
+      "zone": "los-barriles-east-cape",
       "aliases": []
     },
     {
       "slug": "paradero-todos-santos",
       "name": "Paradero Todos Santos",
-      "zone": "east-cape-todos-santos",
+      "zone": "el-pescadero-cerritos",
       "aliases": []
     },
     {
       "slug": "paradisus-los-cabos",
       "name": "Paradisus Los Cabos",
-      "zone": "tourist-corridor",
+      "zone": "the-corridor",
       "aliases": []
     },
     {
       "slug": "park-hyatt-los-cabos-at-cabo-del-sol",
       "name": "Park Hyatt Los Cabos at Cabo del Sol",
-      "zone": "tourist-corridor",
+      "zone": "the-corridor",
       "aliases": []
     },
     {
       "slug": "park-royal-hotels-and-resorts",
       "name": "Park Royal Hotels and Resorts",
-      "zone": "san-jose-del-cabo",
+      "zone": "san-jose-del-cabo-estuary",
       "aliases": []
     },
     {
       "slug": "pedregal-residential-area",
       "name": "Pedregal Residential Area",
-      "zone": "cabo-san-lucas",
+      "zone": "cabo-san-lucas-marina",
       "aliases": []
     },
     {
       "slug": "pescadero",
       "name": "Pescadero",
-      "zone": "east-cape-todos-santos",
+      "zone": "el-pescadero-cerritos",
       "aliases": []
     },
     {
       "slug": "playa-grande-resort",
       "name": "Playa Grande Resort",
-      "zone": "cabo-san-lucas",
+      "zone": "cabo-san-lucas-marina",
       "aliases": []
     },
     {
       "slug": "portofino-condos-in-pedregal",
       "name": "Portofino Condos in Pedregal",
-      "zone": "cabo-san-lucas",
+      "zone": "cabo-san-lucas-marina",
       "aliases": []
     },
     {
       "slug": "posada-de-las-flores-la-paz",
       "name": "Posada de las Flores La Paz",
-      "zone": "east-cape-todos-santos",
+      "zone": "la-paz-balandra",
       "aliases": []
     },
     {
       "slug": "posada-real-los-cabos",
       "name": "Posada Real Los Cabos",
-      "zone": "san-jose-del-cabo",
+      "zone": "san-jose-del-cabo-estuary",
       "aliases": []
     },
     {
       "slug": "pueblo-bonito-blanco-los-cabos-beach-resort",
       "name": "Pueblo Bonito Blanco Los Cabos Beach Resort",
-      "zone": "cabo-san-lucas",
+      "zone": "cabo-san-lucas-marina",
       "aliases": []
     },
     {
       "slug": "pueblo-bonito-montecristo",
       "name": "Pueblo Bonito Montecristo",
-      "zone": "cabo-san-lucas",
+      "zone": "cabo-san-lucas-marina",
       "aliases": []
     },
     {
       "slug": "pueblo-bonito-pacifica-golf-and-spa-resort",
       "name": "Pueblo Bonito Pacifica Golf and Spa Resort",
-      "zone": "pacific-side",
+      "zone": "pacific-coast",
       "aliases": [
         "Pueblo Bonito Pacifica"
       ]
@@ -1323,7 +2499,7 @@
     {
       "slug": "pueblo-bonito-rose-resort-and-spa",
       "name": "Pueblo Bonito Rosé Resort and Spa",
-      "zone": "cabo-san-lucas",
+      "zone": "cabo-san-lucas-marina",
       "aliases": [
         "Pueblo Bonito Rosé"
       ]
@@ -1331,7 +2507,7 @@
     {
       "slug": "pueblo-bonito-sunset-beach-golf-and-spa-resort",
       "name": "Pueblo Bonito Sunset Beach Golf and Spa Resort",
-      "zone": "cabo-san-lucas",
+      "zone": "pacific-coast",
       "aliases": [
         "Pueblo Bonito Sunset Beach"
       ]
@@ -1339,175 +2515,175 @@
     {
       "slug": "pueblo-bonito-sunset-beach-pacific",
       "name": "Pueblo Bonito Sunset Beach Pacific",
-      "zone": "pacific-side",
+      "zone": "pacific-coast",
       "aliases": []
     },
     {
       "slug": "puerta-del-sol",
       "name": "Puerta Del Sol",
-      "zone": "puerto-los-cabos",
+      "zone": "the-corridor",
       "aliases": []
     },
     {
       "slug": "puerto-los-cabos-residential-area",
       "name": "Puerto Los Cabos Residential Area",
-      "zone": "puerto-los-cabos",
+      "zone": "the-corridor",
       "aliases": []
     },
     {
       "slug": "punta-ballena-area",
       "name": "Punta Ballena Area",
-      "zone": "cabo-san-lucas",
+      "zone": "cabo-san-lucas-marina",
       "aliases": []
     },
     {
       "slug": "punta-pescadero-paradise",
       "name": "Punta Pescadero Paradise",
-      "zone": "east-cape-todos-santos",
+      "zone": "el-pescadero-cerritos",
       "aliases": []
     },
     {
       "slug": "punto-nima",
       "name": "Punto Nima",
-      "zone": "san-jose-del-cabo",
+      "zone": "the-corridor",
       "aliases": []
     },
     {
       "slug": "querencia-residential-area",
       "name": "Querencia Residential Area",
-      "zone": "tourist-corridor",
+      "zone": "the-corridor",
       "aliases": []
     },
     {
       "slug": "quinta-del-sol",
       "name": "Quinta Del Sol",
-      "zone": "cabo-san-lucas",
+      "zone": "cabo-san-lucas-marina",
       "aliases": []
     },
     {
       "slug": "rancho-buena-vista",
       "name": "Rancho Buena Vista",
-      "zone": "east-cape-todos-santos",
+      "zone": "los-barriles-east-cape",
       "aliases": []
     },
     {
       "slug": "rancho-leonero",
       "name": "Rancho Leonero",
-      "zone": "east-cape-todos-santos",
+      "zone": "los-barriles-east-cape",
       "aliases": []
     },
     {
       "slug": "residence-inn-puerto-los-cabos",
       "name": "Residence Inn Puerto Los Cabos",
-      "zone": "puerto-los-cabos",
+      "zone": "the-corridor",
       "aliases": []
     },
     {
       "slug": "residencial-diamante",
       "name": "Residencial Diamante",
-      "zone": "pacific-side",
+      "zone": "pacific-coast",
       "aliases": []
     },
     {
       "slug": "riu-palace-baja-california",
       "name": "Riu Palace Baja California",
-      "zone": "cabo-san-lucas",
+      "zone": "cabo-san-lucas-marina",
       "aliases": []
     },
     {
       "slug": "riu-palace-cabo-san-lucas",
       "name": "Riu Palace Cabo San Lucas",
-      "zone": "cabo-san-lucas",
+      "zone": "cabo-san-lucas-marina",
       "aliases": []
     },
     {
       "slug": "riu-santa-fe",
       "name": "Riu Santa Fe",
-      "zone": "cabo-san-lucas",
+      "zone": "cabo-san-lucas-marina",
       "aliases": []
     },
     {
       "slug": "royal-decameron-los-cabos",
       "name": "Royal Decameron Los Cabos",
-      "zone": "san-jose-del-cabo",
+      "zone": "san-jose-del-cabo-estuary",
       "aliases": []
     },
     {
       "slug": "royal-solaris",
       "name": "Royal Solaris",
-      "zone": "san-jose-del-cabo",
+      "zone": "san-jose-del-cabo-estuary",
       "aliases": []
     },
     {
       "slug": "royal-solaris-los-cabos",
       "name": "Royal Solaris Los Cabos",
-      "zone": "san-jose-del-cabo",
+      "zone": "san-jose-del-cabo-estuary",
       "aliases": []
     },
     {
       "slug": "sampaguita-villas-baja",
       "name": "Sampaguita Villas Baja",
-      "zone": "san-jose-del-cabo",
+      "zone": "san-jose-del-cabo-estuary",
       "aliases": []
     },
     {
       "slug": "san-angel-suites",
       "name": "San Angel Suites",
-      "zone": "cabo-san-lucas",
+      "zone": "cabo-san-lucas-marina",
       "aliases": []
     },
     {
       "slug": "san-jose-del-cabo-downtown-centro",
       "name": "San Jose del Cabo Downtown/Centro",
-      "zone": "san-jose-del-cabo",
+      "zone": "san-jose-del-cabo-estuary",
       "aliases": []
     },
     {
       "slug": "sandbar-los-cabos",
       "name": "Sandbar Los Cabos",
-      "zone": "cabo-san-lucas",
+      "zone": "cabo-san-lucas-marina",
       "aliases": []
     },
     {
       "slug": "sandos-finest-playa-los-cabos",
       "name": "Sandos Finest Playa Los Cabos",
-      "zone": "san-jose-del-cabo",
+      "zone": "san-jose-del-cabo-estuary",
       "aliases": []
     },
     {
       "slug": "sandos-finisterra-los-cabos",
       "name": "Sandos Finisterra Los Cabos",
-      "zone": "cabo-san-lucas",
+      "zone": "cabo-san-lucas-marina",
       "aliases": []
     },
     {
       "slug": "sandos-palm-bay",
       "name": "Sandos Palm Bay",
-      "zone": "tourist-corridor",
+      "zone": "the-corridor",
       "aliases": []
     },
     {
       "slug": "santa-fe-cabo-san-lucas",
       "name": "Santa Fé Cabo San Lucas",
-      "zone": "cabo-san-lucas",
+      "zone": "cabo-san-lucas-marina",
       "aliases": []
     },
     {
       "slug": "santa-maria-del-cabo",
       "name": "Santa María del Cabo",
-      "zone": "san-jose-del-cabo",
+      "zone": "san-jose-del-cabo-estuary",
       "aliases": []
     },
     {
       "slug": "secrets-marquis-los-cabos",
       "name": "Secrets Marquis Los Cabos",
-      "zone": "tourist-corridor",
+      "zone": "the-corridor",
       "aliases": []
     },
     {
       "slug": "secrets-puerto-los-cabos-golf-and-spa-resort",
       "name": "Secrets Puerto Los Cabos Golf and Spa Resort",
-      "zone": "puerto-los-cabos",
+      "zone": "the-corridor",
       "aliases": [
         "Secrets Puerto Los Cabos Golf & Spa",
         "Secrets Puerto Los Cabos"
@@ -1516,277 +2692,277 @@
     {
       "slug": "seven-crown-express-and-suites",
       "name": "Seven Crown Express and Suites",
-      "zone": "cabo-san-lucas",
+      "zone": "cabo-san-lucas-marina",
       "aliases": []
     },
     {
       "slug": "seven-crown-la-paz-centro",
       "name": "Seven Crown La Paz - Centro",
-      "zone": "east-cape-todos-santos",
+      "zone": "la-paz-balandra",
       "aliases": []
     },
     {
       "slug": "seven-crown-la-paz-malecon",
       "name": "Seven Crown La Paz - Malecon",
-      "zone": "east-cape-todos-santos",
+      "zone": "la-paz-balandra",
       "aliases": []
     },
     {
       "slug": "sheraton-grand-los-cabos",
       "name": "Sheraton Grand Los Cabos",
-      "zone": "tourist-corridor",
+      "zone": "the-corridor",
       "aliases": []
     },
     {
       "slug": "siesta-suites-boutique",
       "name": "Siesta Suites Boutique",
-      "zone": "cabo-san-lucas",
+      "zone": "cabo-san-lucas-marina",
       "aliases": []
     },
     {
       "slug": "sirena-del-mar",
       "name": "Sirena Del Mar",
-      "zone": "cabo-san-lucas",
+      "zone": "cabo-san-lucas-marina",
       "aliases": []
     },
     {
       "slug": "six-two-four-urban-beach",
       "name": "Six two four urban beach",
-      "zone": "san-jose-del-cabo",
+      "zone": "san-jose-del-cabo-estuary",
       "aliases": []
     },
     {
       "slug": "soho-house-los-cabos",
       "name": "Soho House Los Cabos",
-      "zone": "tourist-corridor",
+      "zone": "the-corridor",
       "aliases": []
     },
     {
       "slug": "solaz-a-luxury-collection-resort",
       "name": "Solaz a Luxury Collection Resort",
-      "zone": "tourist-corridor",
+      "zone": "the-corridor",
       "aliases": []
     },
     {
       "slug": "solaz-a-luxury-collection-resort-los-cabos",
       "name": "Solaz, a Luxury Collection Resort, Los Cabos",
-      "zone": "tourist-corridor",
+      "zone": "the-corridor",
       "aliases": []
     },
     {
       "slug": "solmar-resort",
       "name": "Solmar Resort",
-      "zone": "cabo-san-lucas",
+      "zone": "cabo-san-lucas-marina",
       "aliases": []
     },
     {
       "slug": "sunrock-hotel-and-suites-los-cabos",
       "name": "Sunrock Hotel and Suites Los Cabos",
-      "zone": "cabo-san-lucas",
+      "zone": "cabo-san-lucas-marina",
       "aliases": []
     },
     {
       "slug": "terrasol",
       "name": "Terrasol",
-      "zone": "cabo-san-lucas",
+      "zone": "cabo-san-lucas-marina",
       "aliases": []
     },
     {
       "slug": "tesoro-los-cabos",
       "name": "Tesoro Los Cabos",
-      "zone": "cabo-san-lucas",
+      "zone": "cabo-san-lucas-marina",
       "aliases": []
     },
     {
       "slug": "the-bungalows-hotel",
       "name": "The Bungalows Hotel",
-      "zone": "cabo-san-lucas",
+      "zone": "cabo-san-lucas-marina",
       "aliases": []
     },
     {
       "slug": "the-cape-a-thompson-hotel",
       "name": "The Cape a Thompson Hotel",
-      "zone": "cabo-san-lucas",
+      "zone": "cabo-san-lucas-marina",
       "aliases": []
     },
     {
       "slug": "the-cape-hotel",
       "name": "The Cape Hotel",
-      "zone": "cabo-san-lucas",
+      "zone": "cabo-san-lucas-marina",
       "aliases": []
     },
     {
       "slug": "the-club-at-presidente-los-cabos",
       "name": "The Club at Presidente Los Cabos",
-      "zone": "san-jose-del-cabo",
+      "zone": "san-jose-del-cabo-estuary",
       "aliases": []
     },
     {
       "slug": "the-grand-mayan-los-cabos",
       "name": "The Grand Mayan Los Cabos",
-      "zone": "san-jose-del-cabo",
+      "zone": "san-jose-del-cabo-estuary",
       "aliases": []
     },
     {
       "slug": "the-residences-at-hacienda-encantada",
       "name": "The Residences at Hacienda Encantada",
-      "zone": "cabo-san-lucas",
+      "zone": "cabo-san-lucas-marina",
       "aliases": []
     },
     {
       "slug": "the-ridge-at-playa-grande-luxury-villas",
       "name": "The Ridge at Playa Grande Luxury Villas",
-      "zone": "cabo-san-lucas",
+      "zone": "cabo-san-lucas-marina",
       "aliases": []
     },
     {
       "slug": "the-westin-resort-and-spa",
       "name": "The Westin Resort and Spa",
-      "zone": "tourist-corridor",
+      "zone": "the-corridor",
       "aliases": []
     },
     {
       "slug": "todos-santos",
       "name": "Todos Santos",
-      "zone": "east-cape-todos-santos",
+      "zone": "todos-santos",
       "aliases": []
     },
     {
       "slug": "tropicana-inn",
       "name": "Tropicana Inn",
-      "zone": "san-jose-del-cabo",
+      "zone": "san-jose-del-cabo-estuary",
       "aliases": []
     },
     {
       "slug": "tropicana-inn-hotel-and-restaurant",
       "name": "Tropicana Inn Hotel and Restaurant",
-      "zone": "san-jose-del-cabo",
+      "zone": "san-jose-del-cabo-estuary",
       "aliases": []
     },
     {
       "slug": "ventanas-al-paraiso",
       "name": "Ventanas al Paraíso",
-      "zone": "east-cape-todos-santos",
+      "zone": "los-barriles-east-cape",
       "aliases": []
     },
     {
       "slug": "viceroy-los-cabos",
       "name": "Viceroy Los Cabos",
-      "zone": "san-jose-del-cabo",
+      "zone": "san-jose-del-cabo-estuary",
       "aliases": []
     },
     {
       "slug": "vidanta-east-cape",
       "name": "Vidanta East Cape",
-      "zone": "east-cape-todos-santos",
+      "zone": "los-barriles-east-cape",
       "aliases": []
     },
     {
       "slug": "vidanta-los-cabos",
       "name": "Vidanta Los Cabos",
-      "zone": "san-jose-del-cabo",
+      "zone": "san-jose-del-cabo-estuary",
       "aliases": []
     },
     {
       "slug": "villa-del-arco-beach-resort-and-spa-cabo-san-lucas",
       "name": "Villa del Arco Beach Resort and Spa Cabo San Lucas",
-      "zone": "cabo-san-lucas",
+      "zone": "cabo-san-lucas-marina",
       "aliases": []
     },
     {
       "slug": "villa-del-mar-palmilla",
       "name": "Villa del Mar Palmilla",
-      "zone": "tourist-corridor",
+      "zone": "the-corridor",
       "aliases": []
     },
     {
       "slug": "villa-del-palmar-beach-resort-and-spa-cabo-san-lucas",
       "name": "Villa Del Palmar Beach Resort and Spa Cabo San Lucas",
-      "zone": "cabo-san-lucas",
+      "zone": "cabo-san-lucas-marina",
       "aliases": []
     },
     {
       "slug": "villa-del-palmar-cabo",
       "name": "Villa del Palmar Cabo",
-      "zone": "tourist-corridor",
+      "zone": "cabo-san-lucas-marina",
       "aliases": []
     },
     {
       "slug": "villa-finca-tezal",
       "name": "Villa Finca Tezal",
-      "zone": "cabo-san-lucas",
+      "zone": "cabo-san-lucas-marina",
       "aliases": []
     },
     {
       "slug": "villa-la-estancia-cabo",
       "name": "Villa La Estancia Cabo",
-      "zone": "tourist-corridor",
+      "zone": "cabo-san-lucas-marina",
       "aliases": []
     },
     {
       "slug": "villa-la-estancia-cabo-san-lucas",
       "name": "Villa La Estancia Cabo San Lucas",
-      "zone": "cabo-san-lucas",
+      "zone": "cabo-san-lucas-marina",
       "aliases": []
     },
     {
       "slug": "villa-la-estancia-los-cabos",
       "name": "Villa La Estancia Los Cabos",
-      "zone": "pacific-side",
+      "zone": "cabo-san-lucas-marina",
       "aliases": []
     },
     {
       "slug": "villa-serena",
       "name": "Villa Serena",
-      "zone": "cabo-san-lucas",
+      "zone": "cabo-san-lucas-marina",
       "aliases": []
     },
     {
       "slug": "vista-azul",
       "name": "Vista Azul",
-      "zone": "cabo-san-lucas",
+      "zone": "cabo-san-lucas-marina",
       "aliases": []
     },
     {
       "slug": "vista-encantada-spa-resort-and-residences",
       "name": "Vista Encantada Spa Resort and Residences",
-      "zone": "cabo-san-lucas",
+      "zone": "cabo-san-lucas-marina",
       "aliases": []
     },
     {
       "slug": "waldorf-astoria-los-cabos-pedregal",
       "name": "Waldorf Astoria Los Cabos Pedregal",
-      "zone": "cabo-san-lucas",
+      "zone": "pacific-coast",
       "aliases": []
     },
     {
       "slug": "westin-los-cabos",
       "name": "Westin Los Cabos",
-      "zone": "san-jose-del-cabo",
+      "zone": "the-corridor",
       "aliases": []
     },
     {
       "slug": "worldmark-coral-baja",
       "name": "Worldmark Coral Baja",
-      "zone": "san-jose-del-cabo",
+      "zone": "san-jose-del-cabo-estuary",
       "aliases": []
     },
     {
       "slug": "zadun-a-ritz-carlton-reserve",
       "name": "Zadun, a Ritz Carlton Reserve",
-      "zone": "puerto-los-cabos",
+      "zone": "the-corridor",
       "aliases": []
     },
     {
       "slug": "zoetry-casa-del-mar",
       "name": "Zoëtry Casa del Mar",
-      "zone": "tourist-corridor",
+      "zone": "the-corridor",
       "aliases": []
     },
     {
       "slug": "zoetry-casa-del-mar-los-cabos",
       "name": "Zoetry Casa Del Mar Los Cabos",
-      "zone": "tourist-corridor",
+      "zone": "the-corridor",
       "aliases": []
     }
   ],
@@ -1794,243 +2970,164 @@
     {
       "code": "INCLUDED_BASIC_KIT",
       "name": {
-        "en": "Cold beer and water",
-        "es": "Cerveza y agua fría"
+        "en": "Chilled water and beer",
+        "es": "Agua y cerveza frías"
       },
       "description": {
-        "en": "Included with every transfer",
-        "es": "Incluido en cada traslado"
+        "en": "Waiting on board for every transfer",
+        "es": "A bordo en cada traslado"
       },
       "price_cents": 0,
       "pricing_mode": "per_booking",
       "max_qty": 1,
       "included": true,
       "auto_rule": null,
-      "sort": 0
+      "sort": 0,
+      "free_qty": 0,
+      "vehicle_prices": {},
+      "one_per_vehicle": false
     },
     {
-      "code": "GROCERY_STOP",
+      "code": "CAR_SEAT",
       "name": {
-        "en": "Grocery Stop",
-        "es": "Parada en Supermercado"
+        "en": "Child car seat",
+        "es": "Silla de auto infantil"
       },
       "description": {
-        "en": "Stop at grocery store"
-      },
-      "price_cents": 5000,
-      "pricing_mode": "per_booking",
-      "max_qty": 1,
-      "included": false,
-      "auto_rule": null,
-      "sort": 1
-    },
-    {
-      "code": "EXTRA_STOP",
-      "name": {
-        "en": "Extra Stop",
-        "es": "Parada Extra"
-      },
-      "description": {
-        "en": "Additional stop"
-      },
-      "price_cents": 2000,
-      "pricing_mode": "per_stop",
-      "max_qty": 3,
-      "included": false,
-      "auto_rule": null,
-      "sort": 2
-    },
-    {
-      "code": "BABY_SEAT",
-      "name": {
-        "en": "Baby Seat",
-        "es": "Silla para Bebé"
-      },
-      "description": {
-        "en": "Baby seat"
-      },
-      "price_cents": 1500,
-      "pricing_mode": "per_seat",
-      "max_qty": 2,
-      "included": false,
-      "auto_rule": null,
-      "sort": 3
-    },
-    {
-      "code": "BOOSTER",
-      "name": {
-        "en": "Booster Seat",
-        "es": "Silla Elevadora"
-      },
-      "description": {
-        "en": "Booster seat"
+        "en": "Installed before pickup; the first one is on us",
+        "es": "Instalada antes del pickup; la primera va por nuestra cuenta"
       },
       "price_cents": 1000,
-      "pricing_mode": "per_seat",
-      "max_qty": 2,
-      "included": false,
-      "auto_rule": null,
-      "sort": 4
-    },
-    {
-      "code": "SPECIAL_ASSISTANCE",
-      "name": {
-        "en": "Special Assistance",
-        "es": "Asistencia Especial"
-      },
-      "description": {
-        "en": "Wheelchair, mobility assistance"
-      },
-      "price_cents": 2500,
       "pricing_mode": "per_booking",
-      "max_qty": 1,
-      "included": false,
-      "auto_rule": null,
-      "sort": 5
-    },
-    {
-      "code": "OVERSIZE_LUGGAGE",
-      "name": {
-        "en": "Oversize / Large Luggage",
-        "es": "Equipaje Grande / Sobredimensionado"
-      },
-      "description": {
-        "en": "Golf bags, surfboards, etc."
-      },
-      "price_cents": 2000,
-      "pricing_mode": "per_booking",
-      "max_qty": 2,
-      "included": false,
-      "auto_rule": null,
-      "sort": 6
-    },
-    {
-      "code": "WAIT_TIME",
-      "name": {
-        "en": "Wait Time (per hour)",
-        "es": "Tiempo de Espera (por hora)"
-      },
-      "description": {
-        "en": "Additional wait time"
-      },
-      "price_cents": 3000,
-      "pricing_mode": "per_hour",
       "max_qty": 4,
       "included": false,
       "auto_rule": null,
-      "sort": 7
+      "sort": 1,
+      "free_qty": 1,
+      "vehicle_prices": {},
+      "one_per_vehicle": false
     },
     {
-      "code": "NIGHT_SURCHARGE",
+      "code": "BOOSTER_SEAT",
       "name": {
-        "en": "Night surcharge (11 PM - 5 AM)",
-        "es": "Recargo nocturno (11 PM - 5 AM)"
+        "en": "Booster seat",
+        "es": "Asiento elevador"
       },
       "description": {
-        "en": "Late night surcharge"
+        "en": "For older kids; the first one is on us",
+        "es": "Para niños más grandes; el primero va por nuestra cuenta"
+      },
+      "price_cents": 1000,
+      "pricing_mode": "per_booking",
+      "max_qty": 4,
+      "included": false,
+      "auto_rule": null,
+      "sort": 2,
+      "free_qty": 1,
+      "vehicle_prices": {},
+      "one_per_vehicle": false
+    },
+    {
+      "code": "SHOPPING_STOP",
+      "name": {
+        "en": "Grocery & liquor stop",
+        "es": "Parada en súper y licorería"
+      },
+      "description": {
+        "en": "Up to one hour at the store you choose, one per vehicle",
+        "es": "Hasta una hora en la tienda que elijas, una por vehículo"
+      },
+      "price_cents": 5000,
+      "pricing_mode": "per_booking",
+      "max_qty": 6,
+      "included": false,
+      "auto_rule": null,
+      "sort": 3,
+      "free_qty": 0,
+      "vehicle_prices": {
+        "ESCALADE": 12000
+      },
+      "one_per_vehicle": true
+    },
+    {
+      "code": "SPARKLING_WINE",
+      "name": {
+        "en": "Sparkling wine",
+        "es": "Vino espumoso"
+      },
+      "description": {
+        "en": "A chilled bottle to toast your arrival",
+        "es": "Una botella fría para brindar al llegar"
       },
       "price_cents": 2000,
       "pricing_mode": "per_booking",
-      "max_qty": 1,
-      "included": false,
-      "auto_rule": "night_surcharge",
-      "sort": 8
-    },
-    {
-      "code": "CHAMPAGNE",
-      "name": {
-        "en": "Champagne",
-        "es": "Champagne"
-      },
-      "description": {
-        "en": "Bottle of champagne on arrival"
-      },
-      "price_cents": 4000,
-      "pricing_mode": "per_booking",
-      "max_qty": 1,
+      "max_qty": 6,
       "included": false,
       "auto_rule": null,
-      "sort": 9
+      "sort": 4,
+      "free_qty": 0,
+      "vehicle_prices": {},
+      "one_per_vehicle": false
     },
     {
-      "code": "CHAMPAGNE_UPGRADE",
+      "code": "BEER_12_PACK",
       "name": {
-        "en": "Champagne Moët & Chandon",
-        "es": "Champagne Moët & Chandon"
+        "en": "12-pack of beer",
+        "es": "Paquete de 12 cervezas"
       },
       "description": {
-        "en": "Bottle of Moët & Chandon on arrival"
+        "en": "Cold and ready for the ride",
+        "es": "Frías y listas para el camino"
       },
-      "price_cents": 8000,
+      "price_cents": 3000,
       "pricing_mode": "per_booking",
-      "max_qty": 1,
+      "max_qty": 6,
       "included": false,
       "auto_rule": null,
-      "sort": 10
-    },
-    {
-      "code": "LUXURY_WELCOME",
-      "name": {
-        "en": "Premium Welcome Kit",
-        "es": "Kit de Bienvenida Premium"
-      },
-      "description": {
-        "en": "Champagne · cheese board · celebration detail"
-      },
-      "price_cents": 10000,
-      "pricing_mode": "per_booking",
-      "max_qty": 1,
-      "included": false,
-      "auto_rule": null,
-      "sort": 11
-    },
-    {
-      "code": "ROMANTIC_KIT",
-      "name": {
-        "en": "Romantic Kit",
-        "es": "Kit Romántico"
-      },
-      "description": {
-        "en": "Roses, chocolate, champagne"
-      },
-      "price_cents": 10000,
-      "pricing_mode": "per_booking",
-      "max_qty": 1,
-      "included": false,
-      "auto_rule": null,
-      "sort": 12
+      "sort": 5,
+      "free_qty": 0,
+      "vehicle_prices": {},
+      "one_per_vehicle": false
     },
     {
       "code": "BIRTHDAY_KIT",
       "name": {
-        "en": "Birthday Kit",
-        "es": "Kit Cumpleaños"
+        "en": "Birthday celebration kit",
+        "es": "Kit de cumpleaños"
       },
       "description": {
-        "en": "Balloons, cupcake, celebration"
+        "en": "Balloon decor and a welcome cup",
+        "es": "Decoración con globos y copa de bienvenida"
       },
-      "price_cents": 10000,
+      "price_cents": 2000,
       "pricing_mode": "per_booking",
-      "max_qty": 1,
+      "max_qty": 2,
       "included": false,
       "auto_rule": null,
-      "sort": 13
+      "sort": 6,
+      "free_qty": 0,
+      "vehicle_prices": {},
+      "one_per_vehicle": false
     },
     {
-      "code": "DELUXE_ARRIVAL_KIT",
+      "code": "BACHELORETTE_KIT",
       "name": {
-        "en": "Deluxe Arrival Kit",
-        "es": "Kit de Llegada Deluxe"
+        "en": "Bride-to-be kit",
+        "es": "Kit para la futura novia"
       },
       "description": {
-        "en": "Decoration + champagne + cold towels"
+        "en": "Welcome kit, veil and celebration sash",
+        "es": "Kit de bienvenida, velo y banda de celebración"
       },
-      "price_cents": 13000,
+      "price_cents": 2500,
       "pricing_mode": "per_booking",
-      "max_qty": 1,
+      "max_qty": 2,
       "included": false,
       "auto_rule": null,
-      "sort": 14
+      "sort": 7,
+      "free_qty": 0,
+      "vehicle_prices": {},
+      "one_per_vehicle": false
     }
   ],
   "activities": [

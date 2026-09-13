@@ -578,6 +578,14 @@ export interface components {
             max_qty: number;
             /** Included */
             included: boolean;
+            /** Free Qty */
+            free_qty: number;
+            /** Vehicle Prices */
+            vehicle_prices: {
+                [key: string]: number;
+            };
+            /** One Per Vehicle */
+            one_per_vehicle: boolean;
         };
         /** HTTPValidationError */
         HTTPValidationError: {
@@ -694,6 +702,11 @@ export interface components {
             total_cents: number;
             /** Vehicle Class */
             vehicle_class?: string | null;
+            /**
+             * Vehicle Count
+             * @default 1
+             */
+            vehicle_count: number;
             /** Zone */
             zone?: string | null;
             /** Promotion */
@@ -758,6 +771,18 @@ export interface components {
             service_scope: components["schemas"]["ServiceScope"];
             /** Passengers */
             passengers: number;
+            /**
+             * Direction
+             * @default arrival
+             * @enum {string}
+             */
+            direction: "arrival" | "departure";
+            /**
+             * Payment
+             * @default card
+             * @enum {string}
+             */
+            payment: "card" | "cash";
             /** Vehicle Class */
             vehicle_class?: string | null;
             /** Legs */
@@ -772,12 +797,6 @@ export interface components {
              * @enum {string}
              */
             language: "en" | "es";
-            /**
-             * Direction
-             * @default arrival
-             * @enum {string}
-             */
-            direction: "arrival" | "departure";
         };
         /** TransferQuoteRequest */
         TransferQuoteRequest: {
@@ -796,6 +815,18 @@ export interface components {
             service_scope: components["schemas"]["ServiceScope"];
             /** Passengers */
             passengers: number;
+            /**
+             * Direction
+             * @default arrival
+             * @enum {string}
+             */
+            direction: "arrival" | "departure";
+            /**
+             * Payment
+             * @default card
+             * @enum {string}
+             */
+            payment: "card" | "cash";
             /** Vehicle Class */
             vehicle_class?: string | null;
             /** Legs */
@@ -841,6 +872,14 @@ export interface components {
             max_pax: number;
             /** Max Bags */
             max_bags: number;
+            /** Included Pax */
+            included_pax: number | null;
+            /** Extra Pax Cents */
+            extra_pax_cents: number;
+            /** Extra Hour Cents */
+            extra_hour_cents: number;
+            /** Cash Deposit Cents */
+            cash_deposit_cents: number;
         };
         /** ZoneOut */
         ZoneOut: {

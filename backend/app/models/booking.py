@@ -142,6 +142,8 @@ class BookingLeg(IdMixin, TenantMixin, TimestampMixin, Base):
     vehicle_class_id: Mapped[uuid.UUID] = mapped_column(
         ForeignKey("vehicle_classes.id", ondelete="RESTRICT")
     )
+    # Unidades del mismo vehículo cuando el grupo no cabe en una (F2.11).
+    vehicle_count: Mapped[int] = mapped_column(default=1, server_default="1")
 
 
 class BookingItem(IdMixin, TenantMixin, TimestampMixin, Base):

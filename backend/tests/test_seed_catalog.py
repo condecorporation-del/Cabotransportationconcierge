@@ -11,17 +11,33 @@ CATALOG = json.loads(CATALOG_PATH.read_text(encoding="utf-8"))
 
 
 def test_rate_matrix_has_no_gaps() -> None:
-    expected = set(
-        product(
-            (z["slug"] for z in CATALOG["zones"]),
-            (v["code"] for v in CATALOG["vehicle_classes"]),
-            ("one_way", "round_trip"),
+    """Aeropuerto y local, ida y redondo, en todas las zonas; la limusina solo en las 5 primeras."""
+    zones = [z["slug"] for z in CATALOG["zones"]]
+    expected = {
+        (zone, vehicle["code"], trip, scope)
+        for zone, vehicle, trip, scope in product(
+            zones, CATALOG["vehicle_classes"], ("one_way", "round_trip"), ("airport", "local")
         )
-    )
-    actual = [(r["zone"], r["vehicle_class"], r["trip_type"]) for r in CATALOG["rates"]]
+        if vehicle["code"] != "LIMOUSINE" or zone in zones[:5]
+    }
+    actual = [
+        (r["zone"], r["vehicle_class"], r["trip_type"], r["service_scope"])
+        for r in CATALOG["rates"]
+    ]
     assert sorted(actual) == sorted(expected)
     assert all(r["price_cents"] > 0 for r in CATALOG["rates"])
     assert "Cabo San Lucas" in rate_matrix(CATALOG)
+
+
+async def test_seed_retires_what_left_the_catalog(db: AsyncSession) -> None:
+    await seed(db, CATALOG)
+    db.add(Zone(slug="old-zone", name={"en": "Old"}, drive_minutes_min=1, drive_minutes_max=2))
+    await db.flush()
+    await seed(db, CATALOG)
+    old = await db.scalar(select(Zone).where(Zone.slug == "old-zone"))
+    assert old is not None
+    await db.refresh(old)
+    assert old.is_active is False
 
 
 def test_each_hotel_appears_once_in_a_known_zone() -> None:

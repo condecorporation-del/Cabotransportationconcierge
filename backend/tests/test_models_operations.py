@@ -62,8 +62,13 @@ async def test_one_assignment_per_leg(db: AsyncSession, leg: BookingLeg) -> None
     driver = Driver(name="Luis", phone="+526240000000")
     db.add(driver)
     await db.flush()
-    db.add_all([BookingAssignment(leg_id=leg.id, driver_id=driver.id) for _ in range(2)])
-    with pytest.raises(IntegrityError, match="uq_booking_assignments_leg_id"):
+    # Una asignación por unidad: la 1 y la 2 conviven; repetir la 1 no.
+    db.add_all(
+        [BookingAssignment(leg_id=leg.id, driver_id=driver.id, unit_index=i) for i in (1, 2)]
+    )
+    await db.flush()
+    db.add(BookingAssignment(leg_id=leg.id, driver_id=driver.id, unit_index=1))
+    with pytest.raises(IntegrityError, match="uq_booking_assignments_leg_id_unit_index"):
         await db.flush()
 
 

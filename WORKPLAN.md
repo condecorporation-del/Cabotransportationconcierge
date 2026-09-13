@@ -12,25 +12,25 @@
 
 | Indicador | Estado |
 |---|---|
-| **Fase actual** | F4 — Pagos con Stripe: 1/10 (F4.1). F3 11/13 y F2 8/12: se agregaron tareas para igualar All Ways (§3.5). F2 8/9: solo falta F2.9 (Marlon revisa el ADR-002). F1 ✅ 12/12. F0 ✅ 9/9. CI verde (run `34738195655`). Vista previa del prototipo en https://cabotransportationconcierge.vercel.app (noindex). |
+| **Fase actual** | F2 — Motor de precios y catálogo: 10/12 (F2.10 y F2.11 igualan a All Ways). Faltan F2.9 (Marlon revisa el ADR-002) y F2.12 (chofer por hora y activity transfers como servicios cotizables). F3 11/13 (faltan F3.12 y F3.13, campos de reserva y pago en efectivo). F4 — Pagos con Stripe: 1/10 (F4.1). F1 ✅ 12/12. F0 ✅ 9/9. Vista previa del prototipo en https://cabotransportationconcierge.vercel.app (noindex). |
 | **Último avance** | 12 sep 2026 — F0:<br>• Repo git con prototipo aprobado.<br>• Backend mínimo FastAPI con `/api/v1/health` y `/health/ready`.<br>• Configuración fail-fast.<br>• Postgres 16 nativo con bases `ctc` y `ctc_test`.<br>• Cliente de API tipado generado desde OpenAPI.<br>• CI escrito.<br>• ADR-001 (entorno sin Docker).<br>• Checklist para el cliente. |
-| **Backend** | ✅ Base lista para la lógica de negocio:<br>• Health y readiness.<br>• Engine apto para Supabase.<br>• Todos los modelos de §6 con aislamiento por empresa.<br>• Scripts `seed_catalog`, `ensure_owner` y `check_db`.<br>• Servicio de códigos de reserva.<br>• Motor único de precios.<br>• API pública: `POST /quotes` y `GET /catalog/*` (zonas, búsqueda y página de hotel, vehículos, extras, actividades, paquetes) con ETag y rate limit.<br>• `POST /bookings` con precio recalculado y congelado, `Idempotency-Key`, anticipación mínima, formato de vuelo y pickup antes del vuelo.<br>• Máquina de estados de la reserva con auditoría.<br>• Enlace de gestión firmado (90 días), `GET /bookings/{code}` con Bearer y My Trip (`GET /bookings/lookup`) sin enumeración.<br>• Cambios (`PATCH /bookings/{code}`) y cancelación del cliente con las ventanas de `company_settings`; errores de dominio con `code` estable (422 y 409).<br>• `POST /contact` con honeypot y Turnstile; UTM y referrer en la reserva; auditoría de creación, cambios y cancelación.<br>• Voucher PDF bilingüe con QR (`GET /bookings/{code}/voucher.pdf`).<br>• Cliente de Stripe por HTTP (intents y reembolsos con idempotencia) y verificación de la firma del webhook. Ruff (reglas de seguridad) y mypy estricto en 0 errores. |
-| **Base de datos** | ✅ Local: Postgres 16.15 nativo con `ctc` y `ctc_test`. Migraciones:<br>• `5721f5faa1c7`: empresas, ajustes, admins y sesiones.<br>• `4b96b66d17b0`: `pg_trgm`, zonas, hoteles, clases de vehículo, tarifas, extras, actividades, paquetes, promociones y clientes.<br>• `0b3217285efc`: reservas, tramos e ítems.<br>• `56ed3ca7c373`: pagos, eventos de Stripe y cuentas por cobrar.<br>• `a6a95d459beb`: choferes, vehículos, asignaciones, tareas, auditoría, cola de correos, IA, contacto y reseñas.<br>• `523ec6ce4943`: contador de códigos de reserva.<br>• `9c5a8aed60e7`: clave de idempotencia en reservas.<br>• `4e2afe533f53`: anticipación mínima (`company_settings.min_notice_hours`).<br>• `43fcd1c0fe04`: fecha de la actividad en `booking_items`.<br>`alembic check` sin diferencias y `scripts/check_db.py` en código 0.<br>Catálogo de prueba cargado en `ctc` con `scripts/seed_catalog.py`: 226 hoteles, 24 tarifas, 15 extras. |
+| **Backend** | ✅ Base lista para la lógica de negocio:<br>• Health y readiness.<br>• Engine apto para Supabase.<br>• Todos los modelos de §6 con aislamiento por empresa.<br>• Scripts `seed_catalog`, `ensure_owner` y `check_db`.<br>• Servicio de códigos de reserva.<br>• Motor único de precios.<br>• API pública: `POST /quotes` y `GET /catalog/*` (zonas, búsqueda y página de hotel, vehículos, extras, actividades, paquetes) con ETag y rate limit.<br>• `POST /bookings` con precio recalculado y congelado, `Idempotency-Key`, anticipación mínima, formato de vuelo y pickup antes del vuelo.<br>• Máquina de estados de la reserva con auditoría.<br>• Enlace de gestión firmado (90 días), `GET /bookings/{code}` con Bearer y My Trip (`GET /bookings/lookup`) sin enumeración.<br>• Cambios (`PATCH /bookings/{code}`) y cancelación del cliente con las ventanas de `company_settings`; errores de dominio con `code` estable (422 y 409).<br>• `POST /contact` con honeypot y Turnstile; UTM y referrer en la reserva; auditoría de creación, cambios y cancelación.<br>• Voucher PDF bilingüe con QR (`GET /bookings/{code}/voucher.pdf`).<br>• Cliente de Stripe por HTTP (intents y reembolsos con idempotencia) y verificación de la firma del webhook.<br>• Catálogo y motor de precios iguales a All Ways (§3.5.4): 10 zonas con nombres propios, 5 vehículos, 180 tarifas, multi-vehículo automático (`ceil(pasajeros/capacidad)`), pasajeros extra de limusina, extras con unidades gratis y precio por vehículo, recargo nocturno por hora exacta e IVA 16% con tarjeta (efectivo sin IVA y con depósito en vehículos premium). Ruff (reglas de seguridad) y mypy estricto en 0 errores. |
+| **Base de datos** | ✅ Local: Postgres 16.15 nativo con `ctc` y `ctc_test`. Migraciones:<br>• `5721f5faa1c7`: empresas, ajustes, admins y sesiones.<br>• `4b96b66d17b0`: `pg_trgm`, zonas, hoteles, clases de vehículo, tarifas, extras, actividades, paquetes, promociones y clientes.<br>• `0b3217285efc`: reservas, tramos e ítems.<br>• `56ed3ca7c373`: pagos, eventos de Stripe y cuentas por cobrar.<br>• `a6a95d459beb`: choferes, vehículos, asignaciones, tareas, auditoría, cola de correos, IA, contacto y reseñas.<br>• `523ec6ce4943`: contador de códigos de reserva.<br>• `9c5a8aed60e7`: clave de idempotencia en reservas.<br>• `4e2afe533f53`: anticipación mínima (`company_settings.min_notice_hours`).<br>• `43fcd1c0fe04`: fecha de la actividad en `booking_items`.<br>• `a669171fe543`: tarifas y reglas de vehículos como All Ways (unidades, pasajeros extra, IVA, depósito).<br>`alembic check` sin diferencias y `scripts/check_db.py` en código 0.<br>Catálogo aprobado (D-P1) cargado en `ctc` con `scripts/seed_catalog.py`: 10 zonas, 5 vehículos, 180 tarifas, 226 hoteles, 8 extras. El seed desactiva lo que ya no está en el JSON en vez de borrarlo. |
 | **Sitio público real** | ❌ Solo el prototipo estático `site/` (HTML generado por `site/build.js`). |
 | **Admin** | ❌ No existe. |
-| **Tests** | ✅ 155 tests pytest verdes contra Postgres real, incluidos el aislamiento por empresa, los constraints de todas las tablas, el seed idempotente, la creación del owner, 50 códigos de reserva concurrentes, el diagnóstico de la base, el motor de precios sobre el catálogo real, la API pública (cotización, catálogo, ETag, rate limit) la creación de reservas (idempotencia, precio congelado, horarios) las 36 combinaciones de la máquina de estados y el acceso del cliente (token alterado, expirado o ajeno; lookup sin enumeración; cambios y cancelación con sus ventanas), el contacto (honeypot y Turnstile), la atribución UTM el voucher PDF con texto seleccionable y el cliente de Stripe simulado con respx. En cada corrida la migración va a base y de vuelta a head. pip-audit y npm audit sin vulnerabilidades. |
+| **Tests** | ✅ 163 tests pytest verdes contra Postgres real, incluidos el aislamiento por empresa, los constraints de todas las tablas, el seed idempotente y su retiro de lo obsoleto, la creación del owner, 50 códigos de reserva concurrentes, el diagnóstico de la base, el motor de precios sobre el catálogo de All Ways (cada celda de la matriz, multi-vehículo, pasajeros extra de limusina, extras con unidades gratis y por vehículo, recargo nocturno por hora exacta, IVA y depósito en efectivo), la API pública (cotización, catálogo, ETag, rate limit), la creación de reservas (idempotencia, precio congelado, horarios, grupos grandes), las 36 combinaciones de la máquina de estados y el acceso del cliente (token alterado, expirado o ajeno; lookup sin enumeración; cambios y cancelación con sus ventanas), el contacto (honeypot y Turnstile), la atribución UTM, el voucher PDF con texto seleccionable y el cliente de Stripe simulado con respx. En cada corrida la migración va a base y de vuelta a head. `alembic check`, pip-audit y npm audit sin vulnerabilidades. |
 | **Deploy** | ❌ No configurado. |
 | **Git** | ✅ Remoto `github.com/condecorporation-del/Cabotransportationconcierge` (push por la deploy key `~/.ssh/deploy_cabo_concierge`, alias SSH `github-cabo`). Rama `main` subida; gitleaks sin hallazgos en el historial. |
 
-**Siguiente tarea:** F2.10 a F2.12 (catálogo y tarifas iguales a All Ways, multi-vehículo) y F3.12 a F3.13 (campos de reserva y pago en efectivo), porque cambian los montos que cobra Stripe. Después, F4.2 y F4.3. Para F4.10 hacen falta las llaves de prueba de Stripe del cliente.
+**Siguiente tarea:** F3.12 y F3.13 (campos de reserva y pago en efectivo iguales a All Ways) y F2.12 (chofer por hora y activity transfers como servicios cotizables), porque cambian los montos que cobra Stripe. Después, F4.2 y F4.3. Para F4.10 hacen falta las llaves de prueba de Stripe del cliente.
 
 **Progreso por fase**
 
 ```
 F0  Fundación y decisiones          [██████████] 9/9 ✅
 F1  Base de datos y dominio         [██████████] 12/12 ✅
-F2  Motor de precios y catálogo     [███████---] 8/12
-F3  Reservas públicas               [████████--] 11/13
+F2  Motor de precios y catálogo     [████████--] 10/12
+F3  Reservas públicas               [████████--] 11/13 (ya no rechaza grupos grandes; falta F3.12/F3.13)
 F4  Pagos con Stripe                [█---------] 1/10
 F5  Emails, PDF y trabajos          [----------] 0/11
 F6  Auth y API del admin            [----------] 0/13
@@ -483,15 +483,15 @@ Self-hosted en WOFF2 con subset latino (incluye acentos y ñ), `font-display: sw
 | I | Hotel Zone of San Jose del Cabo | San José del Cabo & Estuary | San José del Cabo |
 | II | Puerto Los Cabos & Tourism Corridor | The Corridor & Puerto Los Cabos | The Corridor |
 | III | Cabo San Lucas | Cabo San Lucas & Marina | Cabo San Lucas |
-| IV | CSL Pacific Ocean Side | Pacific Coast · Pedregal & Diamante | Pacific Coast |
-| V | Cabo Further Zone | Pacific North & Outer Cabo | Pacific North |
+| IV | CSL Pacific Ocean Side | Pacific Coast & Pedregal | Pacific Coast |
+| V | Cabo Further Zone | Pacific North · Diamante | Pacific North |
 | VI | Pescadero | El Pescadero & Cerritos | — |
 | VII | Todos Santos | Todos Santos, Pueblo Mágico | — |
 | VIII | La Paz | La Paz & Balandra | — |
 | IX | Los Barriles | Los Barriles · East Cape | — |
 | X | Cabo Pulmo | Cabo Pulmo Marine Park | — |
 
-En español: "San José del Cabo y el Estero", "El Corredor y Puerto Los Cabos", "Cabo San Lucas y la Marina", "Costa del Pacífico · Pedregal y Diamante", "Pacífico Norte", "El Pescadero y Cerritos", "Todos Santos, Pueblo Mágico", "La Paz y Balandra", "Los Barriles · East Cape" y "Parque Marino Cabo Pulmo". Los slugs también son propios (`san-jose-del-cabo-estuary`, `the-corridor`, `cabo-san-lucas-marina`, `pacific-coast`, `pacific-north`…).
+En español: "San José del Cabo y el Estero", "El Corredor y Puerto Los Cabos", "Cabo San Lucas y la Marina", "Costa del Pacífico y Pedregal", "Pacífico Norte · Diamante" (Diamante, Nobu y Hard Rock quedan en la V, como en la referencia), "El Pescadero y Cerritos", "Todos Santos, Pueblo Mágico", "La Paz y Balandra", "Los Barriles · East Cape" y "Parque Marino Cabo Pulmo". Los slugs también son propios (`san-jose-del-cabo-estuary`, `the-corridor`, `cabo-san-lucas-marina`, `pacific-coast`, `pacific-north`…).
 
 **5. Textos parecidos, pero reescritos.**
 - Cada título, párrafo, FAQ, mensaje de error y botón conserva la intención y la información útil, pero con otras palabras, otro orden y la voz de CTC (concierge de lujo, cercano y preciso).
@@ -1091,29 +1091,11 @@ Formato de cada tarea: `- [ ] ID — qué`, con **Verificar** (comando o prueba 
 - [x] **F2.7** — `GET /catalog/*` con caché `ETag`. Verificar: la segunda llamada responde 304.
 - [x] **F2.8** — Snapshot de precios en `booking_items`: si cambia una tarifa, las reservas existentes no cambian. Verificar: test.
 - [ ] **F2.9** — Documentar las reglas de precio con ejemplos numéricos. **Escrito** en `docs/decisions/ADR-002-precios.md`; queda abierta hasta que Marlon revise los ejemplos. Verificar: Marlon revisa los ejemplos.
-- [ ] **F2.10** — Catálogo igual a All Ways (§3.5.4):
-  - 10 zonas y 5 vehículos (Suburban 5, Escalade 5, Van 10, Limousine 6 con máximo 10, Sprinter 17).
-  - Matriz completa con Airport One Way, Airport Round Trip, Local One Way y Local Round Trip; Limousine solo en zonas 1 a 5.
-  - Los 245 hoteles reasignados a las 10 zonas, con los nombres y slugs propios de §3.5.6 (no los de All Ways).
-  - Extras, depósitos (Escalade $100, Limousine $110), promo automática por fecha de viaje y tarifas por hora del chofer privado.
-  - Antes de sembrar, leer los componentes de All Ways para confirmar tres montos: recargo nocturno por vehículo, orden de las tarifas de activity transfers y cargo por pasajero extra de la limusina.
+- [x] **F2.10** — Catálogo igual a All Ways (§3.5.4). Hecho: 10 zonas con nombres propios y 5 vehículos (Suburban 5, Escalade 5, Van 10, Limousine 6 con máximo 10, Sprinter 17); matriz completa de 180 tarifas (Airport/Local × One Way/Round Trip), Limousine solo en las zonas 1 a 5; 226 hoteles reasignados por coincidencia con los lugares públicos de la referencia (76 exactos, 58 por nombre corto, 8 por similitud) y el resto por regla de zona real, documentado en `meta` del catálogo; 8 extras con depósitos (Escalade $100, Limousine $110), recargo nocturno por vehículo (Suburban $85, Escalade $150, Van $110, Sprinter $115, Limousine $195) y promo automática. El seed desactiva lo que sale del catálogo en vez de borrarlo. Verificar: `test_every_rate_matches_the_catalog` compara cada celda de la matriz sembrada contra §3.5.4 (160 combinaciones, 20 sin Limousine → `rate_unavailable`).
+- [x] **F2.11** — Multi-vehículo como All Ways (D-P14 decidido). Hecho: el motor calcula `unidades = ceil(pasajeros / max_pax)` y multiplica la tarifa base; ya no existe `too_many_passengers` ni `vehicle_too_small`; pasajeros de 1 a 20 (`Field(le=20)`); "Any type of Vehicle" (sin `vehicle_class`) toma el menor total entre todos los vehículos activos con tarifa; `SHOPPING_STOP` exige una unidad por vehículo pedido (`one_per_vehicle`, código `extra_per_vehicle` si no alcanza); `booking_legs.vehicle_count` y `booking_assignments.unit_index` (única por `leg_id, unit_index`, ya no por `leg_id` solo). Verificar: 8 pasajeros en Suburban → 2 unidades y el doble de precio; 20 en Van → 2; 21 → `ValidationError`; migración `a669171fe543` y su reversa probadas.
+- [ ] **F2.12** — Precios de servicios sin tramo de aeropuerto. **Ya hecho** en F2.10/F2.11: pasajeros extra de la limusina después de 6 (`extra_pax_cents`, $10 por pasajero, unidad y tramo) y la línea de IVA 16% con tarjeta (`card_tax_percent`, sin IVA en efectivo ni en salidas al aeropuerto, D-P5). **Falta:** chofer por hora (3/6/12 h + hora extra, tabla en §3.5.4) y activity transfers por vehículo como tipos de servicio cotizables — hoy `quote_transfer` solo entiende traslados de aeropuerto y local con hotel de origen o destino; un servicio por hora o de actividad no tiene tramo con hotel y necesita su propio `TripType`/schema.
 
-  Verificar: test que compara cada celda de la matriz sembrada con §3.5.4.
-- [ ] **F2.11** — Multi-vehículo como All Ways (D-P14 decidido):
-  - El motor calcula `unidades = ceil(pasajeros / capacidad)` (limusina: 10) y multiplica la tarifa base; ya no existe `too_many_passengers` ni `vehicle_too_small`.
-  - Pasajeros de 1 a 20.
-  - Opción "Any type of Vehicle" con la tarifa más baja y asignación por disponibilidad.
-  - Shopping Stop obligatoria por unidad cuando se pide.
-  - Esquema: `booking_legs.vehicle_count` y `booking_assignments` con una asignación por unidad (se quita `UNIQUE(leg_id)`, queda `UNIQUE(leg_id, unit_index)`).
-
-  Verificar: 8 pasajeros en Suburban = 2 unidades y el doble de precio; 20 en Sprinter = 2; 21 → 422; test de la migración.
-- [ ] **F2.12** — Precios de servicios sin tramo de aeropuerto:
-  - Chofer por hora (3, 6 y 12 h más hora extra).
-  - Activity transfers por vehículo.
-  - Cargo por pasajero extra de la limusina después de 6.
-  - Línea de IVA 16% según el método de pago (D-P5).
-
-  Verificar: tests con los montos de §3.5.4.
+  Verificar: tests con los montos de §3.5.4 para las dos tarifas que faltan.
 
 ### F3 — Reservas públicas
 

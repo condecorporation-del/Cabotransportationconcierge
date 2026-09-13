@@ -31,9 +31,10 @@ async def test_transfer_quote(api: AsyncClient) -> None:
     response = await api.post("/api/v1/quotes", json=_transfer(hotel_id))
     assert response.status_code == 200, response.text
     quote = response.json()
-    assert quote["zone"] == "cabo-san-lucas"
+    assert quote["zone"] == "cabo-san-lucas-marina"
     assert quote["lines"][0]["kind"] == "transfer"
-    assert quote["total_cents"] == quote["subtotal_cents"] - quote["discount_cents"] > 0
+    expected = quote["subtotal_cents"] - quote["discount_cents"] + quote["tax_cents"]
+    assert quote["total_cents"] == expected > 0
 
 
 async def test_activity_quote(api: AsyncClient) -> None:

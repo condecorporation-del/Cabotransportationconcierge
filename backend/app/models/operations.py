@@ -65,17 +65,18 @@ class Vehicle(IdMixin, TenantMixin, TimestampMixin, Base):
 
 
 class BookingAssignment(IdMixin, TenantMixin, TimestampMixin, Base):
-    """Chofer y vehículo de un tramo. Una sola asignación por tramo."""
+    """Chofer y vehículo de cada unidad de un tramo (un tramo de 3 Suburbans tiene 3)."""
 
     __tablename__ = "booking_assignments"
     __table_args__ = (
-        UniqueConstraint("leg_id"),
+        UniqueConstraint("leg_id", "unit_index"),
         CheckConstraint(
             "driver_id IS NOT NULL OR vehicle_id IS NOT NULL", name="driver_or_vehicle"
         ),
     )
 
     leg_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("booking_legs.id", ondelete="CASCADE"))
+    unit_index: Mapped[int] = mapped_column(default=1, server_default="1")
     # Índice: detectar choques de horario del mismo chofer al asignar (F6.7).
     driver_id: Mapped[uuid.UUID | None] = mapped_column(
         ForeignKey("drivers.id", ondelete="RESTRICT"), index=True

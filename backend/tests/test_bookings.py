@@ -38,7 +38,7 @@ async def _transfer(db: AsyncSession, **changes: Any) -> dict[str, Any]:
             },
             {"service_date": (ARRIVAL + timedelta(days=5)).isoformat(), "service_time": "11:00"},
         ],
-        "extras": [{"code": "BABY_SEAT", "quantity": 1}],
+        "extras": [{"code": "CAR_SEAT", "quantity": 2}],
         "customer": {"name": "Ana López", "email": "ana@example.com"},
     } | changes
 
@@ -51,7 +51,8 @@ async def test_round_trip_booking_is_created_with_frozen_prices(
     created = response.json()
     assert created["code"].startswith(f"CTC-{date.today().year}-")
     assert created["status"] == "pending_payment"
-    assert sum(item["total_cents"] for item in created["items"]) == created["total_cents"]
+    items = sum(item["total_cents"] for item in created["items"])
+    assert items + created["tax_cents"] == created["total_cents"]
 
     legs = (await db.scalars(select(BookingLeg).order_by(BookingLeg.service_date))).all()
     assert [(leg.leg_type, leg.destination) for leg in legs] == [
@@ -59,6 +60,15 @@ async def test_round_trip_booking_is_created_with_frozen_prices(
         (LegType.DEPARTURE, "SJD Los Cabos International Airport"),
     ]
     assert legs[0].flight_number == "AA1245"
+
+
+async def test_large_group_books_several_vehicles(api: AsyncClient, db: AsyncSession) -> None:
+    body = await _transfer(db, passengers=12, vehicle_class="SUBURBAN", extras=[])
+    response = await api.post(URL, json=body)
+    assert response.status_code == 201, response.text
+    assert response.json()["items"][0]["quantity"] == 3
+    legs = (await db.scalars(select(BookingLeg))).all()
+    assert {leg.vehicle_count for leg in legs} == {3}
 
 
 async def test_booking_keeps_attribution_and_is_audited(api: AsyncClient, db: AsyncSession) -> None:
