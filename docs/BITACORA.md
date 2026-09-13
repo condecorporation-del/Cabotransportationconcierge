@@ -2,6 +2,28 @@
 
 Una entrada por sesión o tarea, la más reciente arriba (formato en `AGENTS.md` §10).
 
+## 2026-09-12 — Vista previa en Vercel + cierre de F0
+
+**Qué se hizo**
+- Marlon conectó el repo a Vercel y no se veía nada. **Causa:** la raíz del repo no tiene `index.html`; el prototipo vive en `site/`. Vercel respondía `X-Vercel-Error: NOT_FOUND`.
+- `vercel.json`:
+  - `outputDirectory: site` (sin build) y `cleanUrls`.
+  - Headers `X-Robots-Tag: noindex, nofollow`: el prototipo aún tiene textos y fotos de All Ways y no debe indexarse.
+  - `nosniff`, `X-Frame-Options: DENY` y `Referrer-Policy`.
+  - Caché de 7 días para `images/`, `videos/` y `build/`.
+- Arrival Guide: el video de All Ways (no versionado) se reemplazó por la imagen propia `sprinter-interior.jpg` (D-P6).
+- F0.2 cerrada: Marlon borró la key de OpenRouter y esa key no se usa en este proyecto. **F0 queda 9/9.**
+
+**Archivos:** `vercel.json`, `site/build.js`, `site/arrival-guide.html`, `WORKPLAN.md`
+
+**Verificación**
+- Commit `1c1471a`, auto-deploy de Vercel.
+- `https://cabotransportationconcierge.vercel.app/` → 200 con `X-Robots-Tag: noindex, nofollow`.
+- `arrival-guide`, `luxe.css`, `hero-suburban.jpg`, `videos/hero-promo-light.mp4` (6.4 MB) y `images/svg/logo-ctc.svg` → 200.
+- Script de referencias: 77 archivos locales del home y 8 de Arrival Guide, todos versionados.
+
+**Pendiente / riesgos:** es solo el prototipo estático. Muchos links del navbar siguen en `#` hasta F9, y el cotizador y el chat son simulados hasta F8 y F10.
+
 ## 2026-09-12 — F0.7 CI en GitHub
 
 **Qué se hizo**
