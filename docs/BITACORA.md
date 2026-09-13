@@ -2,6 +2,47 @@
 
 Una entrada por sesión o tarea, la más reciente arriba (formato en `AGENTS.md` §10).
 
+## 2026-09-12 — WORKPLAN v1.2: réplica completa de All Ways con datos propios
+
+Marlon pidió: la página igual a All Ways (servicios, reserva, Bachelorette y City Tours con su propia área, tarifas), diseño más moderno, precios iguales y toda la información de CTC, sin que se pase ningún dato.
+
+**Cómo se levantó la especificación**
+- Rutas: el mapa Ziggy de la app (132 rutas públicas).
+- Props: el JSON `data-page` de 33 páginas.
+- Textos, campos y mensajes: los chunks JS de cada página.
+- APIs públicas: `private-driver` y `activity-rates`.
+
+Nada de eso se versiona (es contenido de terceros): solo la especificación escrita.
+
+**Qué se agregó al WORKPLAN**
+- §3.5.1: tres reglas (igual en estructura, diseño moderno, cero datos) y lista prohibida con marca, teléfonos, direcciones, marcas hermanas, cifras de reseñas, personas y assets.
+- §3.5.2: header, mega menú Services (Airport & Transfers, Events & Groups, Tours) y footer.
+- §3.5.3: inventario de 40 rutas con secciones en orden, formularios y datos, y las rutas que no se replican.
+- §3.5.4: tarifas completas (10 zonas × 5 vehículos × aeropuerto/local, chofer por hora, activity transfers, extras, depósitos, promo, IVA).
+- §3.5.5: motor de reserva paso a paso (Service, Extras, Contact, Payment y Order Summary).
+- Decisiones: D-P1 (precios de All Ways), D-P8 (todos los servicios) y D-P14 (multi-vehículo) decididas por el "todo igual"; D-P5 igual a All Ways con revisión del contador; D-P15 nueva (cobro en MXN).
+- Tareas: F2.10–F2.12, F3.12–F3.13, F8.14 y F9.16–F9.20. F3 vuelve a quedar abierta (11/13).
+
+**Por verificar en F2.10:** tres montos que el código no mostró con claridad: recargo nocturno por vehículo, orden de las tarifas de activity transfers y cargo por pasajero extra de la limusina.
+
+**Archivos:** `WORKPLAN.md`, `AGENTS.md`
+
+## 2026-09-12 — Verificación del campo "Passengers" en allwayscabotransportation.com/booking
+
+Marlon pidió revisar bien la página real de reserva de All Ways en cuanto a "cuántas personas". Como es una SPA (Inertia + Vue, sin SSR del contenido), leí el JSON de props (`data-page`) y descargué los chunks reales `BookingHome-*.js`, `Vehicle-*.js` y `Payments-*.js` desde `/build/assets/` para confirmar el comportamiento exacto en el código, no solo lo visible.
+
+**Confirmado (antes ya estaba en §3.4.1, ahora con precisión del código real):**
+- Un solo campo `pax` (no separa adultos/niños/infantes). Stepper −/+, mínimo 1.
+- Tope: escribir más de 19 lo ajusta solo a 20. Es el máximo reservable en línea.
+
+**Nuevo, no documentado antes:** All Ways **no rechaza por capacidad**. Cualquier vehículo se puede elegir con cualquier número de pasajeros: multiplica el precio por `ceil(pasajeros / capacidad)` unidades (Limousine usa `max_capacity`, no `capacity`). 8 pasajeros en un Suburban (capacidad 5) = 2 Suburbans, el doble de precio, no un error.
+
+Aquí el motor (F2.2) rechaza con `too_many_passengers` arriba de 14 (el máximo de la Sprinter, único vehículo grande activo). Igualar el comportamiento de All Ways exige cotizar por unidades, agregar cantidad a `booking_legs` y que el despacho asigne un chofer por unidad (`booking_assignments` hoy tiene `UNIQUE(leg_id)`, una sola asignación por tramo). Es un cambio de esquema, no solo de copy, así que lo dejé como **D-P14** en vez de decidirlo solo. Mientras tanto se mantiene el rechazo con mensaje de contactar por WhatsApp (coincide con el valor por defecto que ya existía).
+
+**Archivos:** `WORKPLAN.md` (§3.4.1, tabla de decisiones pendientes D-P14)
+
+**Pendiente:** que Marlon decida D-P14 (automatizar multi-vehículo como All Ways, o mantener "contáctanos" para grupos grandes).
+
 ## 2026-09-12 — F4.1 cliente de Stripe
 
 **Qué se hizo**

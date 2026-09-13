@@ -12,7 +12,7 @@
 
 | Indicador | Estado |
 |---|---|
-| **Fase actual** | F4 — Pagos con Stripe: 1/10 (F4.1). F3 ✅ 11/11. F2 8/9: solo falta F2.9 (Marlon revisa el ADR-002). F1 ✅ 12/12. F0 ✅ 9/9. CI verde (run `34738195655`). Vista previa del prototipo en https://cabotransportationconcierge.vercel.app (noindex). |
+| **Fase actual** | F4 — Pagos con Stripe: 1/10 (F4.1). F3 11/13 y F2 8/12: se agregaron tareas para igualar All Ways (§3.5). F2 8/9: solo falta F2.9 (Marlon revisa el ADR-002). F1 ✅ 12/12. F0 ✅ 9/9. CI verde (run `34738195655`). Vista previa del prototipo en https://cabotransportationconcierge.vercel.app (noindex). |
 | **Último avance** | 12 sep 2026 — F0:<br>• Repo git con prototipo aprobado.<br>• Backend mínimo FastAPI con `/api/v1/health` y `/health/ready`.<br>• Configuración fail-fast.<br>• Postgres 16 nativo con bases `ctc` y `ctc_test`.<br>• Cliente de API tipado generado desde OpenAPI.<br>• CI escrito.<br>• ADR-001 (entorno sin Docker).<br>• Checklist para el cliente. |
 | **Backend** | ✅ Base lista para la lógica de negocio:<br>• Health y readiness.<br>• Engine apto para Supabase.<br>• Todos los modelos de §6 con aislamiento por empresa.<br>• Scripts `seed_catalog`, `ensure_owner` y `check_db`.<br>• Servicio de códigos de reserva.<br>• Motor único de precios.<br>• API pública: `POST /quotes` y `GET /catalog/*` (zonas, búsqueda y página de hotel, vehículos, extras, actividades, paquetes) con ETag y rate limit.<br>• `POST /bookings` con precio recalculado y congelado, `Idempotency-Key`, anticipación mínima, formato de vuelo y pickup antes del vuelo.<br>• Máquina de estados de la reserva con auditoría.<br>• Enlace de gestión firmado (90 días), `GET /bookings/{code}` con Bearer y My Trip (`GET /bookings/lookup`) sin enumeración.<br>• Cambios (`PATCH /bookings/{code}`) y cancelación del cliente con las ventanas de `company_settings`; errores de dominio con `code` estable (422 y 409).<br>• `POST /contact` con honeypot y Turnstile; UTM y referrer en la reserva; auditoría de creación, cambios y cancelación.<br>• Voucher PDF bilingüe con QR (`GET /bookings/{code}/voucher.pdf`).<br>• Cliente de Stripe por HTTP (intents y reembolsos con idempotencia) y verificación de la firma del webhook. Ruff (reglas de seguridad) y mypy estricto en 0 errores. |
 | **Base de datos** | ✅ Local: Postgres 16.15 nativo con `ctc` y `ctc_test`. Migraciones:<br>• `5721f5faa1c7`: empresas, ajustes, admins y sesiones.<br>• `4b96b66d17b0`: `pg_trgm`, zonas, hoteles, clases de vehículo, tarifas, extras, actividades, paquetes, promociones y clientes.<br>• `0b3217285efc`: reservas, tramos e ítems.<br>• `56ed3ca7c373`: pagos, eventos de Stripe y cuentas por cobrar.<br>• `a6a95d459beb`: choferes, vehículos, asignaciones, tareas, auditoría, cola de correos, IA, contacto y reseñas.<br>• `523ec6ce4943`: contador de códigos de reserva.<br>• `9c5a8aed60e7`: clave de idempotencia en reservas.<br>• `4e2afe533f53`: anticipación mínima (`company_settings.min_notice_hours`).<br>• `43fcd1c0fe04`: fecha de la actividad en `booking_items`.<br>`alembic check` sin diferencias y `scripts/check_db.py` en código 0.<br>Catálogo de prueba cargado en `ctc` con `scripts/seed_catalog.py`: 226 hoteles, 24 tarifas, 15 extras. |
@@ -22,21 +22,21 @@
 | **Deploy** | ❌ No configurado. |
 | **Git** | ✅ Remoto `github.com/condecorporation-del/Cabotransportationconcierge` (push por la deploy key `~/.ssh/deploy_cabo_concierge`, alias SSH `github-cabo`). Rama `main` subida; gitleaks sin hallazgos en el historial. |
 
-**Siguiente tarea:** F4.2 (`POST /payments/intent`) y F4.3 (`POST /payments/confirm`). Para F4.10 hacen falta las llaves de prueba de Stripe del cliente, y F4.9 depende de la decisión D-P5.
+**Siguiente tarea:** F2.10 a F2.12 (catálogo y tarifas iguales a All Ways, multi-vehículo) y F3.12 a F3.13 (campos de reserva y pago en efectivo), porque cambian los montos que cobra Stripe. Después, F4.2 y F4.3. Para F4.10 hacen falta las llaves de prueba de Stripe del cliente.
 
 **Progreso por fase**
 
 ```
 F0  Fundación y decisiones          [██████████] 9/9 ✅
 F1  Base de datos y dominio         [██████████] 12/12 ✅
-F2  Motor de precios y catálogo     [████████--] 8/9
-F3  Reservas públicas               [██████████] 11/11 ✅
+F2  Motor de precios y catálogo     [███████---] 8/12
+F3  Reservas públicas               [████████--] 11/13
 F4  Pagos con Stripe                [█---------] 1/10
 F5  Emails, PDF y trabajos          [----------] 0/11
 F6  Auth y API del admin            [----------] 0/13
 F7  Sitio público: migrar prototipo [----------] 0/15
-F8  Sitio público: funciones reales [----------] 0/13
-F9  Páginas de contenido y navbar   [----------] 0/15
+F8  Sitio público: funciones reales [----------] 0/14
+F9  Páginas de contenido y navbar   [----------] 0/20
 F10 Agente de IA Customer Help      [----------] 0/11
 F11 Admin frontend                  [----------] 0/15
 F12 SEO                             [----------] 0/12
@@ -157,6 +157,8 @@ Referencia analizada el 12 sep 2026: HTML del home, `/los-cabos-hotel-shuttles`,
 
 - **Tipos de servicio** en pestañas: Airport Round-Trip, Airport One-Way, Local Round-Trip y Local One-Way. Además hay chofer privado por hora ("USD / hr") y City Tour.
 - **Campos:** Pickup Location, Drop-off Location, Arrival Date, Return Date (solo round trip), Passengers (stepper), Vehicle, Estimated Total / Total Due y el botón Book My Ride.
+- **Passengers, verificado el 12 sep 2026 leyendo el bundle real (`BookingHome-*.js`):** un solo campo (`pax`), no separa adultos/niños/infantes. Stepper −/+, mínimo 1 (el botón `−` no baja de 1); si se escribe un número mayor a 19, se ajusta solo a 20 (tope blando: 20 es el máximo que se puede reservar en línea).
+- **No hay rechazo por capacidad.** Cualquier vehículo se puede elegir con cualquier número de pasajeros: el precio se multiplica por las unidades necesarias, `unidades = Math.ceil(pasajeros / capacidad)` (Limousine usa `max_capacity` en vez de `capacity`). Es decir, 8 pasajeros en un Suburban (capacidad 5) = 2 Suburbans y el doble de precio, no un error. Capacidades reales: Suburban 5, Cadillac Escalade 5, Van 10, Limousine 6 (`max_capacity` 10), Sprinter 17.
 - **Reglas y mensajes:**
   - "For Airport Round-Trips, the Pick-up location must be the Airport." (origen con etiqueta "Locked")
   - "For this route, the Drop-off location is locked to the Airport."
@@ -268,6 +270,178 @@ Referencia analizada el 12 sep 2026: HTML del home, `/los-cabos-hotel-shuttles`,
 - El widget es el motor de §3.4.1, prellenado con el hotel.
 - Texto único y bilingüe por hotel (F12.5) y fotos propias.
 - En móvil la tabla de tarifas se convierte en tarjetas.
+
+### 3.5 Réplica completa de All Ways con información propia (mandato de Marlon, 12 sep 2026)
+
+> Marlon: "Quiero la página igual a All Ways, pero con un diseño más moderno: los servicios, la reserva, Bachelorette y City Tours con su propia área, las tarifas de precios también. Todo igual, pero la información diferente. Los precios los puedes dejar igual. Todo personalizado para la empresa, que no se pase ningún dato."
+
+Fuente: lectura del sitio real el 12 sep 2026. Es una app Laravel + Inertia + Vue. Se leyeron el JSON de props (`data-page`) de 33 páginas, el mapa de rutas (Ziggy, 132 rutas públicas), los chunks de cada página (`/build/assets/*.js`) y las APIs públicas `api/private-driver` y `api/activity-rates`. Copia local de trabajo en el scratchpad de la sesión (no se versiona: es contenido de terceros).
+
+#### 3.5.1 Las tres reglas
+
+1. **Igual en estructura y funcionamiento.** Mismas páginas, mismo menú, mismas secciones en el mismo orden, mismos formularios con los mismos campos, mismo motor de reserva con sus reglas y mensajes, y mismas tarifas. Ante la duda de cómo debe comportarse algo, la respuesta es "como en All Ways" (sin volver a preguntar a Marlon).
+2. **Diseño más moderno** con la identidad aprobada (obsidiana y dorado, Playfair Display y Outfit, animaciones del prototipo). Nada del look de All Ways: ni su azul `#215465` / `#007a96`, ni su tipografía de Typekit, ni sus imágenes.
+3. **Cero datos de All Ways.** Todo texto, dato, foto, video, reseña, número y enlace es de Cabo Transportation Concierge. Los precios son la única excepción permitida.
+
+**Lista prohibida** (el CI la busca en el build del sitio, el admin, los correos, el voucher y el prompt de la IA; F9.16). Cualquier coincidencia rompe el build:
+
+| Tipo | Valores prohibidos |
+|---|---|
+| Marca | `All Ways`, `AllWays`, `Allways`, `allwayscabo`, prefijo de reserva `ALLW-`, "ALL WAYS CABO CHECKPOINT" |
+| Contacto | `+52 624 129 7911`, `6241297911`, `(619) 354-3205` |
+| Direcciones | Plaza Coronado, Plaza Providencia, Calle Los Pirules, "Carretera Transpeninsular KM 4.3", CID de Google Maps `11928089571017072965` |
+| Marcas hermanas | 605 Tower, Allways Cabo Boats, Boats Baja, Marketing Eleven, "Banana fleet", tarifas de barco (`boatRates`: $650, $600, $770) |
+| Reputación | 6,700 / 6,774 reseñas, 1,870 (Google), 4,355 (TripAdvisor), 549 (Yelp), "#9 of 345", "since 2013" / "desde 2013", "more than 300 weddings", TripAdvisor Travelers Choice |
+| Personas | Nombres de choferes y clientes de sus reseñas (por ejemplo "Eddie", "Sarah L.") |
+| Assets | Fotos de `/images/` de All Ways, el video de Arrival Guide con su hostess, el ID de Typekit `qkt8msu` |
+
+Los datos propios salen de `company_settings` (teléfono, WhatsApp, email, oficinas, horario, políticas, redes) y de `docs/content/checklist-cliente.md`. Mientras falten, se muestra un placeholder visible en staging y producción queda bloqueada (D-P4).
+
+#### 3.5.2 Menú (header y footer)
+
+**Header, de izquierda a derecha:** logo CTC · **Services** (mega menú) · **All Tours** · **Prices** · **About Us** · **FAQ** · **Travel Guide** · **Contact** · selector EN/ES · CTA "Book your Cabo transfer".
+
+**Mega menú Services**, en tres columnas más una fila de guías:
+
+| Airport & Transfers | Events & Groups | Tours |
+|---|---|---|
+| All Cabo Transfers → `/cabo-transportation` | Weddings → `/weddings` | City Tours → `/city-tours` |
+| Hotel Shuttles → `/los-cabos-hotel-shuttles` | Bachelorette & Bachelor Parties → `/bachelorette-party-transportation` | Sightseeing Tours → `/sightseeing` |
+| Private Chauffeur → `/private-bilingual-driver` | Bisbee's Black & Blue → `/bisbees-black-and-blue-transportation` | CTA "See Cabo with a private driver" |
+| Activity transfers → `/activity-transfers` | Group Transportation → `/group-transfers` | |
+| Prices & Rates → `/cabo-shuttle-prices` | Family Transportation → `/family-transportation` | |
+| | Limousines → `/limousines` | |
+
+Fila inferior: Flight Status ("Live SJD arrivals & departures") → `/cabo-airport-flights` · Uber in Cabo Guide → `/is-there-uber-in-cabo` · Taxi at SJD Airport → `/cabo-airport-taxi` · Customer reviews → `/reviews`.
+
+**Footer:** formulario "Drop us a line" (Full name, Phone number, Email address, Message) · "Top Cabo Destinations" · links (Cabo Transportation, Flight Status, Weddings, Bachelorette, Bisbee's, Groups, Family, Limousines, Prices, About Us, FAQ, Travel Guide, Taxi at SJD Airport, La Paz) · "Our Offices" · Company Policies · bloque de marcas propias. All Ways muestra ahí sus marcas hermanas ("Explore our family of Cabo brands"); aquí van los servicios propios de Instagram (Yachts, Luxury Villas, Private Tours, Activities) o se quita el bloque.
+
+#### 3.5.3 Inventario de páginas (qué tiene cada una allá y qué cambia aquí)
+
+En todas: mismas secciones en el mismo orden; textos reescritos para CTC; fotos propias; FAQ propias (mismas preguntas del cliente, respuestas con nuestras políticas); CTA al motor de reserva; EN y ES.
+
+| Ruta | Página allá (componente) | Secciones y funciones, en orden | Formulario o datos |
+|---|---|---|---|
+| `/` | `Home` | Hero con cotizador y promo ("Claim My 10% Discount · Applied automatically at checkout"); tarjetas de zona con precio "desde" (160 / 185 / 195 / 205 / 230); transporte a villas, golf y comunidades (Cabo del Sol, Puerto Los Cabos, Quivira, Chileno Bay, Costa Palmas, Diamante…); "After the airport" (dinner & nightlife, activity transfers, private driver, weddings & groups, **pet-friendly**); tours y actividades (snorkel, Camel Tour, Golf Package, Yachts & Boats); comparación taxi vs shuttle vs privado; llegada a SJD; oficinas; reseñas | zones, rates, hotels, reviews propias |
+| `/book` (allá `/booking` y `/book-transportation`) | `Booking/Index` | Motor completo de §3.5.5 | API quotes, bookings, payments |
+| `/my-trip` (y `/voucher/{uuid}`) | `Vouchers/Show` | "Find My Trip / Retrieve Your Voucher" por número; itinerario por tipo de servicio (llegada, salida, local ida, local regreso, chofer privado, nightlife, city tour); contacto del pasajero; special requests; "Your Vehicle"; "Price Summary"; saldo en efectivo a la llegada; "Complete Payment Now"; estados Confirmed & Paid / Deposit Paid / Pending Payment; políticas de cancelación | API lookup (F3.6) |
+| `/cabo-transportation` | `Main/CaboTransportation` | Traslados de larga distancia: tabla de destinos con ruta y tiempo (Todos Santos, El Pescadero y Cerritos, Los Barriles, East Cape y Costa Palmas, La Paz vía Hwy 1 o Hwy 19); round trip desde el aeropuerto; una tarjeta por destino; equipo de pesca, surf o kite; FAQ; widget de reserva | rates zonas 6–10 |
+| `/los-cabos-hotel-shuttles` | `Landings/HotelTransportationIndex` | §3.4.3 | hotels, zones |
+| `/hotels/[slug]` (allá `/{slug}`) | `Landings/HotelRestaurant` | §3.4.4, más: "Transfer facts", "Route options comparison", "Why pre-book this route", nota de bodas, "Covered destinations", nota de torneo Bisbee's (marina), "Nearby hotels", "Long distance transfers" | hotels, rates |
+| `/private-bilingual-driver` | `Main/PrivateBilingualDriver` | Hero "Private Bilingual Chauffeur"; ventajas (Local expertise, Uncompromised Safety); **tabla de tarifas por hora** (§3.5.4); formulario "Plan Your Route" | Full Name, Email, Phone, Service Date, Itinerary Details → "Request Availability" |
+| `/activity-transfers` | `Main/ActivityTransfers` | "We Drive. You Enjoy."; tarifas de traslado a actividades por vehículo (§3.5.4); guías de actividades; CTA "Book Your Ride" | API activity-rates |
+| `/cabo-shuttle-prices` | `Main/Prices` | "Cabo Shuttle Prices by Vehicle": una tabla por vehículo × zona con One Way y Round Trip ("per vehicle, not per person"); aviso de pago en efectivo (D-P5); mapa de zonas; tarjetas de larga distancia y rutas de lujo (La Paz, Costa Palmas, Todos Santos, East Cape, Diamante, Nobu); FAQ | rates |
+| `/weddings` | `Main/Weddings` | Hero; tabla "Venues we drive to every week" con tiempo desde SJD; "How the Wedding Weekend Runs" (arrival day, welcome party, ceremony & reception, late-night returns); "The Bridal Party Fleet"; "When to Book and How Pricing Works"; "What to Tell Your Guests"; "Every Wedding Gets Its Own Page" (portal); "Why Planners Book Us"; reseña; FAQ | Formulario de cotización de boda |
+| `/wedding/[slug]` | `Landings/Wedding` + `Booking/PremiumWeddingIndex` | **Portal por boda:** "Welcome to the wedding portal of…", detalles del evento, cuenta regresiva y reserva de los invitados con el motor prellenado (venue y fechas) | Evento creado desde el admin (F9.18) |
+| `/bachelorette-party-transportation` | `Main/BachelorettePartyTransportation` | Hero "Groups 8-16+"; "Always included" (vehículo privado, chofer con letrero, peajes, agua y cerveza, "Per vehicle, never per person"); ejemplos de tarifa (Sprinter SJD→CSL $155, Suburban SJD→Corridor $100, Van SJD→SJC $110); "Plan the trip" (yacht day, dinner runs, "The 2 AM ride home"); **Bachelorette Package $25** (welcome kit, bride veil, celebration sash); destinos con minutos desde SJD; "Real groups, real trips" (galería); "The fleet"; cruce con yates (aquí: la página propia de Yachts, no la marca de All Ways); FAQ | "Get your quote" (formulario de inquiry de bachelorette) |
+| `/bisbees-black-and-blue-transportation` | `Main/BisbeesBlackAndBlueTransportation` | Hero; "Tournament Dates 2026" (Los Cabos Offshore 12–17 oct, registro Black & Blue 19 oct, pesca 21–23 oct, pesaje 24 oct); "Pre-Dawn Runs, Every Day of the Tournament"; flota; FAQ; "Book before October fills the fleet" | Formulario de cotización de torneo |
+| `/group-transfers` | `Groups/Index` | "Premium Cabo transportation for groups" (Corporate Events • Retreats • VIP Groups) | Coordinator Name, Email, Total Guests, Start Date of Event, Event Description & Needs → "Request Group Proposal" |
+| `/family-transportation` | `Main/FamilyTransportation` | "Car Seats Ready on Arrival" (Infant · Convertible · Booster, **primer asiento gratis**); "Grocery Stops at the Store You Choose"; reseña de una familia (propia); FAQ; enlace a la guía de Uber | CTA a cotizar |
+| `/limousines` | `Main/Limousines` | "The Platinum Fleet"; galería; "The Party Begins the Second Doors Close" (asientos de piel, clima, audio Bluetooth y luces, división de privacidad); "Open Booking Portal" | Motor con Limousine preseleccionada |
+| `/city-tours` | `CityTours/Index` | "Bespoke Sightseeing"; "Where will you go?" con 6 tours: **Cabo San Lucas** (el Arco y la Marina), **San José del Cabo** (Misión y Art Walk), **La Paz + Balandra**, **Todos Santos** (Hotel California y galerías), **Los Barriles / East Cape**, **Cabo Pulmo** (Parque Marino); "Plan your custom journey" | Full Name, Email, Phone, Service Date, Itinerary Details → "Request Availability" (sin precio: cotización) |
+| `/city-tours/[tour]` | `CityTours/CaboSanLucas`, `SanJoseDelCabo`, `LaPaz`, `TodosSantos`, `LosBarriles`, `Balandra` | Hero del destino; distancia y tiempo desde Cabo; qué incluye; FAQ propia del destino (por ejemplo "How far is Balandra Beach…", "What time should we start…"); "Get a quote" | Mismo formulario |
+| `/sightseeing` y `/tours/[slug]` | `Landings/SightseeingToursIndex` + `Landings/CityTour` | Directorio de rutas de un día ("Private sightseeing routes") y página por ruta con "The rate is for the vehicle, not per person"; FAQ; "Need airport transportation too?" | Mismo formulario |
+| `/cabo-airport-flights` | `Main/AirportFlights` | Tablero de llegadas y salidas de SJD con filtro por vuelo o aerolínea y ventana de 2 h atrás a 10 h adelante; FAQ (D-P7) | API externa con caché en servidor |
+| `/cabo-airport-taxi` (allá también `/cabo-airport-shuttle`) | `Main/CaboAirportTaxi` | **Calculadora taxi vs privado** con stepper de pasajeros y zona destino ("Lowest total", "Total for the party"); tabla de tarifas de taxi (SJC $65–85, Corridor $75–95, CSL $90–115) contra la tarifa privada; "The walk from customs to the car"; FAQ | fareRows propias con nuestras tarifas |
+| `/is-there-uber-in-cabo` | `Main/UberInCabo` | Guía de Uber y DiDi en SJD; comparación de costos; ventajas del privado; FAQ 2026 | contenido |
+| `/cabo-airport-transfer-statistics` | `Main/CaboAirportTransferStatistics` | "Average transfer times" por ruta (SJD→SJC 16–22 min, Corridor 26–34, CSL 44–52, Pacific 48–65, Todos Santos 75–95, Los Barriles 70–80, Cabo Pulmo 85–100); "Fleet mix"; FAQ | **Solo con datos propios medidos por CTC**; si no hay, la página no se publica |
+| `/zone-map` (y modal en home) | `ZoneMap` | §3.4.2 | zones |
+| `/arrival-guide` | `ArrivalGuide` | Ya en el prototipo; punto de encuentro y video propios (D-P6) | settings |
+| `/locations/cabo-san-lucas`, `/locations/san-jose-del-cabo` | `Locations/Branch` | Página por oficina: "Office Details" (dirección, teléfono y WhatsApp, horario "7:00 AM – 9:00 PM · Mon–Sun"), mapa, "Serving from this location", "Why choose this office", "Our other location", CTA | Oficinas reales de CTC (D-P4); si solo hay una, solo esa página |
+| `/about-us` | `Main/AboutUs` | Historia, equipo, "Our journey" | Historia real de CTC |
+| `/faq` | `Main/Faq` | Help Center por categorías; "Still have questions?" | contenido |
+| `/reviews` | `Main/Reviews` | Ratings por plataforma con enlace para verificar; reseñas destacadas; galería de la comunidad; FAQ | Solo reseñas reales de CTC (D-P3) |
+| `/contact-us` | `Main/Contact` | "Ready to secure your ride?" → reserva; formulario; oficinas con "Get directions"; mapa | Full Name, Email, Phone, **tema** (General Inquiry, Concierge Support, Reservation Change, Special Event, Corporate Account), Message; honeypot |
+| `/company-policies` | `Main/CompanyPolicies` | Índice y políticas; recomendaciones al llegar a SJD | settings.policies |
+| `/cabo-travel-guide`, `/cabo-travel-guide/[slug]`, `/travel-guide` | `Blog/*`, `TravelGuide/*` | Blog por categorías y guías de destino | content collection |
+| `/landing/[slug]`, `/promo/[slug]`, `/companies/[slug]`, `/hotel/[promo]`, `/restaurants/[promo]` | `Landings/PremiumPromo`, `PremiumCompany`, `Hotels`, `Restaurants`, `BookRequest` | Landings de promoción y de empresas aliadas con descuento propio y reserva prellenada | Promociones del admin (F9.19) |
+
+Rutas que **no** se replican: panel admin de All Ways, `telescope`, exportaciones internas, blog-admin, marcas hermanas y barcos (esos servicios, si CTC los ofrece, van en las páginas propias de Instagram: `/yachts`, `/luxury-villas`, `/private-tours`, `/activities`).
+
+#### 3.5.4 Tarifas (iguales a All Ways, en USD, por vehículo, no por persona)
+
+**Traslados por zona.** Columnas: Airport One Way · Airport Round Trip · Local One Way · Local Round Trip.
+
+| Zona | Suburban (5) | Cadillac Escalade (5) | Van (10) | Limousine (6, hasta 10) | Sprinter (17) |
+|---|---|---|---|---|---|
+| 1 Hotel Zone of San José del Cabo | 90 · 160 · 80 · 140 | 145 · 280 · 200 · 365 | 110 · 200 · 95 · 170 | 230 · 445 · 170 · 320 | 130 · 245 · 140 · 265 |
+| 2 Puerto Los Cabos & Tourism Corridor | 100 · 185 · 80 · 140 | 155 · 295 · 200 · 365 | 125 · 230 · 95 · 170 | 235 · 455 · 170 · 320 | 145 · 275 · 140 · 265 |
+| 3 Cabo San Lucas | 110 · 195 · 80 · 140 | 165 · 315 · 200 · 365 | 130 · 240 · 95 · 170 | 240 · 465 · 170 · 320 | 155 · 295 · 140 · 265 |
+| 4 CSL Pacific Ocean Side | 115 · 205 · 80 · 140 | 175 · 335 · 200 · 365 | 140 · 265 · 95 · 170 | 275 · 530 · 170 · 320 | 165 · 315 · 140 · 265 |
+| 5 Cabo Further Zone | 125 · 230 · 90 · 140 | 195 · 375 · 200 · 365 | 160 · 305 · 100 · 170 | 300 · 590 · 170 · 320 | 190 · 355 · 145 · 265 |
+| 6 Pescadero | 220 · 400 · 220 · 400 | 370 · 720 · 370 · 720 | 270 · 500 · 270 · 500 | — | 310 · 600 · 310 · 600 |
+| 7 Todos Santos | 220 · 400 · 220 · 400 | 370 · 720 · 370 · 720 | 270 · 500 · 270 · 500 | — | 310 · 600 · 310 · 600 |
+| 8 La Paz | 390 · 750 · 400 · 750 | 500 · 950 · 500 · 950 | 490 · 950 · 490 · 950 | — | 650 · 1200 · 650 · 1200 |
+| 9 Los Barriles | 220 · 400 · 220 · 400 | 370 · 720 · 370 · 720 | 270 · 500 · 270 · 500 | — | 310 · 600 · 310 · 600 |
+| 10 Cabo Pulmo | 220 · 400 · 220 · 400 | 370 · 720 · 370 · 720 | 270 · 500 · 270 · 500 | — | 310 · 600 · 310 · 600 |
+
+La Limousine solo opera en las zonas 1 a 5. Las zonas de All Ways (10) reemplazan a las 6 de ClassVIP; los 245 hoteles se reasignan a estas zonas (F2.10).
+
+**Chofer privado por hora** (`/private-bilingual-driver`):
+
+| Vehículo | Pasajeros | 3 h | 6 h | 12 h | Hora extra |
+|---|---|---|---|---|---|
+| Suburban | 6 | 240 | 430 | 780 | 85 |
+| Escalade | 6 | 400 | 770 | 1,300 | 150 |
+| Van | 10 | 330 | 630 | 1,000 | 110 |
+| Sprinter | 17 | 350 | 680 | 1,200 | 115 |
+| Limousine | 10 | 580 | 1,100 | 1,800 | 195 |
+
+**Activity transfers:** $140, $180, $170, $265 y $300 por vehículo. El orden exacto vehículo → precio se confirma leyendo el componente en F2.10.
+
+**Extras** (máximo según el vehículo):
+
+| Extra | Precio | Nota |
+|---|---|---|
+| Car Seat | gratis (el primero) | "First car seat complimentary" |
+| Booster Seat | gratis | |
+| Sparkling Wine | 20 | |
+| 12 Pack Beer | 30 | |
+| Birthday Package | 20 | Latex balloon decoration, welcome cup |
+| Bachelorette Package | 25 | Welcome kit, bride veil, celebration sash |
+| Shopping Stop | 50 por hora (Suburban, Escalade); 120 en vehículos grandes | "You must select one shopping stop for each vehicle requested" |
+| Limo Extras | según la limusina | "Up to 10 passengers · Extra cost after 6" (cargo por pasajero extra) |
+
+**Otras reglas de precio:**
+- Promoción automática por fecha de viaje ("September 10% Off", 1–30 sep): se aplica sola, sin código; si la fecha está fuera de la ventana, avisa "Your selected date is outside the promo window…".
+- Recargo nocturno 11 PM – 5 AM. `rateFacts` indica $85–$195, que coincide con la hora extra de cada vehículo; el monto exacto se verifica en F2.10 y reemplaza los $20 de D-P12.
+- Línea "Tax (IVA 16%)" en el resumen al pagar con tarjeta, y "Pay in cash (USD) to your driver and avoid the 16% tax" (D-P5).
+- Depósito para pagar en efectivo con vehículos premium: Escalade $100 y Limousine $110 ("Deposit required for premium vehicles").
+- Precio "desde" de las zonas del home: 160 / 185 / 195 / 205 / 230 (round trip en Suburban).
+
+#### 3.5.5 Motor de reserva: todo lo que pide, en orden
+
+Pasos con check (`BookingSteps`): **Service → Extras → Contact → Payment**.
+
+1. **Service** ("How are you traveling?"):
+   - Airport Round Trip ("Airport pickup and return to the airport"), Airport One Way ("Airport to your hotel, or hotel to the airport"), Local Round Trip ("Between hotels, restaurants or venues, and back") y Local One Way ("Point to point within Cabo"). También chofer por hora ("USD / hr") y City Tour.
+   - Pickup Location y Drop-off Location con bloqueos ("Locked") según el servicio; Arrival Date y Return Date (aviso "Same Day").
+   - **Passengers:** un solo número con stepper −/+, mínimo 1 y máximo 20.
+   - **Vehicle:** Suburban, Cadillac Escalade, Van, Limousine, Sprinter o "Any type of Vehicle" ("Assigned based on availability", el más económico). Avisos: "The vehicle assigned is subject to availability (Suburban, Escalade, Van, or Sprinter)" y "Max 5 Pax | Only Airport services".
+   - **Multi-vehículo:** nunca se rechaza por capacidad; unidades = `ceil(pasajeros / capacidad)` (la Limousine usa 10) y el precio base se multiplica por las unidades. El resumen muestra "Vehicle(s)".
+   - Mensajes en orden: "Select a vehicle to continue." → "Select your pick-up location." → "Select your drop-off location." → "Select your arrival date." → "Select your return date for round-trip." → "Rate unavailable — try another vehicle or call {teléfono de CTC}".
+   - Botón "Continue to Add-ons".
+2. **Extras** ("Personalize Your Ride"): los extras de §3.5.4 con cantidad; una Shopping Stop por vehículo pedido.
+3. **Contact** ("Your details"):
+   - First name, Last name, Email address, Confirm email ("Emails don't match") y Mobile phone.
+   - Llegada: Arrival Airline y Flight Number.
+   - "Departure Information": Airline, Flight Time y Pickup Time ("We recommend 3 hours before your flight. Enter your flight time above and we'll suggest it automatically.").
+   - "Pickup & Return Service" (local): Return Time.
+   - Special requests.
+   - Aviso "Please ensure you provide complete and accurate flight information for your entire travel party…".
+   - Checkbox "I have read and accept the terms and conditions."
+   - Honeypot "Leave this field blank if you are human" y "Please fix the following errors:".
+4. **Payment** ("Select payment method"):
+   - **Card** ("Pay with card", "Secure checkout", Stripe).
+   - **Pay in cash** a la llegada, con depósito con tarjeta para vehículos premium.
+   - "Payment information" con aviso de cobro en **pesos mexicanos (MXN)** que hay que aceptar (moneda de cobro configurable, D-P15).
+   - Estados: "Processing payment...", "Looks like you already made this payment", "You have canceled the payment process", error de conexión con reintento, "Great! your payment is completed!" y "Retrieve your voucher / View Voucher".
+5. **Order Summary** fijo durante todo el flujo:
+   - Service type, From, Arrival Date, Return Date, Total Passengers y Vehicle(s).
+   - Extra options, Subtotal, Special offer applied / Discount, Night surcharge, Add-ons, Limo Extras, Tax (IVA 16%) y Total Due.
+   - "Pay on arrival" cuando aplica.
+   - "Toll roads, airport fees, and full insurance are completely included in your final price."
+   - "Your savings are already reflected in the price summary. No promo code needed."
 
 ---
 
@@ -563,6 +737,12 @@ Hoy el prototipo tiene **179 links que apuntan a `#` en el home y 68 en Arrival 
 | `/map` | Explore interactive map (también abre como modal en el home) | Nuevo (réplica de `ZoneMap`, §3.4.2) | zones, hotels |
 | `/gallery` | See all 9 photos | Nuevo (lightbox) | imágenes |
 | `/404` | — | Nuevo | — |
+| `/sightseeing` + `/tours/[slug]` | Mega menú: Sightseeing Tours | Nuevo (réplica, §3.5.3) | contenido + formulario |
+| `/city-tours/[tour]` | Tarjetas de City Tours (CSL, SJD, La Paz, Balandra, Todos Santos, Los Barriles, Cabo Pulmo) | Nuevo (réplica, §3.5.3) | contenido + formulario |
+| `/wedding/[slug]` | "Every Wedding Gets Its Own Page" | Nuevo (portal por boda, F9.18) | eventos del admin |
+| `/locations/cabo-san-lucas`, `/locations/san-jose-del-cabo` | Oficinas del footer | Nuevo (réplica, §3.5.3; según oficinas reales, D-P4) | settings.offices |
+| `/cabo-airport-transfer-statistics` | Guías | Nuevo, solo con datos propios | contenido |
+| `/landing/[slug]`, `/promo/[slug]`, `/companies/[slug]` | Promociones y empresas aliadas | Nuevo (F9.19) | promociones del admin |
 | `/es/...` | Selector EN/ES del header y footer | Nuevo, desde el lanzamiento (F7.13) | cada página en inglés tiene su par en español |
 
 ### 9.2 Elementos interactivos a conectar
@@ -845,6 +1025,29 @@ Formato de cada tarea: `- [ ] ID — qué`, con **Verificar** (comando o prueba 
 - [x] **F2.7** — `GET /catalog/*` con caché `ETag`. Verificar: la segunda llamada responde 304.
 - [x] **F2.8** — Snapshot de precios en `booking_items`: si cambia una tarifa, las reservas existentes no cambian. Verificar: test.
 - [ ] **F2.9** — Documentar las reglas de precio con ejemplos numéricos. **Escrito** en `docs/decisions/ADR-002-precios.md`; queda abierta hasta que Marlon revise los ejemplos. Verificar: Marlon revisa los ejemplos.
+- [ ] **F2.10** — Catálogo igual a All Ways (§3.5.4):
+  - 10 zonas y 5 vehículos (Suburban 5, Escalade 5, Van 10, Limousine 6 con máximo 10, Sprinter 17).
+  - Matriz completa con Airport One Way, Airport Round Trip, Local One Way y Local Round Trip; Limousine solo en zonas 1 a 5.
+  - Los 245 hoteles reasignados a las 10 zonas.
+  - Extras, depósitos (Escalade $100, Limousine $110), promo automática por fecha de viaje y tarifas por hora del chofer privado.
+  - Antes de sembrar, leer los componentes de All Ways para confirmar tres montos: recargo nocturno por vehículo, orden de las tarifas de activity transfers y cargo por pasajero extra de la limusina.
+
+  Verificar: test que compara cada celda de la matriz sembrada con §3.5.4.
+- [ ] **F2.11** — Multi-vehículo como All Ways (D-P14 decidido):
+  - El motor calcula `unidades = ceil(pasajeros / capacidad)` (limusina: 10) y multiplica la tarifa base; ya no existe `too_many_passengers` ni `vehicle_too_small`.
+  - Pasajeros de 1 a 20.
+  - Opción "Any type of Vehicle" con la tarifa más baja y asignación por disponibilidad.
+  - Shopping Stop obligatoria por unidad cuando se pide.
+  - Esquema: `booking_legs.vehicle_count` y `booking_assignments` con una asignación por unidad (se quita `UNIQUE(leg_id)`, queda `UNIQUE(leg_id, unit_index)`).
+
+  Verificar: 8 pasajeros en Suburban = 2 unidades y el doble de precio; 20 en Sprinter = 2; 21 → 422; test de la migración.
+- [ ] **F2.12** — Precios de servicios sin tramo de aeropuerto:
+  - Chofer por hora (3, 6 y 12 h más hora extra).
+  - Activity transfers por vehículo.
+  - Cargo por pasajero extra de la limusina después de 6.
+  - Línea de IVA 16% según el método de pago (D-P5).
+
+  Verificar: tests con los montos de §3.5.4.
 
 ### F3 — Reservas públicas
 
@@ -859,6 +1062,20 @@ Formato de cada tarea: `- [ ] ID — qué`, con **Verificar** (comando o prueba 
 - [x] **F3.9** — Auditoría: toda creación o cambio registra `audit_logs` (actor `customer`, `system` o admin). Verificar: test.
 - [x] **F3.10** — `POST /contact` con honeypot y Turnstile. Verificar: sin token Turnstile en producción → 400.
 - [x] **F3.11** — Captura de UTM y referrer en la reserva. Verificar: test.
+- [ ] **F3.12** — Datos de la reserva iguales al formulario de All Ways (§3.5.5):
+  - Cliente con First name y Last name, Confirm email y Mobile phone obligatorio.
+  - Aerolínea y hora de vuelo también en la salida, y Pickup Time sugerido editable.
+  - Return Time en servicios locales redondos.
+  - Special requests y aceptación de términos con fecha y versión guardadas.
+  - Tipos de servicio Local One Way y Local Round Trip (origen y destino entre hoteles o direcciones), chofer por hora y city tour como tipo de reserva.
+
+  Verificar: test de API por cada tipo de servicio con sus campos obligatorios.
+- [ ] **F3.13** — Pago en efectivo como en All Ways:
+  - Método `cash_on_arrival`: la reserva queda `CONFIRMED`, con saldo a cobrar por el chofer y sin IVA (D-P5).
+  - Depósito con tarjeta obligatorio para Escalade y Limousine; la reserva pasa a "Deposit Paid" al pagarlo.
+  - El voucher muestra el saldo pendiente ("Balance payable in cash on arrival").
+
+  Verificar: tests de los tres estados (Confirmed & Paid, Deposit Paid, Pending Payment).
 
 ### F4 — Pagos con Stripe
 
@@ -965,6 +1182,13 @@ Formato de cada tarea: `- [ ] ID — qué`, con **Verificar** (comando o prueba 
   - "Retrieve your voucher" con ID de transacción, monto, fecha y tipo.
 
   Verificar: e2e de cada estado con Stripe en modo test.
+- [ ] **F8.14** — Motor completo de §3.5.5 en 4 pasos (Service, Extras, Contact, Payment):
+  - Stepper de pasajeros de 1 a 20 y "Vehicle(s)" con las unidades calculadas.
+  - "Any type of Vehicle".
+  - Order Summary fijo con todas sus líneas (subtotal, descuento, recargo nocturno, add-ons, extras de limusina, IVA y Total Due).
+  - Método Card o Pay in cash con depósito, y aviso de cobro en MXN.
+
+  Verificar: e2e de un grupo de 12 en Suburban (3 unidades), de pago en efectivo con Escalade (depósito) y de fecha fuera de la promo.
 
 ### F9 — Páginas de contenido y navbar completo
 
@@ -1004,6 +1228,23 @@ Formato de cada tarea: `- [ ] ID — qué`, con **Verificar** (comando o prueba 
   Verificar: `getStaticPaths` genera 245 páginas × 2 idiomas, y Rich Results Test sin errores en 5 muestras.
 - [ ] **F9.14** — En el home, "Explore interactive map" abre el mapa en un modal con carga diferida, y "Browse all hotel transfers" lleva al directorio en el idioma actual. Verificar: e2e en EN y ES, en móvil y desktop.
 - [ ] **F9.15** — Traducción profesional al español de todo el contenido: páginas, guías, hoteles, FAQ, políticas, correos, voucher y prompt de la IA. La revisa una persona hispanohablante nativa; nada se publica con traducción automática sin revisar. Verificar: checklist por página en `docs/content/`.
+- [ ] **F9.16** — **Guardia "cero datos de All Ways"** (§3.5.1):
+  - Script `scripts/check_third_party.mjs` que busca la lista prohibida (sin importar mayúsculas ni espacios en teléfonos) en el build del sitio, el admin, las plantillas de correo, el voucher, el prompt de la IA y `catalog.json`.
+  - Corre en CI y rompe el build si encuentra algo.
+  - Inventario de assets con su origen en `docs/content/assets.md`.
+
+  Verificar: agregar "All Ways" a una página hace fallar el CI.
+- [ ] **F9.17** — Header y footer exactos de §3.5.2: mega menú Services con Airport & Transfers, Events & Groups y Tours, fila de guías, CTAs y footer con "Drop us a line", "Top Cabo Destinations", "Our Offices" y marcas propias. Verificar: cada link del menú y del footer responde 200 en EN y ES.
+- [ ] **F9.18** — Páginas de servicio con sus secciones en el orden de §3.5.3:
+  - Bachelorette (con Bachelorette Package y formulario de inquiry), Weddings y portal `/wedding/[slug]` creado desde el admin, Bisbee's con fechas 2026, Groups y Family.
+  - Limousines, Private Chauffeur con tabla por hora y Activity transfers con tarifas de la API.
+  - Long distance (`/cabo-transportation`) y Prices con una tabla por vehículo.
+  - Calculadora taxi vs privado y oficinas `/locations/*`.
+  - Cada formulario guarda la solicitud, avisa a la empresa (F5) y aparece en el admin.
+
+  Verificar: e2e por página (secciones presentes y formulario enviado) y precios iguales a la base.
+- [ ] **F9.19** — City Tours completos: índice con los 6 tours y "Plan your custom journey"; página por tour (CSL, SJD, La Paz, Balandra, Todos Santos, Los Barriles, Cabo Pulmo) con distancia, qué incluye, FAQ y formulario; directorio `/sightseeing` con `/tours/[slug]`; landings de promoción y de empresas aliadas (`/landing`, `/promo`, `/companies`) con descuento propio. Verificar: 200 en EN y ES y solicitudes visibles en el admin.
+- [ ] **F9.20** — Revisión final lado a lado con allwayscabotransportation.com: página por página (menú, secciones, formularios, pasos, mensajes y precios), con una tabla de "igual / mejorado / omitido y por qué" en `docs/content/paridad-allways.md`. Verificar: Marlon aprueba la tabla.
 
 ### F10 — Agente de IA Customer Help
 
@@ -1120,19 +1361,21 @@ Mientras no haya respuesta, se usa el **valor por defecto** para no bloquear el 
 
 | ID | Tema | Conflicto o dato faltante | Valor por defecto mientras tanto |
 |---|---|---|---|
-| D-P1 | **Tabla de precios** | El sitio copiado muestra 5 zonas con round trip desde $160–$230; ClassVIP tiene 6 zonas con one way de $90 a $150 (SUV) y de $130 a $205 (Sprinter). | Matriz de ClassVIP (6 zonas), con round trip = 1.8 × one way, marcada "por aprobar". |
+| D-P1 | **Tabla de precios** | ✅ Decidido por Marlon (12 sep 2026): "los precios los puedes dejar igual" que All Ways. | Matriz de All Ways de §3.5.4 (10 zonas, 5 vehículos, aeropuerto y local); reemplaza la de ClassVIP en F2.10. |
 | D-P2 | **Política de cancelación y cambios** | El texto copiado dice 72 h para cancelar y 5 h para cambios; ClassVIP usa cancelación gratis hasta 24 h. | 24 h de cancelación y 5 h de cambios, configurables en settings. |
 | D-P3 | **Reseñas, fotos y estadísticas** | 6,774 reseñas, "desde 2013", Google (901) y fotos de clientes son de All Ways. | Ocultar esas secciones hasta tener material real. |
 | D-P4 | **Contacto y oficinas** | Teléfono, WhatsApp, email y direcciones son de relleno; Instagram solo dice "Cabo San Lucas". | Placeholders visibles en staging; bloqueante para producción. |
-| D-P5 | **Impuestos y efectivo** | El texto copiado dice que pagar en efectivo evita el 16% de impuesto. | Precios con IVA incluido y efectivo solo desde el admin; confirmar con el contador. |
+| D-P5 | **Impuestos y efectivo** | All Ways agrega "Tax (IVA 16%)" al pagar con tarjeta y ofrece "Pay in cash" sin ese impuesto, con depósito para Escalade y Limousine. | Igual que All Ways (§3.5.4, F2.12 y F3.13); el contador de CTC debe confirmar que es correcto fiscalmente antes de F15. |
 | D-P6 | **Video de Arrival Guide** | Es el de All Ways (sale su hostess y su letrero). | Poster propio sin video hasta tener el del cliente. |
 | D-P7 | **Estado de vuelos** | Requiere una API de pago (AeroDataBox o FlightAware). | Link a la página oficial de llegadas de SJD. |
-| D-P8 | **Servicios que se ofrecen de verdad** | El motor de All Ways ofrece Suburban (5), Cadillac Escalade (5), Van (10), Sprinter (17), Limousine, chofer por hora y City Tour; la flota real conocida del cliente es Suburban y Sprinter. | El selector se arma con los vehículos activos de la base; al inicio solo Suburban y Sprinter activos, y las páginas de servicios no confirmados ocultas. |
+| D-P8 | **Servicios que se ofrecen de verdad** | ✅ Decidido por Marlon (12 sep 2026): "todo igual" que All Ways. | Los 5 vehículos, chofer por hora, activity transfers, city tours, bodas, bachelorette, Bisbee's, grupos, familias y limusinas, todos activos. El admin puede desactivar un vehículo o servicio si CTC no lo tiene. |
 | D-P9 | **Dominio** | No definido. | `cabotransportationconcierge.com` como supuesto de configuración. |
 | D-P10 | **Idiomas** | ✅ Decidido por Marlon (12 sep 2026): bilingüe desde el lanzamiento. | Inglés en `/`, español en `/es/` (D15). |
 | D-P11 | **Promoción de septiembre** | El video anuncia "SEPTEMBER 10% OFF" con viaje del 1 al 30 de sep de 2026. | Promoción automática configurada; si se lanza después, actualizar el video y la fecha. |
 | D-P12 | **Horario del recargo nocturno** | All Ways cobra "Night surcharge · 11 PM – 5 AM"; ClassVIP cobra LATE_NIGHT de 10 PM a 6 AM y EARLY_MORNING antes de las 6 AM. | Horario configurable en settings; por defecto 11 PM – 5 AM (réplica de All Ways) con el precio del extra de ClassVIP ($20). |
 | D-P13 | **Zona de Los Cabos Golf Resort** | ClassVIP lo tenía en Cabo San Lucas y también en San José del Cabo, con precios distintos; no se pudo verificar su ubicación. Los otros 14 hoteles con dos zonas se corrigieron por ubicación real (`catalog.json` → `meta.hotel_zone_decisions`). | Cabo San Lucas. |
+| D-P14 | **Grupos más grandes que un vehículo** | All Ways no rechaza: multiplica el precio por `ceil(pasajeros / capacidad)` unidades del mismo vehículo (hasta 20 pasajeros en línea). Aquí el motor (F2.2) hoy rechaza con `too_many_passengers` arriba de 14 (el máximo de la Sprinter) y cada tramo de la reserva solo admite un `vehicle_class_id`, sin cantidad. Igualarlo exige: cotizar y cobrar por unidades, un campo de cantidad en `booking_legs` y que el despacho asigne un chofer por unidad (hoy `booking_assignments` tiene `UNIQUE(leg_id)`, una sola asignación por tramo). | ✅ Decidido por Marlon (12 sep 2026, "todo igual"): multi-vehículo automático como All Ways, hasta 20 pasajeros (F2.11). |
+| D-P15 | **Moneda de cobro** | All Ways muestra precios en USD y cobra con Stripe en pesos mexicanos (MXN), con un aviso que el cliente acepta. | Igual: precios en USD y moneda de cobro configurable en settings (MXN por defecto, con el aviso); el tipo de cambio lo confirma el cliente antes de F4.10. |
 
 ---
 
@@ -1155,3 +1398,4 @@ Mientras no haya respuesta, se usa el **valor por defecto** para no bloquear el 
 |---|---|
 | 2026-09-12 | Versión inicial: arquitectura, paridad con ClassVIP, errores a evitar, modelo de datos, API, mapa del sitio, SEO, seguridad, fases F0–F16 y decisiones pendientes. |
 | 2026-09-12 | v1.1, a pedido de Marlon:<br>• D15 bilingüe EN/ES desde el lanzamiento, D16 responsive primero y D17 réplica de funciones.<br>• §3.4 especificación del motor de reserva, mapa interactivo, directorio de hoteles y página por hotel de allwayscabotransportation.com.<br>• §12.1 presupuestos de carga y §12.2 matriz responsive.<br>• Tareas nuevas F7.13–F7.15, F8.11–F8.13, F9.13–F9.15 y F14.11–F14.12.<br>• D-P10 decidida y D-P12 agregada. |
+| 2026-09-12 | v1.2, a pedido de Marlon ("todo igual a All Ways, información diferente, que no se pase ningún dato"):<br>• §3.5 réplica completa: tres reglas, lista prohibida, menú, inventario de 40 rutas con secciones y formularios, tarifas completas y motor de reserva paso a paso.<br>• D-P1, D-P8 y D-P14 decididas; D-P5 ajustada y D-P15 agregada.<br>• Tareas nuevas F2.10–F2.12, F3.12–F3.13, F8.14 y F9.16–F9.20. |

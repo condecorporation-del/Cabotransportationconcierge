@@ -230,6 +230,7 @@ Una entrada por sesión o tarea, la más reciente arriba:
 - No editar nada dentro de `classvip-transfers-python` (es solo referencia).
 - No borrar `site/` (es el diseño aprobado). La carpeta `design/` es el primer prototipo descartado: bórrala solo con OK de Marlon.
 - No publicar contenido, fotos, reseñas, estadísticas o videos de All Ways Cabo Transportation en producción (WORKPLAN F9.1 y F9.2, D-P3 y D-P6).
+- El sitio es una réplica de All Ways en estructura, funciones y precios, con diseño propio y **cero datos de All Ways** (WORKPLAN §3.5). Ante la duda de cómo debe funcionar algo, se replica lo de All Ways sin preguntar; ningún valor de la lista prohibida de §3.5.1 puede entrar al código, al contenido ni a los datos (lo vigila F9.16).
 - No calcular precios en el frontend ni duplicar constantes de precio.
 - No filtrar el listado del admin por estado por defecto.
 - No usar SQLite en tests ni `create_all` en producción.
