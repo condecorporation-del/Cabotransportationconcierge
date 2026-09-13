@@ -57,7 +57,9 @@ async def test_same_idempotency_key_creates_one_booking(api: AsyncClient, db: As
     first = await api.post(URL, json=body, headers=headers)
     second = await api.post(URL, json=body, headers=headers)
     assert first.status_code == second.status_code == 201
-    assert first.json() == second.json()
+    replies = [first.json(), second.json()]
+    assert all(reply.pop("token") for reply in replies)
+    assert replies[0] == replies[1]
     assert await db.scalar(select(func.count()).select_from(Booking)) == 1
 
 

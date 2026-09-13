@@ -2,6 +2,26 @@
 
 Una entrada por sesión o tarea, la más reciente arriba (formato en `AGENTS.md` §10).
 
+## 2026-09-12 — F3.5 enlace de gestión firmado y F3.6 My Trip
+
+**Qué se hizo**
+- `app/core/security.py`: `booking_token` y `read_booking_token` con itsdangerous (`URLSafeTimedSerializer`, salt `booking-manage`, 90 días). El token lleva empresa y código; uno alterado, expirado o de otra empresa no se puede leer.
+- `POST /bookings` ahora devuelve `token` para la página de confirmación (§8.1 paso 6).
+- `GET /bookings/{code}` con `Authorization: Bearer <token>` → detalle con tramos, ítems y notas.
+  - Sin token, token alterado o expirado → 401 con instrucción para buscar la reserva.
+  - Token válido de otra reserva → 404.
+- `GET /bookings/lookup?code=&email=` (5/min además del límite general): código sin importar mayúsculas y email sin importar mayúsculas. Si no existe o el email no coincide → el mismo 404 con el mismo cuerpo.
+- `rate_limit`: el contador se separa por ruta y por límite, para combinar el general del router con uno más estricto por ruta.
+- Config: en local sin `SECRET_KEY` se genera una clave aleatoria por arranque; staging y producción siguen exigiendo 32 caracteres.
+
+**Archivos:** `backend/app/api/v1/bookings.py`, `backend/app/core/config.py`, `backend/app/core/rate_limit.py`, `backend/app/core/security.py`, `backend/app/schemas/bookings.py`, `backend/tests/test_booking_access.py`, `backend/tests/test_bookings.py`, `backend/tests/test_config.py`, `backend/.env.example`, `backend/pyproject.toml`, `backend/uv.lock`, `packages/api-client/src/schema.d.ts`, `WORKPLAN.md`
+
+**Verificación**
+- `uv run pytest` → **139 passed** (7 nuevos): el token abre su reserva; token alterado o ausente → 401; token de otra reserva → 404; token emitido hace 90 días y 1 minuto → 401; lookup con código en minúsculas y email en mayúsculas → token que abre la reserva; email incorrecto y reserva inexistente → mismo 404 y mismo cuerpo; la sexta búsqueda en un minuto → 429; clave local aleatoria y distinta en cada arranque.
+- `ruff`, `mypy`, `alembic check`, `pip-audit` y `tsc` → sin errores.
+
+**Pendiente:** F3.7 (cambios y cancelación con políticas), F3.8 (voucher PDF), F3.9 (auditoría de creación y cambios).
+
 ## 2026-09-12 — F3.2 máquina de estados, F3.3 validaciones y F3.4 recargo nocturno
 
 **Qué se hizo**

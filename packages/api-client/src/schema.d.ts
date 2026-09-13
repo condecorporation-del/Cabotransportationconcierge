@@ -203,6 +203,43 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/bookings/lookup": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Lookup
+         * @description My Trip: código + email. Si no existe o el email no coincide, la respuesta es la misma.
+         */
+        get: operations["lookup_api_v1_bookings_lookup_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/bookings/{code}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Detail */
+        get: operations["detail_api_v1_bookings__code__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -277,6 +314,8 @@ export interface components {
         };
         /** BookingCreated */
         BookingCreated: {
+            /** Token */
+            token: string;
             /** Code */
             code: string;
             status: components["schemas"]["BookingStatus"];
@@ -293,6 +332,28 @@ export interface components {
             /** Items */
             items: components["schemas"]["BookingItemOut"][];
         };
+        /** BookingDetail */
+        BookingDetail: {
+            /** Code */
+            code: string;
+            status: components["schemas"]["BookingStatus"];
+            /** Currency */
+            currency: string;
+            /** Subtotal Cents */
+            subtotal_cents: number;
+            /** Discount Cents */
+            discount_cents: number;
+            /** Tax Cents */
+            tax_cents: number;
+            /** Total Cents */
+            total_cents: number;
+            /** Items */
+            items: components["schemas"]["BookingItemOut"][];
+            /** Legs */
+            legs: components["schemas"]["BookingLegOut"][];
+            /** Notes Customer */
+            notes_customer: string | null;
+        };
         /** BookingItemOut */
         BookingItemOut: {
             item_type: components["schemas"]["ItemType"];
@@ -305,11 +366,44 @@ export interface components {
             /** Total Cents */
             total_cents: number;
         };
+        /** BookingLegOut */
+        BookingLegOut: {
+            leg_type: components["schemas"]["LegType"];
+            /**
+             * Service Date
+             * Format: date
+             */
+            service_date: string;
+            /** Service Time */
+            service_time: string | null;
+            /** Pickup Time */
+            pickup_time: string | null;
+            /** Flight Number */
+            flight_number: string | null;
+            /** Airline */
+            airline: string | null;
+            /** Origin */
+            origin: string;
+            /** Destination */
+            destination: string;
+            /** Pax Adults */
+            pax_adults: number;
+            /** Pax Children */
+            pax_children: number;
+        };
         /**
          * BookingStatus
          * @enum {string}
          */
         BookingStatus: "pending_payment" | "offline_hold" | "confirmed" | "paid" | "completed" | "cancelled";
+        /**
+         * BookingToken
+         * @description Token de gestión: va en `Authorization: Bearer` para ver o cambiar la reserva.
+         */
+        BookingToken: {
+            /** Token */
+            token: string;
+        };
         /** CustomerIn */
         CustomerIn: {
             /** Name */
@@ -418,6 +512,11 @@ export interface components {
              */
             international: boolean;
         };
+        /**
+         * LegType
+         * @enum {string}
+         */
+        LegType: "arrival" | "departure" | "local";
         /** PackageOut */
         PackageOut: {
             /** Slug */
@@ -888,6 +987,76 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["BookingCreated"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    lookup_api_v1_bookings_lookup_get: {
+        parameters: {
+            query: {
+                code: string;
+                email: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BookingToken"];
+                };
+            };
+            /** @description Booking not found. */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    detail_api_v1_bookings__code__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                code: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BookingDetail"];
                 };
             };
             /** @description Validation Error */

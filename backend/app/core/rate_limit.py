@@ -15,7 +15,7 @@ def rate_limit(limit: int, per_seconds: int = 60) -> Callable[[Request], Awaitab
     async def check(request: Request) -> None:
         now = time.time()
         window = int(now // per_seconds)
-        route = request.scope["route"].path
+        route = f"{request.scope['route'].path}:{limit}/{per_seconds}"
         store: dict[str, tuple[int, Counter[str]]] = request.app.state.rate_limits
         current, hits = store.get(route, (window, Counter()))
         if current != window:

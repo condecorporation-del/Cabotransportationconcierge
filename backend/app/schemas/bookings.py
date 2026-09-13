@@ -1,8 +1,9 @@
+from datetime import date, time
 from typing import Annotated, Literal
 
 from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
-from app.models import BookingStatus, ItemType
+from app.models import BookingStatus, ItemType, LegType
 from app.schemas.quotes import ActivityQuoteRequest, TransferQuoteRequest, _Strict
 
 
@@ -31,9 +32,11 @@ BookingRequest = Annotated[
 ]
 
 
-class BookingItemOut(BaseModel):
+class _FromOrm(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
+
+class BookingItemOut(_FromOrm):
     item_type: ItemType
     description: str
     quantity: int
@@ -41,9 +44,20 @@ class BookingItemOut(BaseModel):
     total_cents: int
 
 
-class BookingCreated(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
+class BookingLegOut(_FromOrm):
+    leg_type: LegType
+    service_date: date
+    service_time: time | None
+    pickup_time: time | None
+    flight_number: str | None
+    airline: str | None
+    origin: str
+    destination: str
+    pax_adults: int
+    pax_children: int
 
+
+class BookingSummary(_FromOrm):
     code: str
     status: BookingStatus
     currency: str
@@ -52,3 +66,18 @@ class BookingCreated(BaseModel):
     tax_cents: int
     total_cents: int
     items: list[BookingItemOut]
+
+
+class BookingToken(BaseModel):
+    """Token de gestión: va en `Authorization: Bearer` para ver o cambiar la reserva."""
+
+    token: str
+
+
+class BookingCreated(BookingSummary, BookingToken):
+    pass
+
+
+class BookingDetail(BookingSummary):
+    legs: list[BookingLegOut]
+    notes_customer: str | None

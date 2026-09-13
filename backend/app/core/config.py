@@ -1,3 +1,4 @@
+import secrets
 from functools import lru_cache
 from typing import Literal, Self
 
@@ -23,6 +24,8 @@ class Settings(BaseSettings):
     @model_validator(mode="after")
     def _fail_fast(self) -> Self:
         if self.environment not in ("staging", "production"):
+            # Local sin SECRET_KEY: clave aleatoria; los enlaces firmados valen hasta reiniciar.
+            self.secret_key = self.secret_key or secrets.token_urlsafe(48)
             return self
         errors = []
         if len(self.secret_key) < 32:

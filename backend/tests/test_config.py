@@ -24,6 +24,15 @@ def test_production_refuses_insecure_config(database_url: str, secret_key: str, 
         )
 
 
+def test_local_without_secret_gets_a_random_strong_key() -> None:
+    first, second = (
+        Settings(_env_file=None, environment="development", database_url=REMOTE_DB)
+        for _ in range(2)
+    )
+    assert len(first.secret_key) >= 32
+    assert first.secret_key != second.secret_key
+
+
 def test_production_accepts_secure_config_and_hides_secrets() -> None:
     settings = Settings(
         _env_file=None, environment="production", database_url=REMOTE_DB, secret_key=STRONG_KEY
