@@ -2,6 +2,32 @@
 
 Una entrada por sesión o tarea, la más reciente arriba (formato en `AGENTS.md` §10).
 
+## 2026-09-12 — F1.6 Catálogo y clientes
+
+**Qué se hizo**
+- `app/models/catalog.py` con enums (`TripType`, `ServiceScope`, `PricingMode`, `ExtraAutoRule`, `DiscountType`, `PromotionScope`) y modelos `Zone`, `Hotel`, `VehicleClass`, `Rate`, `Extra`, `Activity`, `ActivityPackage` y `Promotion`. Todos usan `TenantMixin`, así que quedan aislados por empresa (F1.2).
+- `app/models/customer.py`: `Customer` con email único por empresa sin importar mayúsculas. Se hizo antes que F1.5 porque las reservas lo referencian.
+- Reglas en la base:
+  - Una tarifa por combinación (`uq_rates_zone_vehicle_trip_scope`).
+  - `price_cents >= 0`, rango de pasajeros válido y porcentaje ≤ 100.
+  - Código de promoción único sin importar mayúsculas; varias promociones sin código están permitidas porque son automáticas por fechas.
+  - Índice GIN trigram en el nombre del hotel, para la búsqueda de F2.5.
+- Solo campos que usa el motor de precios (regla de código mínimo): sin dirección, coordenadas ni imágenes hasta F9.
+
+**Encontrado al revisar la migración antes de aplicarla**
+1. Faltaba `CREATE EXTENSION pg_trgm`, porque autogenerate no crea extensiones. Se agregó a mano al inicio de `upgrade()`.
+2. La naming convention usaba solo la primera columna, así que todos los unique compuestos salían como `uq_<tabla>_company_id`: nombres engañosos y con riesgo de choque. Se cambió a `column_0_N_name` (todas las columnas) y `rates` recibió un nombre explícito corto para no pasar el límite de 63 caracteres de Postgres. Los nombres de la migración anterior no cambian porque son de una sola columna.
+
+**Archivos:** `backend/app/models/catalog.py`, `backend/app/models/customer.py`, `backend/app/models/__init__.py`, `backend/app/db.py`, `backend/alembic/versions/20260912_4b96b66d17b0_catalogo_y_clientes.py`, `backend/tests/test_models_catalog.py`, `WORKPLAN.md`
+
+**Verificación**
+- `uv run pytest` → **20 passed**. Tests nuevos: tarifa duplicada, precio negativo, slug de hotel repetido, código de promo repetido sin importar mayúsculas (sin código sí se permite), email de cliente repetido y `pg_trgm` instalada.
+- `alembic upgrade head` en `ctc` y luego `alembic check` → "No new upgrade operations detected".
+- `ruff check`, `ruff format --check` y `mypy app` → 0 errores.
+- CI del commit anterior `8d7994c` (run `34727447942`) → los 3 jobs en success.
+
+**Pendiente:** F1.5 (reservas), F1.7 (pagos y finanzas), F1.8 (operación y comunicación) y F1.9 a F1.12.
+
 ## 2026-09-12 — F1.2 Aislamiento por empresa en el ORM
 
 **Qué se hizo**

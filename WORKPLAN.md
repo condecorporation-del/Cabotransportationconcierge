@@ -12,23 +12,23 @@
 
 | Indicador | Estado |
 |---|---|
-| **Fase actual** | F1 — Base de datos y dominio: 4/12 (F1.1 a F1.4). F0 ✅ 9/9. CI verde (run `34727349395`). Vista previa del prototipo en https://cabotransportationconcierge.vercel.app (noindex). |
+| **Fase actual** | F1 — Base de datos y dominio: 5/12 (F1.1 a F1.4 y F1.6). F0 ✅ 9/9. CI verde (run `34727447942`). Vista previa del prototipo en https://cabotransportationconcierge.vercel.app (noindex). |
 | **Último avance** | 12 sep 2026 — F0:<br>• Repo git con prototipo aprobado.<br>• Backend mínimo FastAPI con `/api/v1/health` y `/health/ready`.<br>• Configuración fail-fast.<br>• Postgres 16 nativo con bases `ctc` y `ctc_test`.<br>• Cliente de API tipado generado desde OpenAPI.<br>• CI escrito.<br>• ADR-001 (entorno sin Docker).<br>• Checklist para el cliente. |
 | **Backend** | ✅ App mínima: health y readiness con Postgres real. Ruff (reglas de seguridad) y mypy estricto en 0 errores. |
-| **Base de datos** | ✅ Local: Postgres 16.15 nativo con `ctc` y `ctc_test`. Tablas creadas por la migración `5721f5faa1c7`: `companies`, `company_settings`, `admin_users` y `sessions`. `alembic check` sin diferencias. |
+| **Base de datos** | ✅ Local: Postgres 16.15 nativo con `ctc` y `ctc_test`. Migraciones:<br>• `5721f5faa1c7`: empresas, ajustes, admins y sesiones.<br>• `4b96b66d17b0`: `pg_trgm`, zonas, hoteles, clases de vehículo, tarifas, extras, actividades, paquetes, promociones y clientes.<br>`alembic check` sin diferencias. |
 | **Sitio público real** | ❌ Solo el prototipo estático `site/` (HTML generado por `site/build.js`). |
 | **Admin** | ❌ No existe. |
-| **Tests** | ✅ 14 tests pytest verdes contra Postgres real, incluido el aislamiento por empresa. En cada corrida la migración va a base y de vuelta a head. pip-audit y npm audit sin vulnerabilidades. |
+| **Tests** | ✅ 20 tests pytest verdes contra Postgres real, incluidos el aislamiento por empresa y los constraints del catálogo. En cada corrida la migración va a base y de vuelta a head. pip-audit y npm audit sin vulnerabilidades. |
 | **Deploy** | ❌ No configurado. |
 | **Git** | ✅ Remoto `github.com/condecorporation-del/Cabotransportationconcierge` (push por la deploy key `~/.ssh/deploy_cabo_concierge`, alias SSH `github-cabo`). Rama `main` subida; gitleaks sin hallazgos en el historial. |
 
-**Siguiente tarea:** F1.5 (modelos de reservas: `bookings`, `booking_legs`, `booking_items` y `booking_assignments`).
+**Siguiente tarea:** F1.5, modelos de reservas: `bookings`, `booking_legs`, `booking_items` y `booking_assignments`. Ya puede referenciar hoteles, vehículos y clientes.
 
 **Progreso por fase**
 
 ```
 F0  Fundación y decisiones          [██████████] 9/9 ✅
-F1  Base de datos y dominio         [███-------] 4/12
+F1  Base de datos y dominio         [████------] 5/12
 F2  Motor de precios y catálogo     [----------] 0/9
 F3  Reservas públicas               [----------] 0/11
 F4  Pagos con Stripe                [----------] 0/10
@@ -749,7 +749,11 @@ Formato de cada tarea: `- [ ] ID — qué`, con **Verificar** (comando o prueba 
 - [x] **F1.3** — Alembic async con `DATABASE_URL_DIRECT`; migración inicial generada y revisada a mano. Verificar: `alembic upgrade head` y luego `alembic downgrade base` funcionan en limpio.
 - [x] **F1.4** — Modelos de empresa, settings, usuarios y sesiones. Verificar: tests de unicidad (email por empresa).
 - [ ] **F1.5** — Modelos de reservas: `bookings`, `booking_legs`, `booking_items`, `booking_assignments`. Verificar: test que crea una reserva con 2 tramos y extras, y la relee completa.
-- [ ] **F1.6** — Modelos de catálogo: `zones`, `hotels` (pg_trgm), `vehicle_classes`, `rates`, `extras`, `activities`, `activity_packages`, `promotions`. Verificar: constraint único de `rates`.
+- [x] **F1.6** — Modelos de catálogo: `zones`, `hotels` (pg_trgm), `vehicle_classes`, `rates`, `extras`, `activities`, `activity_packages` y `promotions`, más `customers`. Se adelantó a F1.5 porque las reservas tienen FK a hoteles, vehículos y clientes.
+  - Solo los campos que usa el motor de precios. Dirección, coordenadas e imágenes se agregan cuando las use el mapa o el contenido (F9).
+  - Reglas en la base: una tarifa por zona, vehículo, viaje y servicio; precios ≥ 0; porcentaje ≤ 100; código de promo único sin importar mayúsculas (sin código = automática); email de cliente único por empresa.
+
+  Verificar: tests de cada constraint y de que `pg_trgm` está instalada.
 - [ ] **F1.7** — Modelos de pagos y finanzas: `payments`, `stripe_events`, `client_accounts`, `account_charges`, `account_payments`. Verificar: tests de unicidad de intent y evento.
 - [ ] **F1.8** — Modelos de operación y comunicación: `drivers`, `vehicles`, `admin_tasks`, `audit_logs`, `email_outbox`, `ai_conversations`, `ai_messages`, `contact_messages`, `reviews`. Verificar: migración aplicada.
 - [ ] **F1.9** — `scripts/seed_catalog.py`: importar de ClassVIP (`backend/scripts/data/*.json`) hoteles (sin duplicados, con slug y alias), 6 zonas, matriz de tarifas corregida (sin ceros ni duplicados), 16 extras, actividades y combos. Con la bandera `--dry-run` imprime la matriz para que Marlon la apruebe (D-P1). Verificar: reporte de conteos y matriz sin huecos.
