@@ -5,7 +5,7 @@ from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from sqlalchemy.ext.asyncio import async_sessionmaker
 
-from app.api.v1 import bookings, catalog, contact, health, quotes
+from app.api.v1 import bookings, catalog, contact, health, quotes, webhooks
 from app.core.config import get_settings
 from app.core.errors import AppError
 from app.db import engine_from_url
@@ -38,7 +38,7 @@ def create_app() -> FastAPI:
     )
     app.state.rate_limits = {}
     app.add_exception_handler(AppError, app_error)
-    for module in (health, catalog, quotes, bookings, contact):
+    for module in (health, catalog, quotes, bookings, contact, webhooks):
         app.include_router(module.router, prefix="/api/v1")
     return app
 

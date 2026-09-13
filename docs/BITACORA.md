@@ -2,6 +2,26 @@
 
 Una entrada por sesión o tarea, la más reciente arriba (formato en `AGENTS.md` §10).
 
+## 2026-09-13 — F4.4: webhook de Stripe
+
+**`POST /api/v1/webhooks/stripe`** (nuevo router `app/api/v1/webhooks.py`):
+- Firma verificada con `verify_webhook` (F4.1) sobre el cuerpo crudo (`await request.body()`, sin volver a serializarlo: la firma es sobre esos bytes exactos). Firma inválida → 400 `invalid_signature` (lo maneja el handler global de `AppError`, sin código de más).
+- `stripe_events` con el id del evento como llave primaria: `INSERT ... ON CONFLICT DO NOTHING`; si ya existía, no se procesa de nuevo (el evento se guarda una sola vez, se procesa una sola vez).
+- Sin `get_company`: el webhook llega antes de saber la empresa, y el `Payment` se busca globalmente por `stripe_payment_intent_id` (único).
+
+**`app/services/payments.py`, refactor:** la parte de F4.3 que marca pagado (`payment.status = SUCCEEDED`, `PENDING_PAYMENT → PAID`, y `→ CONFIRMED` si era el depósito en efectivo) se movió a `_settle()`, compartida entre `confirm_payment` (navegador) y el webhook. Así llegar por los dos caminos al mismo pago no lo procesa dos veces: si la confirmación rápida ya marcó `SUCCEEDED`, `_apply_success` no vuelve a tocar la reserva.
+- `payment_intent.payment_failed`: marca el `Payment` `FAILED` si seguía `PENDING`; la reserva no cambia (el cliente puede reintentar).
+- `charge.refunded`: `refunded_cents` (limitado al monto pagado) y `REFUNDED` o `PARTIALLY_REFUNDED` según alcance. No mueve el estado de la reserva por sí solo — eso lo decide el admin en F4.7.
+- `checkout.session.completed` se reconoce (no cae como evento desconocido) pero no hace nada: no existe todavía quien cree esas sesiones (F4.6, link de pago del admin).
+
+**Archivos:** `backend/app/api/v1/webhooks.py`, `backend/app/main.py`, `backend/app/services/payments.py`, `backend/tests/test_webhooks.py`, `packages/api-client/src/schema.d.ts`, `WORKPLAN.md`
+
+**Verificación**
+- `uv run pytest` → **182 passed** (8 nuevos): firma inválida → 400; `payment_intent.succeeded` marca `PAID`; el mismo id de evento dos veces solo deja un registro en `stripe_events`; el depósito en efectivo confirma (`CONFIRMED`) igual que por el navegador; si el navegador ya confirmó, el webhook no reintenta la transición; `payment_intent.payment_failed` marca el pago sin tocar la reserva; `charge.refunded` deja el pago reembolsado; un tipo de evento no manejado se guarda igual.
+- `ruff`, `mypy`, `alembic check`, `pip-audit` y `tsc` del cliente → sin errores.
+
+**Pendiente:** F4.5 espera al worker de correos (F5); F4.6 a F4.8 esperan al admin (F6); F4.10 (prueba real con Stripe CLI) espera las llaves de prueba del cliente.
+
 ## 2026-09-13 — F4.2 y F4.3: crear y confirmar el pago con Stripe
 
 **`app/services/payments.py`** (nuevo), usando el `stripe_gateway.py` de F4.1 sin agregarle lógica:

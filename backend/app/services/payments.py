@@ -1,10 +1,13 @@
-"""Pago de una reserva con Stripe (F4.2, F4.3): el monto siempre sale de la reserva ya creada.
+"""Pago de una reserva con Stripe (F4.2 a F4.4): el monto siempre sale de la reserva ya creada.
 
 `stripe_gateway.py` es el único que habla con Stripe; aquí solo se decide qué cobrar y se
-guarda el resultado. El webhook (F4.4) es la fuente de verdad final; esto confirma al instante.
+guarda el resultado. El webhook es la fuente de verdad si la confirmación rápida del
+navegador no llega a correr (se cerró la pestaña, se cayó la red); ambos caminos marcan
+pagado por el mismo `_settle`, así que llegar por los dos no lo hace dos veces.
 """
 
 from datetime import UTC, datetime
+from typing import Any
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -25,6 +28,17 @@ from app.services.stripe_gateway import StripeGateway
 
 class PaymentError(AppError):
     status_code = 400
+
+
+async def _settle(
+    session: AsyncSession, payment: Payment, booking: Booking, actor: AuditActor, ip: str | None
+) -> None:
+    payment.status = PaymentStatus.SUCCEEDED
+    payment.paid_at = datetime.now(UTC)
+    transition(session, booking, BookingStatus.PAID, actor=actor, ip=ip)
+    if booking.payment_method == "cash":
+        # El depósito confirma la reserva; el saldo lo cobra el chofer (§8.2: PAID -> CONFIRMED).
+        transition(session, booking, BookingStatus.CONFIRMED, actor=AuditActor.SYSTEM, ip=ip)
 
 
 def _amount(booking: Booking) -> int:
@@ -99,10 +113,54 @@ async def confirm_payment(
         raise PaymentError("payment_mismatch", "This payment does not belong to this booking.")
     if intent.get("status") != "succeeded":
         raise PaymentError("payment_not_completed", "The payment has not completed yet.")
+    await _settle(session, payment, booking, AuditActor.CUSTOMER, ip)
 
-    payment.status = PaymentStatus.SUCCEEDED
-    payment.paid_at = datetime.now(UTC)
-    transition(session, booking, BookingStatus.PAID, actor=AuditActor.CUSTOMER, ip=ip)
-    if booking.payment_method == "cash":
-        # El depósito confirma la reserva; el saldo lo cobra el chofer (§8.2: PAID -> CONFIRMED).
-        transition(session, booking, BookingStatus.CONFIRMED, actor=AuditActor.SYSTEM, ip=ip)
+
+async def handle_stripe_event(session: AsyncSession, event: dict[str, Any]) -> None:
+    """F4.4: procesa lo que ya cambió en Stripe; `stripe_events` afuera evita repetirlo."""
+    kind = event.get("type")
+    data: dict[str, Any] = ((event.get("data") or {}).get("object")) or {}
+    if kind == "payment_intent.succeeded":
+        await _apply_success(session, data)
+    elif kind == "payment_intent.payment_failed":
+        await _apply_failure(session, data)
+    elif kind == "charge.refunded":
+        await _apply_refund(session, data)
+    # checkout.session.completed: sin manejo hasta el link de pago del admin (F4.6).
+
+
+async def _payment_for(session: AsyncSession, intent_id: str | None) -> Payment | None:
+    if not intent_id:
+        return None
+    payment = await session.scalar(
+        select(Payment).where(Payment.stripe_payment_intent_id == intent_id)
+    )
+    return payment
+
+
+async def _apply_success(session: AsyncSession, intent: dict[str, Any]) -> None:
+    payment = await _payment_for(session, intent.get("id"))
+    if payment is None or payment.status is PaymentStatus.SUCCEEDED:
+        return  # Ya lo marcó la confirmación rápida, o no es un intent nuestro.
+    booking = await session.get(Booking, payment.booking_id)
+    if booking is None or booking.status is not BookingStatus.PENDING_PAYMENT:
+        return
+    await _settle(session, payment, booking, AuditActor.SYSTEM, None)
+
+
+async def _apply_failure(session: AsyncSession, intent: dict[str, Any]) -> None:
+    payment = await _payment_for(session, intent.get("id"))
+    if payment and payment.status is PaymentStatus.PENDING:
+        payment.status = PaymentStatus.FAILED
+
+
+async def _apply_refund(session: AsyncSession, charge: dict[str, Any]) -> None:
+    payment = await _payment_for(session, charge.get("payment_intent"))
+    if payment is None:
+        return
+    payment.refunded_cents = min(int(charge.get("amount_refunded") or 0), payment.amount_cents)
+    payment.status = (
+        PaymentStatus.REFUNDED
+        if payment.refunded_cents >= payment.amount_cents
+        else PaymentStatus.PARTIALLY_REFUNDED
+    )
