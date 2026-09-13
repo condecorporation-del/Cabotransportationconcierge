@@ -34,7 +34,7 @@ F3  Reservas públicas               [████████--] 11/13
 F4  Pagos con Stripe                [█---------] 1/10
 F5  Emails, PDF y trabajos          [----------] 0/11
 F6  Auth y API del admin            [----------] 0/13
-F7  Sitio público: migrar prototipo [----------] 0/15
+F7  Sitio público: migrar prototipo [----------] 0/16
 F8  Sitio público: funciones reales [----------] 0/14
 F9  Páginas de contenido y navbar   [----------] 0/20
 F10 Agente de IA Customer Help      [----------] 0/11
@@ -280,7 +280,7 @@ Fuente: lectura del sitio real el 12 sep 2026. Es una app Laravel + Inertia + Vu
 #### 3.5.1 Las tres reglas
 
 1. **Igual en estructura y funcionamiento.** Mismas páginas, mismo menú, mismas secciones en el mismo orden, mismos formularios con los mismos campos, mismo motor de reserva con sus reglas y mensajes, y mismas tarifas. Ante la duda de cómo debe comportarse algo, la respuesta es "como en All Ways" (sin volver a preguntar a Marlon).
-2. **Diseño más moderno** con la identidad aprobada (obsidiana y dorado, Playfair Display y Outfit, animaciones del prototipo). Nada del look de All Ways: ni su azul `#215465` / `#007a96`, ni su tipografía de Typekit, ni sus imágenes.
+2. **Diseño más premium y distinguible** (detalle en §3.5.6): obsidiana y dorado, tipografías nuevas, navbar con otra composición, zonas con nombres propios, textos parecidos pero reescritos, y el logo oficial de CTC. Nada del look de All Ways: ni su azul `#215465` / `#007a96`, ni su tipografía (Ideal Sans de Typekit), ni sus imágenes. Se usa la **misma función** con **otra forma**: quien conozca los dos sitios debe reconocer el servicio, pero no confundir las marcas.
 3. **Cero datos de All Ways.** Todo texto, dato, foto, video, reseña, número y enlace es de Cabo Transportation Concierge. Los precios son la única excepción permitida.
 
 **Lista prohibida** (el CI la busca en el build del sitio, el admin, los correos, el voucher y el prompt de la IA; F9.16). Cualquier coincidencia rompe el build:
@@ -299,7 +299,7 @@ Los datos propios salen de `company_settings` (teléfono, WhatsApp, email, ofici
 
 #### 3.5.2 Menú (header y footer)
 
-**Header, de izquierda a derecha:** logo CTC · **Services** (mega menú) · **All Tours** · **Prices** · **About Us** · **FAQ** · **Travel Guide** · **Contact** · selector EN/ES · CTA "Book your Cabo transfer".
+**Contenido del header** (mismos destinos que All Ways; la composición visual es distinta y se define en §3.5.6): logo CTC · **Services** (mega menú) · **All Tours** · **Prices** · **About Us** · **FAQ** · **Travel Guide** · **Contact** · selector EN/ES · CTA de reserva.
 
 **Mega menú Services**, en tres columnas más una fila de guías:
 
@@ -436,12 +436,78 @@ Pasos con check (`BookingSteps`): **Service → Extras → Contact → Payment**
    - **Pay in cash** a la llegada, con depósito con tarjeta para vehículos premium.
    - "Payment information" con aviso de cobro en **pesos mexicanos (MXN)** que hay que aceptar (moneda de cobro configurable, D-P15).
    - Estados: "Processing payment...", "Looks like you already made this payment", "You have canceled the payment process", error de conexión con reintento, "Great! your payment is completed!" y "Retrieve your voucher / View Voucher".
+> Los textos entre comillas de §3.5.3 y §3.5.5 son la **referencia de significado**, no el copy final. Cada uno se reescribe según §3.5.6 (por ejemplo, "Select a vehicle to continue." → "Choose your vehicle to continue"; "Personalize Your Ride" → "Tailor your journey"; "Per vehicle, never per person" → "One price for the vehicle, whatever your group size").
+
 5. **Order Summary** fijo durante todo el flujo:
    - Service type, From, Arrival Date, Return Date, Total Passengers y Vehicle(s).
    - Extra options, Subtotal, Special offer applied / Discount, Night surcharge, Add-ons, Limo Extras, Tax (IVA 16%) y Total Due.
    - "Pay on arrival" cuando aplica.
    - "Toll roads, airport fees, and full insurance are completely included in your final price."
    - "Your savings are already reflected in the price summary. No promo code needed."
+
+#### 3.5.6 Diferenciación: más premium y con identidad propia (Marlon, 12 sep 2026)
+
+> Marlon: "El diseño de nosotros tiene que quedar más premium, con otras fuentes para que no se vea tan igual, el navbar un poquito diferente, las zonas diferentes, el texto parecido pero un poquito diferente, y usa el logo de Cabo Transportation Concierge que te di."
+
+**1. Logo oficial.** El medallón dorado que entregó Marlon (`C:\Users\conde\Downloads\Video\Cabotransportation logo.jpg`): monograma CTC grabado, "CABO / TRANSPORTATION / CONCIERGE" y la Escalade dorada dentro de un aro. Reemplaza el SVG horizontal provisional (`site/images/svg/logo-ctc.svg`, que no es el logo del cliente).
+- Versiones con fondo transparente en `site/images/logo/`:
+  - `ctc-medallion-{512,192,128,64}.webp` y `.png`.
+  - `favicon-32.png` y `apple-touch-icon.png`.
+- **Header:** medallón de 56–64 px (44 px en la barra compacta).
+- **Footer y hero de páginas internas:** 128–192 px.
+- **Favicon:** recorte del monograma CTC. A 32 px el medallón completo no se lee.
+- **Voucher PDF, correos, imagen OG y JSON-LD `logo`:** el medallón oficial, no el emblema dibujado a mano.
+- **Vector:** se pide a Marlon o a un diseñador el SVG trazado del logo para nitidez en pantallas grandes; mientras tanto, el PNG/WebP de 512 px.
+
+**2. Tipografías nuevas** (distintas de All Ways y del prototipo actual). Elegidas para acompañar el grabado clásico del logo:
+
+| Uso | Fuente | Por qué |
+|---|---|---|
+| Títulos | **Cormorant Garamond** (500–700, con itálica) | Serif de alto contraste y aire editorial de lujo; más fina y distinguida que Playfair. |
+| Marca, navbar y etiquetas cortas | **Cinzel** (500–600) | Mayúsculas romanas de inscripción, las mismas proporciones del "CABO" del logo; solo en textos cortos. |
+| Cuerpo, formularios y precios | **Manrope** (400–700) | Sans geométrica con cifras tabulares claras para tarifas y totales. |
+
+Self-hosted en WOFF2 con subset latino (incluye acentos y ñ), `font-display: swap` y preload solo de las dos variantes del primer pantallazo. En F7.2 se muestran a Marlon dos muestras lado a lado (esta combinación y una alternativa) antes de fijar los tokens.
+
+**3. Navbar con otra composición** (mismos links que §3.5.2; distinta forma que All Ways, que usa logo a la izquierda y links en línea):
+- **Barra superior fina:** WhatsApp y teléfono de CTC, "My Trip" y selector EN/ES.
+- **Barra principal:** medallón **centrado**; a la izquierda Services, Tours y Prices; a la derecha About, FAQ, Travel Guide y Contact; CTA "Reserve" con borde dorado al extremo derecho.
+- **Al hacer scroll:** se compacta en una barra de vidrio obsidiana (blur) con el medallón pequeño a la izquierda y el CTA siempre visible.
+- **Mega menú:** panel de ancho completo con las 3 columnas (Airport & Transfers, Events & Groups, Tours), una tarjeta destacada con foto (por ejemplo, la Suburban negra) y CTA de reserva, y la fila de guías abajo. Se abre con hover y con click o Enter, se cierra con Escape.
+- **Móvil:** menú a pantalla completa en obsidiana, con el medallón arriba, acordeones por grupo y los botones de reserva y WhatsApp fijos abajo.
+
+**4. Zonas con nombres propios.** Mismos límites geográficos y mismos precios (§3.5.4), otros nombres. Numeración romana en el mapa ("Zone I", "Zone II"…).
+
+| # | All Ways | Cabo Transportation Concierge | Tarjeta del home |
+|---|---|---|---|
+| I | Hotel Zone of San Jose del Cabo | San José del Cabo & Estuary | San José del Cabo |
+| II | Puerto Los Cabos & Tourism Corridor | The Corridor & Puerto Los Cabos | The Corridor |
+| III | Cabo San Lucas | Cabo San Lucas & Marina | Cabo San Lucas |
+| IV | CSL Pacific Ocean Side | Pacific Coast · Pedregal & Diamante | Pacific Coast |
+| V | Cabo Further Zone | Pacific North & Outer Cabo | Pacific North |
+| VI | Pescadero | El Pescadero & Cerritos | — |
+| VII | Todos Santos | Todos Santos, Pueblo Mágico | — |
+| VIII | La Paz | La Paz & Balandra | — |
+| IX | Los Barriles | Los Barriles · East Cape | — |
+| X | Cabo Pulmo | Cabo Pulmo Marine Park | — |
+
+En español: "San José del Cabo y el Estero", "El Corredor y Puerto Los Cabos", "Cabo San Lucas y la Marina", "Costa del Pacífico · Pedregal y Diamante", "Pacífico Norte", "El Pescadero y Cerritos", "Todos Santos, Pueblo Mágico", "La Paz y Balandra", "Los Barriles · East Cape" y "Parque Marino Cabo Pulmo". Los slugs también son propios (`san-jose-del-cabo-estuary`, `the-corridor`, `cabo-san-lucas-marina`, `pacific-coast`, `pacific-north`…).
+
+**5. Textos parecidos, pero reescritos.**
+- Cada título, párrafo, FAQ, mensaje de error y botón conserva la intención y la información útil, pero con otras palabras, otro orden y la voz de CTC (concierge de lujo, cercano y preciso).
+- Ninguna frase igual a la de All Ways.
+- Los títulos de página (`<title>`, H1) son distintos para no competir con frases idénticas en Google.
+- Ejemplos:
+
+| All Ways | CTC (EN) |
+|---|---|
+| "How are you traveling?" | "Where is your journey taking you?" |
+| "Book My Ride" | "Reserve my transfer" |
+| "Private Driver in Cabo San Lucas \| Hourly Chauffeur Service" | "Your Private Chauffeur in Los Cabos, by the Hour" |
+| "The 2 AM ride home" | "A ride back, even after the last song" |
+| "Cabo Shuttle Prices by Vehicle" | "Transfer Rates, Vehicle by Vehicle" |
+
+- Verificación automática en F9.1: similitud por oración contra la copia de referencia y ninguna oración con más de 70% de coincidencia.
 
 ---
 
@@ -775,7 +841,7 @@ Hoy el prototipo tiene **179 links que apuntan a `#` en el home y 68 en Arrival 
    - Hero: el poster es la imagen LCP (con preload).
    - El video carga después del evento `load`; en móvil sale una versión de 720p o solo el poster si hay ahorro de datos.
 9. **Imágenes** con `astro:assets` (AVIF/WebP, `srcset`, `width` y `height`), lazy fuera del primer viewport.
-10. **Fuentes** self-hosted (Playfair Display y Outfit) con subset latino y `font-display: swap`.
+10. **Fuentes** self-hosted (Cormorant Garamond, Cinzel y Manrope; §3.5.6) con subset latino y `font-display: swap`.
 11. **Idiomas:** bilingüe desde el lanzamiento (D15), con `hreflang` recíproco y `x-default`, canonical por idioma, sitemap por idioma y JSON-LD con `inLanguage`. Keywords investigadas por idioma (por ejemplo "cabo airport transportation" y "transporte aeropuerto los cabos").
 12. **Fuera del sitio** (F15 y F16): Google Search Console, Bing Webmaster, Google Business Profile, citas NAP consistentes y TripAdvisor.
 
@@ -1028,7 +1094,7 @@ Formato de cada tarea: `- [ ] ID — qué`, con **Verificar** (comando o prueba 
 - [ ] **F2.10** — Catálogo igual a All Ways (§3.5.4):
   - 10 zonas y 5 vehículos (Suburban 5, Escalade 5, Van 10, Limousine 6 con máximo 10, Sprinter 17).
   - Matriz completa con Airport One Way, Airport Round Trip, Local One Way y Local Round Trip; Limousine solo en zonas 1 a 5.
-  - Los 245 hoteles reasignados a las 10 zonas.
+  - Los 245 hoteles reasignados a las 10 zonas, con los nombres y slugs propios de §3.5.6 (no los de All Ways).
   - Extras, depósitos (Escalade $100, Limousine $110), promo automática por fecha de viaje y tarifas por hora del chofer privado.
   - Antes de sembrar, leer los componentes de All Ways para confirmar tres montos: recargo nocturno por vehículo, orden de las tarifas de activity transfers y cargo por pasajero extra de la limusina.
 
@@ -1123,9 +1189,9 @@ Formato de cada tarea: `- [ ] ID — qué`, con **Verificar** (comando o prueba 
 ### F7 — Sitio público: migrar el prototipo a Astro
 
 - [ ] **F7.1** — Proyecto Astro con TypeScript estricto, Tailwind y la integración de React. Verificar: `npm run build` sin warnings.
-- [ ] **F7.2** — `styles/tokens.css` con la paleta y tipografías de `site/luxe.css` (obsidiana, dorado champagne, Playfair Display y Outfit), más la escala de espacios. **Sin cambiar el look aprobado.** Verificar: comparación visual lado a lado con `site/index.html`.
+- [ ] **F7.2** — `styles/tokens.css` con la paleta de `site/luxe.css` (obsidiana y dorado champagne), las tipografías nuevas de §3.5.6 (Cormorant Garamond, Cinzel y Manrope) y la escala de espacios. Verificar: Marlon aprueba dos muestras lado a lado antes de fijar los tokens.
 - [ ] **F7.3** — `BaseLayout.astro` con SEO (`<SEO>` por página), header, footer y botones flotantes (Customer Help y WhatsApp). Verificar: Lighthouse SEO 100 en una página vacía.
-- [ ] **F7.4** — `Header` con mega menú de Services (4 columnas), dropdown de Tours y menú móvil accesibles con teclado, en HTML real (sin depender de JS para los links). Verificar: navegación con Tab y Escape; los links existen sin JS.
+- [ ] **F7.4** — `Header` con la composición de §3.5.6: barra superior, medallón centrado con links a los lados, barra compacta de vidrio al hacer scroll, mega menú de ancho completo con tarjeta destacada y menú móvil a pantalla completa. Todo accesible con teclado y en HTML real (sin depender de JS para los links). Verificar: navegación con Tab y Escape; los links existen sin JS; captura lado a lado con All Ways muestra una composición distinta.
 - [ ] **F7.5** — `Footer` con datos de `company_settings` (cargados en build). Verificar: cambiar el teléfono en la base y reconstruir lo actualiza.
 - [ ] **F7.6** — Home por secciones (componentes) idéntica al prototipo, con textos listos para reescribir (F9.1). Verificar: diff visual con capturas de 1440 y 400 px.
 - [ ] **F7.7** — Hero: poster como LCP y video diferido (WebM y MP4 ligeros), versión móvil, `prefers-reduced-motion`. Verificar: LCP < 2.5 s en Lighthouse móvil.
@@ -1155,6 +1221,13 @@ Formato de cada tarea: `- [ ] ID — qué`, con **Verificar** (comando o prueba 
   - Video del hero según la conexión (`navigator.connection`, `saveData`).
 
   Verificar: Lighthouse CI móvil cumple la tabla de §12.1.
+- [ ] **F7.16** — Logo oficial de CTC en todo el sistema (§3.5.6):
+  - Medallón transparente en header, footer, hero interno, voucher PDF, correos, imagen OG y JSON-LD.
+  - Favicon con el monograma.
+  - SVG vectorial en cuanto lo entreguen.
+  - Se retira el SVG provisional `logo-ctc.svg`.
+
+  Verificar: `grep` sin referencias a `logo-ctc.svg`; favicon visible en Chrome y Safari; voucher con el medallón.
 
 ### F8 — Sitio público: funciones reales
 

@@ -154,9 +154,10 @@ Una tarea está hecha solo si se cumple **todo** esto:
   | `--ctc-pearl` | `#FAF8F4` |
 
   Los botones principales usan el degradado dorado con brillo al pasar el mouse.
-- **Tipografía:** Playfair Display para títulos, Outfit para el cuerpo.
+- **Tipografía (WORKPLAN §3.5.6):** Cormorant Garamond para títulos, Cinzel solo para marca, navbar y etiquetas cortas, Manrope para cuerpo, formularios y precios. El prototipo `site/` todavía usa Playfair Display y Outfit; se cambia al migrar (F7.2).
 - **Hero:** video `videos/hero-promo-light.{webm,mp4}` sobre el poster de la Suburban. Las escenas se generan con `site/video/generate.mjs` (OpenRouter, `alibaba/wan-3.0-prime`) y se unen con `site/video/compose.mjs` (ffmpeg).
-- **Logo:** medallón CTC dorado (`C:\Users\conde\Downloads\Video\Cabotransportation logo.jpg`; recorte circular en `site/video/logo-round.png`). En el header va la versión horizontal `site/images/svg/logo-ctc.svg` hasta tener el vector oficial.
+- **Logo:** el medallón CTC dorado oficial que entregó Marlon (`C:\Users\conde\Downloads\Video\Cabotransportation logo.jpg`). Versiones transparentes optimizadas en `site/images/logo/` (`ctc-medallion-*.webp/png`, `favicon-32.png`, `apple-touch-icon.png`). Es el único logo permitido en header, footer, voucher, correos y OG; `logo-ctc.svg` era provisional y no se usa (F7.16). No se dibujan logos alternativos.
+- **Diferenciación con All Ways (WORKPLAN §3.5.6):** navbar con medallón centrado y otra composición, zonas con nombres propios, textos reescritos (misma intención, otras palabras) y ninguna frase idéntica.
 - **Botones flotantes:** "Customer Help" abajo a la derecha (dorado, ícono de audífonos) y WhatsApp oficial abajo a la izquierda (círculo verde `#25D366`). **No usar "AI Concierge" ni botón flotante de Instagram.**
 - **Animaciones aprobadas:** Ken Burns del hero, títulos palabra por palabra, reveal al hacer scroll, brillo dorado en botones, barra de progreso dorada y header que se oscurece al bajar.
 - Cambios visuales: **uno a la vez y con aprobación de Marlon.** Nunca cambies los tokens globales por tu cuenta.
