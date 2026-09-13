@@ -12,7 +12,7 @@
 
 | Indicador | Estado |
 |---|---|
-| **Fase actual** | F0 — Fundación: 8/9 verificadas. Solo falta **F0.2**: Marlon debe rotar la API key de OpenRouter (el archivo ya salió del repo). CI verde en GitHub: run `34726728816`, commit `b8d66dd`. |
+| **Fase actual** | F0 ✅ completa (9/9). CI verde en GitHub (run `34726728816`). F0.2 cerrada: Marlon borró la key de OpenRouter, y esa key no se usa en este proyecto. Siguiente: F1. |
 | **Último avance** | 12 sep 2026 — F0:<br>• Repo git con prototipo aprobado.<br>• Backend mínimo FastAPI con `/api/v1/health` y `/health/ready`.<br>• Configuración fail-fast.<br>• Postgres 16 nativo con bases `ctc` y `ctc_test`.<br>• Cliente de API tipado generado desde OpenAPI.<br>• CI escrito.<br>• ADR-001 (entorno sin Docker).<br>• Checklist para el cliente. |
 | **Backend** | ✅ App mínima: health y readiness con Postgres real. Ruff (reglas de seguridad) y mypy estricto en 0 errores. |
 | **Base de datos** | ✅ Local: Postgres 16.15 nativo con `ctc` y `ctc_test`. Sin tablas todavía (llegan en F1 con Alembic). |
@@ -22,12 +22,12 @@
 | **Deploy** | ❌ No configurado. |
 | **Git** | ✅ Remoto `github.com/condecorporation-del/Cabotransportationconcierge` (push por la deploy key `~/.ssh/deploy_cabo_concierge`, alias SSH `github-cabo`). Rama `main` subida; gitleaks sin hallazgos en el historial. |
 
-**Siguiente tarea:** F1.1 (engine y sesión por request). En paralelo: F0.2 (Marlon rota la key de OpenRouter).
+**Siguiente tarea:** F1.1 (engine y sesión por request).
 
 **Progreso por fase**
 
 ```
-F0  Fundación y decisiones          [████████--] 8/9
+F0  Fundación y decisiones          [██████████] 9/9 ✅
 F1  Base de datos y dominio         [----------] 0/12
 F2  Motor de precios y catálogo     [----------] 0/9
 F3  Reservas públicas               [----------] 0/11
@@ -721,7 +721,7 @@ Formato de cada tarea: `- [ ] ID — qué`, con **Verificar** (comando o prueba 
 ### F0 — Fundación y decisiones
 
 - [x] **F0.1** — `git init`, `.gitignore` (`.env*`, `node_modules`, `.venv`, `videos` master pesados, `site/video/gen`), rama `main` y primer commit con `site/`, `WORKPLAN.md` y `AGENTS.md`. **No hacer push sin que Marlon dé el repo remoto.** Verificar: `git status` limpio; `git check-ignore site/.env` lo ignora.
-- [ ] **F0.2** — Mover la API key de OpenRouter de `site/.env` a un gestor fuera del repo y **pedir a Marlon que la rote** (se compartió en el chat). Verificar: `site/.env` no existe y hay una key nueva.
+- [x] **F0.2** — Mover la API key de OpenRouter de `site/.env` a un gestor fuera del repo y **pedir a Marlon que la rote** (se compartió en el chat). Verificar: `site/.env` no existe y hay una key nueva.
 - [x] **F0.3** — Crear la estructura de §5.2 a medida que se usa: `backend/`, `packages/api-client/`, `docs/` y `.github/` en F0; `web/` en F7 y `admin/` en F11. Sin carpetas vacías de relleno. Verificar: `git ls-files` muestra esas carpetas con contenido real.
 - [x] **F0.4** — Backend: `uv init`, `pyproject.toml` con dependencias fijadas, ruff, mypy estricto, pytest y la app mínima con `/health`. Verificar: `uv run pytest` y `curl localhost:8000/api/v1/health`.
 - [x] **F0.5** — Postgres 16 nativo y Mailpit (ADR-001: sin Docker en esta PC); fixture de pytest con base de datos de prueba real. Verificar: un test que hace `SELECT 1` contra Postgres.

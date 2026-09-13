@@ -58,7 +58,8 @@ function transform(h, { home }) {
     h = h.replace('<div class="phoenix-promo__slideshow"><!----></div>', '<div class="phoenix-promo__slideshow"><img src="yacht-arch.jpg" alt="Private yacht at The Arch in Cabo San Lucas" loading="lazy" width="1600" height="907" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover"></div>');
   } else {
     /* Arrival guide: video player (client-rendered on the original) + hero photo without the old branding */
-    h = h.replace('<div class="aspect-video w-full relative"><!----></div>', '<div class="aspect-video w-full relative"><video class="absolute inset-0 w-full h-full object-cover" controls playsinline preload="metadata" poster="sprinter-interior.jpg"><source src="videos/video.mp4" type="video/mp4">Your browser does not play this video.</video></div>');
+    // El video de la referencia es de All Ways: se muestra imagen propia hasta tener el del cliente (WORKPLAN D-P6).
+    h = h.replace('<div class="aspect-video w-full relative"><!----></div>', '<div class="aspect-video w-full relative"><img src="sprinter-interior.jpg" alt="Private Sprinter ready for your arrival at SJD" loading="lazy" width="1600" height="900" class="absolute inset-0 w-full h-full object-cover"></div>');
     h = h.replace(/(src|srcset)="images\/home\/cabo-airport-arrival\.webp"/g, '$1="hero-suburban.jpg"');
   }
 
