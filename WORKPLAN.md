@@ -12,23 +12,23 @@
 
 | Indicador | Estado |
 |---|---|
-| **Fase actual** | F1 — Base de datos y dominio: 3/12 (F1.1, F1.3 y F1.4). F0 ✅ 9/9. Vista previa del prototipo en https://cabotransportationconcierge.vercel.app (noindex). |
+| **Fase actual** | F1 — Base de datos y dominio: 4/12 (F1.1 a F1.4). F0 ✅ 9/9. CI verde (run `34727349395`). Vista previa del prototipo en https://cabotransportationconcierge.vercel.app (noindex). |
 | **Último avance** | 12 sep 2026 — F0:<br>• Repo git con prototipo aprobado.<br>• Backend mínimo FastAPI con `/api/v1/health` y `/health/ready`.<br>• Configuración fail-fast.<br>• Postgres 16 nativo con bases `ctc` y `ctc_test`.<br>• Cliente de API tipado generado desde OpenAPI.<br>• CI escrito.<br>• ADR-001 (entorno sin Docker).<br>• Checklist para el cliente. |
 | **Backend** | ✅ App mínima: health y readiness con Postgres real. Ruff (reglas de seguridad) y mypy estricto en 0 errores. |
 | **Base de datos** | ✅ Local: Postgres 16.15 nativo con `ctc` y `ctc_test`. Tablas creadas por la migración `5721f5faa1c7`: `companies`, `company_settings`, `admin_users` y `sessions`. `alembic check` sin diferencias. |
 | **Sitio público real** | ❌ Solo el prototipo estático `site/` (HTML generado por `site/build.js`). |
 | **Admin** | ❌ No existe. |
-| **Tests** | ✅ 12 tests pytest verdes contra Postgres real. En cada corrida la migración va a base y de vuelta a head. pip-audit y npm audit sin vulnerabilidades. |
+| **Tests** | ✅ 14 tests pytest verdes contra Postgres real, incluido el aislamiento por empresa. En cada corrida la migración va a base y de vuelta a head. pip-audit y npm audit sin vulnerabilidades. |
 | **Deploy** | ❌ No configurado. |
 | **Git** | ✅ Remoto `github.com/condecorporation-del/Cabotransportationconcierge` (push por la deploy key `~/.ssh/deploy_cabo_concierge`, alias SSH `github-cabo`). Rama `main` subida; gitleaks sin hallazgos en el historial. |
 
-**Siguiente tarea:** F1.2 (scope por empresa), luego F1.5 (modelos de reservas).
+**Siguiente tarea:** F1.5 (modelos de reservas: `bookings`, `booking_legs`, `booking_items` y `booking_assignments`).
 
 **Progreso por fase**
 
 ```
 F0  Fundación y decisiones          [██████████] 9/9 ✅
-F1  Base de datos y dominio         [██--------] 3/12
+F1  Base de datos y dominio         [███-------] 4/12
 F2  Motor de precios y catálogo     [----------] 0/9
 F3  Reservas públicas               [----------] 0/11
 F4  Pagos con Stripe                [----------] 0/10
@@ -739,7 +739,13 @@ Formato de cada tarea: `- [ ] ID — qué`, con **Verificar** (comando o prueba 
   - Sesión por request. Los servicios hacen commit explícito: así un commit fallido nunca sale como una respuesta 200; lo no confirmado se descarta.
 
   Verificar: test que muestra que una escritura sin commit no persiste.
-- [ ] **F1.2** — Scope de empresa: dependencia que resuelve `company_id` (web por dominio o slug, admin por sesión) y lo aplica en todas las consultas de servicios. Verificar: test que muestra que una empresa B no ve datos de A.
+- [x] **F1.2** — Scope de empresa en el ORM (`app/tenancy.py`). Con `session.info["company_id"]` definido:
+  - Todo SELECT de modelos con `TenantMixin` se filtra por esa empresa (`with_loader_criteria`).
+  - Al hacer flush se completa el `company_id` faltante y se rechaza con `CrossTenantWriteError` cualquier fila de otra empresa.
+
+  La dependencia que fija la empresa del request llega con el primer endpoint que la usa: F2.4 en la web y F6.1 en el admin.
+
+  Verificar: tests que muestran que la empresa B no ve datos de A y que no se puede escribir en otra empresa.
 - [x] **F1.3** — Alembic async con `DATABASE_URL_DIRECT`; migración inicial generada y revisada a mano. Verificar: `alembic upgrade head` y luego `alembic downgrade base` funcionan en limpio.
 - [x] **F1.4** — Modelos de empresa, settings, usuarios y sesiones. Verificar: tests de unicidad (email por empresa).
 - [ ] **F1.5** — Modelos de reservas: `bookings`, `booking_legs`, `booking_items`, `booking_assignments`. Verificar: test que crea una reserva con 2 tramos y extras, y la relee completa.
@@ -756,7 +762,7 @@ Formato de cada tarea: `- [ ] ID — qué`, con **Verificar** (comando o prueba 
 - [ ] **F2.1** — `services/pricing.py`: `quote(request) -> Quote` con líneas (base por tramo o round trip, extras por modo, recargos automáticos de noche y madrugada, promoción, park fee y depósito de actividades) y total. Verificar: test de tabla con todas las combinaciones del seed.
 - [ ] **F2.2** — Selección de vehículo por pasajeros y equipaje (y opción de subir de categoría). Verificar: 1–5 → Suburban, 6–14 → Sprinter; más de 14 → error con mensaje de dos vehículos.
 - [ ] **F2.3** — Promociones: automática por fechas de viaje o por código, alcance `TRANSFER_BASE`. Verificar: la reserva del 15 de sep tiene 10% solo sobre la base; la del 1 de oct no tiene descuento.
-- [ ] **F2.4** — `POST /quotes` con schema estricto y rate limit. Verificar: test de API más un payload inválido que responde 422 con mensajes claros.
+- [ ] **F2.4** — `POST /quotes` con schema estricto y rate limit. Incluye la dependencia `get_company`, que resuelve la empresa por `DEFAULT_COMPANY_SLUG` y fija `session.info["company_id"]` (F1.2). Verificar: test de API más un payload inválido que responde 422 con mensajes claros.
 - [ ] **F2.5** — `GET /catalog/hotels?q=` con trigram, alias y acentos. Verificar: "riu pal", "zadun" y "one only" encuentran el hotel correcto.
 - [ ] **F2.6** — Precios de actividades y combos en el mismo motor. Verificar: 3 actividades × 2 personas = $250 + park fee $50 informado aparte.
 - [ ] **F2.7** — `GET /catalog/*` con caché `ETag`. Verificar: la segunda llamada responde 304.

@@ -2,6 +2,27 @@
 
 Una entrada por sesión o tarea, la más reciente arriba (formato en `AGENTS.md` §10).
 
+## 2026-09-12 — F1.2 Aislamiento por empresa en el ORM
+
+**Qué se hizo**
+- `app/tenancy.py` con `TenantMixin` (columna `company_id` con FK a `companies` y `ondelete=CASCADE`) y dos eventos de sesión:
+  - **`do_orm_execute`:** si `session.info["company_id"]` está definido, agrega a todo SELECT el filtro `with_loader_criteria(TenantMixin, company_id == …)`, incluso con aliases. El aislamiento no depende de que cada servicio recuerde filtrar.
+  - **`before_flush`:** completa el `company_id` faltante en filas nuevas y lanza `CrossTenantWriteError` si una fila nueva o modificada pertenece a otra empresa.
+- `AdminUser` usa `TenantMixin`. La columna es idéntica, así que la migración no cambia.
+- La dependencia que fija la empresa del request (`get_company`) se agrega con el primer endpoint que la usa (F2.4 web, F6.1 admin), para no dejar código sin uso.
+
+**Archivos:** `backend/app/tenancy.py`, `backend/app/models/admin.py`, `backend/tests/test_tenancy.py`, `WORKPLAN.md`
+
+**Verificación**
+- `uv run pytest` → **14 passed**. Tests nuevos:
+  - Con la sesión en la empresa B, `select(AdminUser)` y `count()` solo ven su admin.
+  - El flush completa el `company_id` y rechaza un admin de otra empresa.
+- `uv run alembic check` → "No new upgrade operations detected" (el esquema no cambió).
+- `ruff check`, `ruff format` y `mypy app` → 0 errores.
+- CI del commit anterior `5fad5d1` (run `34727349395`) → backend, api-client y secrets en success, incluido el nuevo paso `alembic upgrade head && alembic check`.
+
+**Pendiente:** F1.5 a F1.12.
+
 ## 2026-09-12 — F1.1, F1.3 y F1.4: base de datos, Alembic y primeros modelos
 
 **Qué se hizo**

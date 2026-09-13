@@ -6,6 +6,7 @@ from sqlalchemy import ForeignKey, Index, String, func, text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db import Base, IdMixin, TimestampMixin
+from app.tenancy import TenantMixin
 
 
 class AdminRole(enum.StrEnum):
@@ -16,14 +17,13 @@ class AdminRole(enum.StrEnum):
     VIEWER = "viewer"
 
 
-class AdminUser(IdMixin, TimestampMixin, Base):
+class AdminUser(IdMixin, TenantMixin, TimestampMixin, Base):
     __tablename__ = "admin_users"
     __table_args__ = (
         # Email único por empresa sin importar mayúsculas.
         Index("uq_admin_users_company_email", "company_id", text("lower(email)"), unique=True),
     )
 
-    company_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("companies.id", ondelete="CASCADE"))
     email: Mapped[str] = mapped_column(String(254))
     password_hash: Mapped[str] = mapped_column(String(255))
     role: Mapped[AdminRole]
