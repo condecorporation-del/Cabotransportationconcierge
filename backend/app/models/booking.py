@@ -102,6 +102,10 @@ class Booking(IdMixin, TenantMixin, TimestampMixin, Base):
     deleted_at: Mapped[datetime | None]
     # Header `Idempotency-Key` de la web: reintentar el POST no duplica la reserva (F3.1).
     idempotency_key: Mapped[str | None] = mapped_column(String(80))
+    # F3.12: versión de las políticas que aceptó el cliente; la fecha es created_at.
+    terms_version: Mapped[str | None] = mapped_column(String(20))
+    # F3.13: "card" o "cash"; solo traslados (WhatsApp decide el método en otros orígenes).
+    payment_method: Mapped[str | None] = mapped_column(String(10))
 
     # raise_on_sql: cargar tramos o ítems exige selectinload explícito (evita N+1 silenciosos).
     # passive_deletes: al borrar, Postgres aplica ON DELETE CASCADE sin cargar los hijos.

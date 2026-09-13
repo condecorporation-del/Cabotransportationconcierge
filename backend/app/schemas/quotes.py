@@ -44,6 +44,8 @@ class LegIn(_Strict):
     flight_number: FlightNumber | None = None
     airline: str | None = Field(default=None, max_length=60)
     international: bool = True
+    # Salida: hora sugerida (3 h antes de un vuelo internacional, 2 h uno nacional); editable.
+    pickup_time: time | None = None
 
 
 class ExtraIn(_Strict):

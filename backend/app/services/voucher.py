@@ -33,6 +33,7 @@ TEXT = {
         "meeting": "Meeting point",
         "meeting_default": "Your meeting point instructions are in your confirmation email.",
         "contact": "Questions",
+        "cash_balance": "Balance payable in cash on arrival",
     },
     "es": {
         "title": "Voucher de reserva",
@@ -57,6 +58,7 @@ TEXT = {
         "paid": "Pagada",
         "completed": "Completada",
         "cancelled": "Cancelada",
+        "cash_balance": "Saldo a pagar en efectivo a la llegada",
     },
 }
 
@@ -138,6 +140,8 @@ def render_voucher(
             _money(item.total_cents, booking.currency), f"{day}{item.description} x{item.quantity}"
         )
     field(t["total"], _money(booking.total_cents, booking.currency))
+    if booking.payment_method == "cash":
+        field(t["cash_balance"], _money(booking.total_cents, booking.currency))
 
     if any(leg.leg_type is LegType.ARRIVAL for leg in booking.legs):
         instructions = settings.arrival_instructions

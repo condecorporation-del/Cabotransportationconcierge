@@ -311,6 +311,8 @@ export interface components {
             /** Notes */
             notes?: string | null;
             attribution?: components["schemas"]["Attribution"];
+            /** Accepted Terms Version */
+            accepted_terms_version: string;
             /**
              * @description discriminator enum property added by openapi-typescript
              * @enum {string}
@@ -406,6 +408,8 @@ export interface components {
             /** Code */
             code: string;
             status: components["schemas"]["BookingStatus"];
+            /** Payment Method */
+            payment_method: string | null;
             /** Currency */
             currency: string;
             /** Subtotal Cents */
@@ -424,6 +428,8 @@ export interface components {
             /** Code */
             code: string;
             status: components["schemas"]["BookingStatus"];
+            /** Payment Method */
+            payment_method: string | null;
             /** Currency */
             currency: string;
             /** Subtotal Cents */
@@ -535,15 +541,22 @@ export interface components {
         };
         /** CustomerIn */
         CustomerIn: {
-            /** Name */
-            name: string;
+            /** First Name */
+            first_name: string;
+            /** Last Name */
+            last_name: string;
             /**
              * Email
              * Format: email
              */
             email: string;
+            /**
+             * Confirm Email
+             * Format: email
+             */
+            confirm_email: string;
             /** Phone */
-            phone?: string | null;
+            phone: string;
             /** Country */
             country?: string | null;
             /**
@@ -658,6 +671,8 @@ export interface components {
              * @default true
              */
             international: boolean;
+            /** Pickup Time */
+            pickup_time?: string | null;
         };
         /**
          * LegType
@@ -756,6 +771,8 @@ export interface components {
             /** Notes */
             notes?: string | null;
             attribution?: components["schemas"]["Attribution"];
+            /** Accepted Terms Version */
+            accepted_terms_version: string;
             /**
              * @description discriminator enum property added by openapi-typescript
              * @enum {string}

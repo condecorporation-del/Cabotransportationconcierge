@@ -5,13 +5,14 @@ from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.security import BOOKING_TOKEN_SECONDS, booking_token
-from tests.test_bookings import URL, _transfer
+from tests.test_bookings import CUSTOMER, URL, _transfer
 
 
 async def _book(
     api: AsyncClient, db: AsyncSession, email: str = "ana@example.com"
 ) -> dict[str, str]:
-    body = await _transfer(db, customer={"name": "Ana López", "email": email})
+    customer = CUSTOMER | {"email": email, "confirm_email": email}
+    body = await _transfer(db, customer=customer)
     response = await api.post(URL, json=body)
     assert response.status_code == 201, response.text
     created: dict[str, str] = response.json()

@@ -70,8 +70,9 @@ async def _customer_id(
     session: AsyncSession, company_id: uuid.UUID, customer: CustomerIn, language: Language
 ) -> uuid.UUID:
     """Un cliente por email (sin importar mayúsculas). Un dato nuevo no pisa uno ya guardado."""
+    fields = customer.model_dump(exclude={"first_name", "last_name", "confirm_email"})
     values = insert(Customer).values(
-        company_id=company_id, language=language, **customer.model_dump()
+        company_id=company_id, language=language, name=customer.name, **fields
     )
     statement = values.on_conflict_do_update(
         index_elements=[Customer.company_id, func.lower(Customer.email)],
@@ -87,10 +88,13 @@ async def _customer_id(
 
 
 async def _transfer_legs(
-    session: AsyncSession, request: TransferBookingRequest, quote: Quote, company: Company
+    session: AsyncSession,
+    request: TransferBookingRequest,
+    quote: Quote,
+    company: Company,
+    settings: CompanySettings,
 ) -> list[BookingLeg]:
     """Tramos con hora de pickup. Rechaza horarios dentro de la anticipación mínima (F3.3)."""
-    settings = await company_settings(session, company.id)
     zone = ZoneInfo(company.timezone)
     earliest = datetime.now(zone) + timedelta(hours=settings.min_notice_hours)
     hotel = (
@@ -111,8 +115,16 @@ async def _transfer_legs(
         if leg.service_time is None:
             raise AppError("time_required", "Add the flight time for each transfer.")
         flight = datetime.combine(leg.service_date, leg.service_time, zone)
-        # Salida: el chofer recoge antes del vuelo; la fecha del tramo es la del pickup.
-        pickup = flight if kind is LegType.ARRIVAL else flight - PICKUP_LEAD[leg.international]
+        if kind is LegType.ARRIVAL:
+            pickup = flight
+        elif leg.pickup_time is not None:
+            # Hora editada por el cliente: mismo día, o el anterior si cruza la medianoche.
+            pickup = datetime.combine(flight.date(), leg.pickup_time, zone)
+            if pickup >= flight:
+                pickup -= timedelta(days=1)
+        else:
+            # Hora sugerida: el chofer recoge antes del vuelo (WORKPLAN §3.5.5).
+            pickup = flight - PICKUP_LEAD[leg.international]
         if pickup < earliest:
             raise AppError("too_soon", "This date is too close. Contact us by WhatsApp.")
         legs.append(
@@ -153,9 +165,17 @@ async def create_booking(
         if existing:
             return existing
 
+    settings = await company_settings(session, company.id)
+    if request.accepted_terms_version != settings.terms_version:
+        raise AppError(
+            "terms_outdated", "Please accept the current terms and conditions and try again."
+        )
+
     today = datetime.now(ZoneInfo(company.timezone)).date()
     legs: list[BookingLeg] = []
     activity_date = None
+    payment_method: str | None = None
+    status = BookingStatus.PENDING_PAYMENT
     if isinstance(request, ActivityBookingRequest):
         if request.service_date <= today:
             raise AppError("too_soon", "Activities are booked at least one day ahead.")
@@ -166,8 +186,13 @@ async def create_booking(
         if request.service_scope is not ServiceScope.AIRPORT:
             raise AppError("scope_unavailable", "Local transfers are booked by WhatsApp.")
         quote = await quote_transfer(session, request, today)
-        legs = await _transfer_legs(session, request, quote, company)
+        legs = await _transfer_legs(session, request, quote, company, settings)
         booking_type = BookingType.TRANSFER
+        payment_method = request.payment
+        # Cash sin depósito (WORKPLAN §3.5.5, F3.13): se confirma sin pago en línea; el chofer
+        # cobra en efectivo. Con depósito (Escalade, Limousine) sigue pendiente hasta F4 (Stripe).
+        if request.payment == "cash" and quote.deposit_cents == 0:
+            status = BookingStatus.CONFIRMED
 
     items = [
         BookingItem(
@@ -194,7 +219,7 @@ async def create_booking(
 
     booking = Booking(
         code=await next_booking_code(session, company.id, today.year),
-        status=BookingStatus.PENDING_PAYMENT,
+        status=status,
         source=BookingSource.WEBSITE,
         booking_type=booking_type,
         customer_id=await _customer_id(session, company.id, request.customer, request.language),
@@ -207,6 +232,8 @@ async def create_booking(
         promotion_id=quote._promotion_id,
         notes_customer=request.notes,
         idempotency_key=idempotency_key,
+        terms_version=request.accepted_terms_version,
+        payment_method=payment_method,
         utm=request.attribution.model_dump(exclude_none=True),
         legs=legs,
         items=items,

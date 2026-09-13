@@ -2,6 +2,36 @@
 
 Una entrada por sesión o tarea, la más reciente arriba (formato en `AGENTS.md` §10).
 
+## 2026-09-13 — F3.12, F3.13 y F4.9: formulario de reserva y pago en efectivo como All Ways
+
+Continuación de la réplica de la referencia (§3.5), ahora en el formulario de reserva y el pago.
+
+**Cliente (`CustomerIn`)**
+- `first_name` y `last_name` en vez de un solo `name` (se combinan al guardar el `Customer`, sin migrar la tabla).
+- `confirm_email`: debe coincidir con `email` sin importar mayúsculas, si no → "Emails don't match" (mismo texto que la referencia).
+- `phone` pasa de opcional a obligatorio (mínimo 7 caracteres), igual que "Mobile phone \*".
+
+**Hora de pickup editable**
+- `LegIn.pickup_time`: si el cliente la manda, se usa esa hora (ajustando la fecha si cruza medianoche) en vez de la sugerida automática (3 h internacional, 2 h nacional); si no la manda, sigue igual que antes. La anticipación mínima se valida sobre la hora que quede.
+
+**Aceptación de términos**
+- `company_settings.terms_version` (nueva, default "1") y `accepted_terms_version` obligatorio en la reserva; si no coincide → `terms_outdated`. La fecha de aceptación es `bookings.created_at`; no hacía falta una columna aparte.
+
+**Pago en efectivo (F3.13, y decide F4.9)**
+- `bookings.payment_method` ("card" o "cash") para mostrarlo en el voucher y, más adelante, en el admin.
+- Efectivo sin depósito (todos los vehículos salvo Escalade y Limousine) → la reserva se crea directamente `CONFIRMED`, sin pasar por pago en línea, igual que "Cash on Arrival" allá.
+- Efectivo con depósito (Escalade, Limousine) → sigue `PENDING_PAYMENT`; cobrar y confirmar el depósito con tarjeta es trabajo de F4.2/F4.3 (Stripe), no de este motor.
+- Voucher: reservas en efectivo muestran "Balance payable in cash on arrival" / "Saldo a pagar en efectivo a la llegada" por el total completo.
+- **F4.9 (D-P5) se marca hecha:** la regla de impuestos y efectivo que pedía esa tarea ya está implementada de punta a punta (motor de precios + estado de la reserva), aunque cobrar el depósito en sí es tarea de Stripe.
+
+**Archivos:** `backend/alembic/versions/20260913_0d1e992bc78d_terminos_y_metodo_de_pago_en_reservas.py`, `backend/app/models/booking.py`, `backend/app/models/company.py`, `backend/app/schemas/bookings.py`, `backend/app/schemas/quotes.py`, `backend/app/services/bookings.py`, `backend/app/services/voucher.py`, `backend/tests/test_bookings.py`, `backend/tests/test_booking_access.py`, `packages/api-client/src/schema.d.ts`, `WORKPLAN.md`
+
+**Verificación**
+- `uv run pytest` → **168 passed** (5 nuevos): hora de pickup editada se respeta; email y confirmación distintos → 422 con el mensaje de la referencia; teléfono corto o ausente → 422; versión de términos vieja → `terms_outdated`; efectivo sin depósito confirma sin IVA, con depósito (Escalade) sigue pendiente, tarjeta sigue pendiente con IVA.
+- `ruff`, `mypy`, `alembic check`, `pip-audit` y `tsc` del cliente → sin errores.
+
+**Pendiente:** Return Time en traslados locales redondos, y Local One Way/Round Trip, chofer por hora y city tour como tipos de reserva — necesitan el schema nuevo de F2.12 (sin hotel de origen/destino). El estado "Deposit Paid" real llega con Stripe (F4.2, F4.3).
+
 ## 2026-09-13 — F2.10 y F2.11: catálogo y motor de precios iguales a All Ways
 
 Marlon confirmó "todo igual, adelante": se reemplaza el catálogo de ClassVIP por el de allwayscabotransportation.com (D-P1, D-P8, D-P14 ya decididas en el WORKPLAN) y el motor cotiza por unidades en vez de rechazar grupos grandes.

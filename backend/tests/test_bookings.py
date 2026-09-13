@@ -21,6 +21,13 @@ from app.models import (
 
 ARRIVAL = date.today() + timedelta(days=30)
 URL = "/api/v1/bookings"
+CUSTOMER = {
+    "first_name": "Ana",
+    "last_name": "López",
+    "email": "ana@example.com",
+    "confirm_email": "ana@example.com",
+    "phone": "+52 624 111 2222",
+}
 
 
 async def _transfer(db: AsyncSession, **changes: Any) -> dict[str, Any]:
@@ -39,7 +46,8 @@ async def _transfer(db: AsyncSession, **changes: Any) -> dict[str, Any]:
             {"service_date": (ARRIVAL + timedelta(days=5)).isoformat(), "service_time": "11:00"},
         ],
         "extras": [{"code": "CAR_SEAT", "quantity": 2}],
-        "customer": {"name": "Ana López", "email": "ana@example.com"},
+        "customer": CUSTOMER,
+        "accepted_terms_version": "1",
     } | changes
 
 
@@ -107,12 +115,23 @@ async def test_customer_is_reused_by_email_without_losing_data(
     api: AsyncClient, db: AsyncSession
 ) -> None:
     await api.post(URL, json=await _transfer(db))
-    returning = {"name": "Otro", "email": "ANA@example.com", "phone": "+52 624 000 0000"}
+    returning = CUSTOMER | {
+        "first_name": "Otro",
+        "email": "ANA@example.com",
+        "confirm_email": "ANA@example.com",
+        "phone": "+52 624 999 9999",
+        "country": "MX",
+    }
     response = await api.post(URL, json=await _transfer(db, customer=returning))
     assert response.status_code == 201, response.text
     [customer] = (await db.scalars(select(Customer))).all()
     await db.refresh(customer)
-    assert (customer.name, customer.phone) == ("Ana López", "+52 624 000 0000")
+    # El nombre y el teléfono ya guardados no se pisan; el país, que faltaba, sí se completa.
+    assert (customer.name, customer.phone, customer.country) == (
+        "Ana López",
+        "+52 624 111 2222",
+        "MX",
+    )
 
 
 async def test_one_way_departure(api: AsyncClient, db: AsyncSession) -> None:
@@ -146,6 +165,71 @@ async def test_international_pickup_can_fall_the_day_before(
         time(22, 30),
         time(1, 30),
     )
+
+
+async def test_customer_pickup_time_override_is_used_instead_of_the_suggestion(
+    api: AsyncClient, db: AsyncSession
+) -> None:
+    """F3.12: la hora sugerida (2 h antes, nacional) se puede editar."""
+    body = await _transfer(
+        db,
+        trip_type="one_way",
+        direction="departure",
+        legs=[
+            {
+                "service_date": ARRIVAL.isoformat(),
+                "service_time": "12:00",
+                "international": False,
+                "pickup_time": "09:30",
+            }
+        ],
+    )
+    assert (await api.post(URL, json=body)).status_code == 201
+    [leg] = (await db.scalars(select(BookingLeg))).all()
+    assert leg.pickup_time == time(9, 30)
+
+
+async def test_confirm_email_must_match(api: AsyncClient, db: AsyncSession) -> None:
+    customer = CUSTOMER | {"confirm_email": "otro@example.com"}
+    response = await api.post(URL, json=await _transfer(db, customer=customer))
+    assert response.status_code == 422
+    assert "Emails don't match" in response.text
+
+
+async def test_phone_is_required_and_has_a_minimum_length(
+    api: AsyncClient, db: AsyncSession
+) -> None:
+    too_short = await api.post(URL, json=await _transfer(db, customer=CUSTOMER | {"phone": "123"}))
+    assert too_short.status_code == 422
+    missing_customer = {key: value for key, value in CUSTOMER.items() if key != "phone"}
+    missing = await api.post(URL, json=await _transfer(db, customer=missing_customer))
+    assert missing.status_code == 422
+
+
+async def test_outdated_terms_version_is_rejected(api: AsyncClient, db: AsyncSession) -> None:
+    response = await api.post(URL, json=await _transfer(db, accepted_terms_version="0"))
+    assert response.status_code == 422
+    assert response.json()["detail"]["code"] == "terms_outdated"
+
+
+async def test_cash_payment_confirms_without_deposit(api: AsyncClient, db: AsyncSession) -> None:
+    """F3.13: efectivo sin depósito confirma sin pago en línea; con depósito sigue pendiente."""
+    no_deposit = await api.post(URL, json=await _transfer(db, payment="cash"))
+    assert no_deposit.status_code == 201, no_deposit.text
+    created = no_deposit.json()
+    assert (created["status"], created["payment_method"], created["tax_cents"]) == (
+        "confirmed",
+        "cash",
+        0,
+    )
+
+    with_deposit = await api.post(
+        URL, json=await _transfer(db, payment="cash", vehicle_class="ESCALADE")
+    )
+    assert with_deposit.json()["status"] == "pending_payment"
+
+    card = await api.post(URL, json=await _transfer(db, payment="card"))
+    assert (card.json()["status"], card.json()["payment_method"]) == ("pending_payment", "card")
 
 
 async def test_schedule_rules_have_stable_codes(api: AsyncClient, db: AsyncSession) -> None:
@@ -183,7 +267,8 @@ async def test_late_arrival_adds_night_surcharge(api: AsyncClient, db: AsyncSess
         trip_type="one_way",
         legs=[{"service_date": ARRIVAL.isoformat(), "service_time": "23:10"}],
     )
-    request = {key: value for key, value in body.items() if key != "customer"}
+    skip = {"customer", "accepted_terms_version"}
+    request = {key: value for key, value in body.items() if key not in skip}
     quote = (await api.post("/api/v1/quotes", json=request)).json()
     assert "NIGHT_SURCHARGE" in [line["code"] for line in quote["lines"]]
     created = (await api.post(URL, json=body)).json()
@@ -202,7 +287,8 @@ async def test_activity_booking_keeps_park_fee_out_of_the_total(
         "activities": activities[: package["activity_count"]],
         "guests": 2,
         "service_date": ARRIVAL.isoformat(),
-        "customer": {"name": "Ana López", "email": "ana@example.com"},
+        "customer": CUSTOMER,
+        "accepted_terms_version": "1",
     }
     response = await api.post(URL, json=body)
     assert response.status_code == 201, response.text
