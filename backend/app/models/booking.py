@@ -5,7 +5,7 @@ import uuid
 from datetime import date, datetime, time
 from typing import Any
 
-from sqlalchemy import CheckConstraint, ForeignKey, Index, String, Text, UniqueConstraint
+from sqlalchemy import CheckConstraint, ForeignKey, Index, String, Text, UniqueConstraint, text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db import Base, IdMixin, TimestampMixin
@@ -66,6 +66,13 @@ class Booking(IdMixin, TenantMixin, TimestampMixin, Base):
         ),
         # Listado del admin: todos los estados, filtrables, más recientes primero (WORKPLAN E1).
         Index("ix_bookings_company_status_created", "company_id", "status", "created_at"),
+        Index(
+            "uq_bookings_company_idempotency_key",
+            "company_id",
+            "idempotency_key",
+            unique=True,
+            postgresql_where=text("idempotency_key IS NOT NULL"),
+        ),
     )
 
     code: Mapped[str] = mapped_column(String(20))
@@ -93,6 +100,8 @@ class Booking(IdMixin, TenantMixin, TimestampMixin, Base):
     cancelled_at: Mapped[datetime | None]
     cancel_reason: Mapped[str | None] = mapped_column(String(300))
     deleted_at: Mapped[datetime | None]
+    # Header `Idempotency-Key` de la web: reintentar el POST no duplica la reserva (F3.1).
+    idempotency_key: Mapped[str | None] = mapped_column(String(80))
 
     # raise_on_sql: cargar tramos o ítems exige selectinload explícito (evita N+1 silenciosos).
     # passive_deletes: al borrar, Postgres aplica ON DELETE CASCADE sin cargar los hijos.

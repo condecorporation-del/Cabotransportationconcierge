@@ -1,3 +1,4 @@
+import json
 import os
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
@@ -19,9 +20,10 @@ from alembic import command  # noqa: E402  (después de fijar el entorno)
 from alembic.config import Config  # noqa: E402
 
 from app.core.config import get_settings  # noqa: E402
-from app.db import engine_from_url  # noqa: E402
+from app.db import engine_from_url, get_session  # noqa: E402
 from app.main import create_app  # noqa: E402
 from app.models import Company, VehicleClass, Zone  # noqa: E402
+from scripts.seed_catalog import CATALOG_PATH, seed  # noqa: E402
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -65,6 +67,20 @@ async def db() -> AsyncIterator[AsyncSession]:
         await session.close()
         await transaction.rollback()
     await engine.dispose()
+
+
+@pytest.fixture
+async def api(db: AsyncSession) -> AsyncIterator[AsyncClient]:
+    """API real sobre la sesión del test (se revierte) con el catálogo real sembrado."""
+    await seed(db, json.loads(CATALOG_PATH.read_text(encoding="utf-8")))
+    app = create_app()
+
+    async def same_session() -> AsyncIterator[AsyncSession]:
+        yield db
+
+    app.dependency_overrides[get_session] = same_session
+    async with running(app) as http:
+        yield http
 
 
 @pytest.fixture

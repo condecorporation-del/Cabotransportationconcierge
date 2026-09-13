@@ -4,7 +4,7 @@ import uuid
 from datetime import date, time
 from typing import Annotated, Literal, Self
 
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, PrivateAttr, model_validator
 
 from app.models import ItemType, ServiceScope, TripType
 
@@ -19,6 +19,9 @@ class LegIn(_Strict):
     service_date: date
     # Hora de aterrizaje en la llegada u hora de pickup en la salida; define el recargo nocturno.
     service_time: time | None = None
+    # Solo al reservar; la cotización los ignora.
+    flight_number: str | None = Field(default=None, max_length=10)
+    airline: str | None = Field(default=None, max_length=60)
 
 
 class ExtraIn(_Strict):
@@ -84,3 +87,5 @@ class Quote(BaseModel):
     # Actividades: se pagan en sitio (park fee) o se retienen como depósito; no suman al total.
     due_on_site_cents: int = 0
     deposit_cents: int = 0
+    # Interno: la reserva guarda qué promoción aplicó; no sale en la respuesta.
+    _promotion_id: uuid.UUID | None = PrivateAttr(default=None)

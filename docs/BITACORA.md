@@ -2,6 +2,32 @@
 
 Una entrada por sesión o tarea, la más reciente arriba (formato en `AGENTS.md` §10).
 
+## 2026-09-12 — F3.1 `POST /bookings` y F2.8 precio congelado
+
+**Qué se hizo**
+- `POST /api/v1/bookings` (rate limit 10/min) → 201 con código, estado, montos e ítems.
+  - Unión `transfer` | `activity`: la misma solicitud de la cotización más `customer`, `notes` y, en one way, `direction` (`arrival` o `departure`).
+  - El servidor vuelve a cotizar con el motor único; el cliente no puede mandar montos (campo desconocido → 422).
+  - Todo en una transacción: cliente, reserva `pending_payment`, tramos, ítems con precio congelado y código `CTC-AAAA-NNNNNN`.
+- **Idempotencia:** `Idempotency-Key` (8 a 80 caracteres) guardado en `bookings` con índice único parcial por empresa (migración `9c5a8aed60e7`). Un `pg_advisory_xact_lock` por clave forma en fila los POST simultáneos; el segundo devuelve la reserva del primero.
+- **Cliente único por email** sin importar mayúsculas (`INSERT ... ON CONFLICT` sobre `lower(email)`). Un dato nuevo completa lo que falta (teléfono, país) pero no pisa el nombre guardado, para que un tercero con el mismo email no altere al cliente.
+- **Tramos:** redondo → llegada (SJD → hotel) y salida (hotel → SJD); one way según `direction`. Vuelo y aerolínea por tramo. Traslados locales → `scope_unavailable` (por WhatsApp).
+- **Actividades:** sin tramos; el park fee va como ítem `park_fee` informativo, fuera del total.
+- `Quote` guarda en privado la promoción aplicada para `bookings.promotion_id` (no sale en la API).
+- Nuevas dependencias: `email-validator`. Cliente tipado regenerado.
+
+**Archivos:** `backend/alembic/versions/20260912_9c5a8aed60e7_clave_de_idempotencia_en_reservas.py`, `backend/app/api/v1/bookings.py`, `backend/app/main.py`, `backend/app/models/booking.py`, `backend/app/schemas/bookings.py`, `backend/app/schemas/quotes.py`, `backend/app/services/bookings.py`, `backend/app/services/pricing.py`, `backend/tests/conftest.py`, `backend/tests/test_api_public.py`, `backend/tests/test_bookings.py`, `backend/pyproject.toml`, `backend/uv.lock`, `packages/api-client/src/schema.d.ts`, `WORKPLAN.md`
+
+**Verificación**
+- `uv run pytest` → **90 passed** (7 nuevos): redondo con tramos, vuelo e ítems que suman el total; misma `Idempotency-Key` dos veces → una sola reserva y respuesta idéntica; mismo email con otras mayúsculas → un cliente, teléfono completado y nombre intacto; one way de salida; actividad con park fee fuera del total; **F2.8:** subir todas las tarifas no cambia los ítems; montos del cliente o traslado local → 422 y ninguna reserva.
+- `ruff`, `mypy`, `alembic check` (con la base local en head), `pip-audit` y `tsc` → sin errores.
+
+**Decisiones a revisar**
+- `promotions.used_count` se incrementará al pagar (F4), no al crear, para que reservas abandonadas no gasten usos.
+- Una `Idempotency-Key` repetida con otro cuerpo devuelve la reserva original (la web genera una clave por checkout).
+
+**Pendiente:** F3.2 (máquina de estados), F3.3 (fecha futura, formato de vuelo, horarios), F3.5 (token de gestión en la respuesta).
+
 ## 2026-09-12 — F2.4, F2.5 y F2.7: API pública de cotización y catálogo
 
 **Qué se hizo**

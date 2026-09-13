@@ -240,7 +240,8 @@ async def quote_transfer(
         )
 
     company = await session.get(Company, company_id)
-    return Quote(
+    applied = promotion if promotion and discount else None
+    quote = Quote(
         currency=company.currency if company else "USD",
         lines=lines,
         subtotal_cents=subtotal,
@@ -249,8 +250,10 @@ async def quote_transfer(
         total_cents=subtotal - discount,
         vehicle_class=vehicle.code,
         zone=zone_slug,
-        promotion=_text(promotion.name, request.language) if promotion and discount else None,
+        promotion=_text(applied.name, request.language) if applied else None,
     )
+    quote._promotion_id = applied.id if applied else None
+    return quote
 
 
 async def quote_activity(session: AsyncSession, request: ActivityQuoteRequest) -> Quote:

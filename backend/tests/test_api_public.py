@@ -1,35 +1,13 @@
-import json
 import uuid
-from collections.abc import AsyncIterator
 from datetime import date, timedelta
 from typing import Any
 
 import pytest
 from httpx import AsyncClient
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import get_settings
-from app.db import get_session
-from app.main import create_app
-from scripts.seed_catalog import CATALOG_PATH, seed
-from tests.conftest import running
 
-CATALOG = json.loads(CATALOG_PATH.read_text(encoding="utf-8"))
 SOON = (date.today() + timedelta(days=30)).isoformat()
-
-
-@pytest.fixture
-async def api(db: AsyncSession) -> AsyncIterator[AsyncClient]:
-    """API real sobre la sesión del test (se revierte) con el catálogo sembrado."""
-    await seed(db, CATALOG)
-    app = create_app()
-
-    async def same_session() -> AsyncIterator[AsyncSession]:
-        yield db
-
-    app.dependency_overrides[get_session] = same_session
-    async with running(app) as http:
-        yield http
 
 
 async def _hotel_id(api: AsyncClient, query: str) -> str:

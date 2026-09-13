@@ -183,10 +183,58 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/bookings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Create
+         * @description Crea la reserva en `pending_payment`; el mismo `Idempotency-Key` no la duplica.
+         */
+        post: operations["create_api_v1_bookings_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** ActivityBookingRequest */
+        ActivityBookingRequest: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "activity";
+            /** Package */
+            package: string;
+            /** Activities */
+            activities: string[];
+            /** Guests */
+            guests: number;
+            /**
+             * Service Date
+             * Format: date
+             */
+            service_date: string;
+            /**
+             * Language
+             * @default en
+             * @enum {string}
+             */
+            language: "en" | "es";
+            customer: components["schemas"]["CustomerIn"];
+            /** Notes */
+            notes?: string | null;
+        };
         /** ActivityOut */
         ActivityOut: {
             /** Slug */
@@ -226,6 +274,60 @@ export interface components {
              * @enum {string}
              */
             language: "en" | "es";
+        };
+        /** BookingCreated */
+        BookingCreated: {
+            /** Code */
+            code: string;
+            status: components["schemas"]["BookingStatus"];
+            /** Currency */
+            currency: string;
+            /** Subtotal Cents */
+            subtotal_cents: number;
+            /** Discount Cents */
+            discount_cents: number;
+            /** Tax Cents */
+            tax_cents: number;
+            /** Total Cents */
+            total_cents: number;
+            /** Items */
+            items: components["schemas"]["BookingItemOut"][];
+        };
+        /** BookingItemOut */
+        BookingItemOut: {
+            item_type: components["schemas"]["ItemType"];
+            /** Description */
+            description: string;
+            /** Quantity */
+            quantity: number;
+            /** Unit Price Cents */
+            unit_price_cents: number;
+            /** Total Cents */
+            total_cents: number;
+        };
+        /**
+         * BookingStatus
+         * @enum {string}
+         */
+        BookingStatus: "pending_payment" | "offline_hold" | "confirmed" | "paid" | "completed" | "cancelled";
+        /** CustomerIn */
+        CustomerIn: {
+            /** Name */
+            name: string;
+            /**
+             * Email
+             * Format: email
+             */
+            email: string;
+            /** Phone */
+            phone?: string | null;
+            /** Country */
+            country?: string | null;
+            /**
+             * Marketing Opt In
+             * @default false
+             */
+            marketing_opt_in: boolean;
         };
         /** ExtraIn */
         ExtraIn: {
@@ -306,6 +408,10 @@ export interface components {
             service_date: string;
             /** Service Time */
             service_time?: string | null;
+            /** Flight Number */
+            flight_number?: string | null;
+            /** Airline */
+            airline?: string | null;
         };
         /** PackageOut */
         PackageOut: {
@@ -388,6 +494,47 @@ export interface components {
          * @enum {string}
          */
         ServiceScope: "airport" | "local";
+        /** TransferBookingRequest */
+        TransferBookingRequest: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "transfer";
+            /**
+             * Hotel Id
+             * Format: uuid
+             */
+            hotel_id: string;
+            trip_type: components["schemas"]["TripType"];
+            /** @default airport */
+            service_scope: components["schemas"]["ServiceScope"];
+            /** Passengers */
+            passengers: number;
+            /** Vehicle Class */
+            vehicle_class?: string | null;
+            /** Legs */
+            legs: components["schemas"]["LegIn"][];
+            /** Extras */
+            extras?: components["schemas"]["ExtraIn"][];
+            /** Promo Code */
+            promo_code?: string | null;
+            /**
+             * Language
+             * @default en
+             * @enum {string}
+             */
+            language: "en" | "es";
+            /**
+             * Direction
+             * @default arrival
+             * @enum {string}
+             */
+            direction: "arrival" | "departure";
+            customer: components["schemas"]["CustomerIn"];
+            /** Notes */
+            notes?: string | null;
+        };
         /** TransferQuoteRequest */
         TransferQuoteRequest: {
             /**
@@ -701,6 +848,41 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Quote"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_api_v1_bookings_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                "idempotency-key"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TransferBookingRequest"] | components["schemas"]["ActivityBookingRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BookingCreated"];
                 };
             };
             /** @description Validation Error */
