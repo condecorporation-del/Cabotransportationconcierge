@@ -2,6 +2,39 @@
 
 Una entrada por sesión o tarea, la más reciente arriba (formato en `AGENTS.md` §10).
 
+## 2026-09-12 — F1.5 Reservas, tramos e ítems
+
+**Qué se hizo**
+- `app/models/booking.py` con enums `BookingStatus`, `BookingSource`, `BookingType`, `LegType`, `LegStatus` e `ItemType`, y tres modelos (todos con `TenantMixin`):
+  - **`Booking`:** código único por empresa, estado, origen, cliente, idioma, moneda, promoción, admin creador, UTM, cancelación y borrado lógico.
+  - **`BookingLeg`:** tramo en tabla propia (D11) con fecha y hora, pickup, vuelo, origen y destino, hotel, pasajeros y clase de vehículo.
+  - **`BookingItem`:** precio congelado por línea, opcionalmente ligado a un tramo.
+- Reglas en la base:
+  - `ck_bookings_totals`: `total = subtotal − descuento + impuesto`, sin negativos.
+  - `ck_booking_items_amounts`: `total = cantidad × unitario`, y solo el ítem `discount` puede ser negativo.
+  - `ck_booking_legs_pax`: al menos 1 adulto.
+  - Código único por empresa.
+- Índices: `ix_bookings_company_status_created` (listado del admin con todos los estados, para prevenir E1) y `ix_booking_legs_company_service_date` (despacho por día).
+- Relaciones `legs` e `items` con `lazy="raise_on_sql"` y `cascade="all, delete-orphan"`: acceder a tramos o ítems sin `selectinload` lanza error en lugar de disparar consultas N+1 silenciosas.
+- `booking_assignments` pasa a F1.8, junto con `drivers` y `vehicles`.
+- La fixture `catalog` (empresa en sesión, zona y Suburban) se movió a `conftest.py` y la comparten los tests de catálogo y reservas.
+- Migración `0b3217285efc` revisada a mano antes de aplicarla:
+  - Nombres de constraints claros y `ondelete` correcto por FK.
+  - Sin índices en `hotel_id`, `vehicle_class_id` ni `leg_id`, a propósito: solo sirven para borrar hoteles, vehículos o tramos, que en la práctica se desactivan en lugar de borrarse. Se agregan cuando una consulta real los necesite.
+
+**Archivos:** `backend/app/models/booking.py`, `backend/app/models/__init__.py`, `backend/alembic/versions/20260912_0b3217285efc_reservas.py`, `backend/tests/test_models_booking.py`, `backend/tests/conftest.py`, `backend/tests/test_models_catalog.py`, `WORKPLAN.md`
+
+**Verificación**
+- `uv run pytest` → **23 passed**. Tests nuevos:
+  - Reserva con llegada y salida, transfer, champagne y descuento de septiembre: se relee completa y los ítems suman el total (235.00 USD).
+  - Totales que no cuadran → `ck_bookings_totals`.
+  - Acceso a `legs` sin cargar → `InvalidRequestError`.
+- `alembic upgrade head` en `ctc` y luego `alembic check` → "No new upgrade operations detected".
+- `ruff check`, `ruff format` y `mypy app` → 0 errores.
+- CI del commit anterior `658c3a1` (run `34727673529`) → los 3 jobs en success.
+
+**Pendiente:** F1.7 (pagos y finanzas), F1.8 (operación y comunicación, más `booking_assignments`) y F1.9 a F1.12.
+
 ## 2026-09-12 — F1.6 Catálogo y clientes
 
 **Qué se hizo**

@@ -16,24 +16,6 @@ from app.models import (
 )
 
 
-@pytest.fixture
-async def catalog(db: AsyncSession) -> tuple[Company, Zone, VehicleClass]:
-    company = Company(name="CTC", slug="ctc-catalog")
-    db.add(company)
-    await db.flush()
-    db.info["company_id"] = company.id
-    zone = Zone(
-        slug="cabo-san-lucas",
-        name={"en": "Cabo San Lucas"},
-        drive_minutes_min=40,
-        drive_minutes_max=50,
-    )
-    suburban = VehicleClass(code="SUBURBAN", name="Chevrolet Suburban", max_pax=5, max_bags=5)
-    db.add_all([zone, suburban])
-    await db.flush()
-    return company, zone, suburban
-
-
 def _rate(zone: Zone, vehicle: VehicleClass, cents: int) -> Rate:
     return Rate(
         zone_id=zone.id, vehicle_class_id=vehicle.id, trip_type=TripType.ONE_WAY, price_cents=cents

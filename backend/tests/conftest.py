@@ -21,6 +21,7 @@ from alembic.config import Config  # noqa: E402
 from app.core.config import get_settings  # noqa: E402
 from app.db import engine_from_url  # noqa: E402
 from app.main import create_app  # noqa: E402
+from app.models import Company, VehicleClass, Zone  # noqa: E402
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -64,3 +65,22 @@ async def db() -> AsyncIterator[AsyncSession]:
         await session.close()
         await transaction.rollback()
     await engine.dispose()
+
+
+@pytest.fixture
+async def catalog(db: AsyncSession) -> tuple[Company, Zone, VehicleClass]:
+    """Empresa activa en la sesión con una zona y una Suburban."""
+    company = Company(name="CTC", slug="ctc-test")
+    db.add(company)
+    await db.flush()
+    db.info["company_id"] = company.id
+    zone = Zone(
+        slug="cabo-san-lucas",
+        name={"en": "Cabo San Lucas"},
+        drive_minutes_min=40,
+        drive_minutes_max=50,
+    )
+    suburban = VehicleClass(code="SUBURBAN", name="Chevrolet Suburban", max_pax=5, max_bags=5)
+    db.add_all([zone, suburban])
+    await db.flush()
+    return company, zone, suburban

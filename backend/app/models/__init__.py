@@ -1,6 +1,17 @@
 """Registra todos los modelos en Base.metadata (lo necesita Alembic)."""
 
 from app.models.admin import AdminRole, AdminSession, AdminUser
+from app.models.booking import (
+    Booking,
+    BookingItem,
+    BookingLeg,
+    BookingSource,
+    BookingStatus,
+    BookingType,
+    ItemType,
+    LegStatus,
+    LegType,
+)
 from app.models.catalog import (
     Activity,
     ActivityPackage,
@@ -26,6 +37,12 @@ __all__ = [
     "AdminRole",
     "AdminSession",
     "AdminUser",
+    "Booking",
+    "BookingItem",
+    "BookingLeg",
+    "BookingSource",
+    "BookingStatus",
+    "BookingType",
     "Company",
     "CompanySettings",
     "Customer",
@@ -33,6 +50,9 @@ __all__ = [
     "Extra",
     "ExtraAutoRule",
     "Hotel",
+    "ItemType",
+    "LegStatus",
+    "LegType",
     "PricingMode",
     "Promotion",
     "PromotionScope",
