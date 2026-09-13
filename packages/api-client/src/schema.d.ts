@@ -244,6 +244,23 @@ export interface paths {
         patch: operations["change_api_v1_bookings__code__patch"];
         trace?: never;
     };
+    "/api/v1/bookings/{code}/voucher.pdf": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Voucher */
+        get: operations["voucher_api_v1_bookings__code__voucher_pdf_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/bookings/{code}/cancel": {
         parameters: {
             query?: never;
@@ -1215,6 +1232,37 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["BookingDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    voucher_api_v1_bookings__code__voucher_pdf_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                code: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/pdf": unknown;
                 };
             };
             /** @description Validation Error */

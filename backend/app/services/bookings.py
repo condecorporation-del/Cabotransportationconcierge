@@ -55,7 +55,7 @@ EDITABLE = frozenset(
 )
 
 
-async def _settings(session: AsyncSession, company_id: uuid.UUID) -> CompanySettings:
+async def company_settings(session: AsyncSession, company_id: uuid.UUID) -> CompanySettings:
     settings = await session.get(CompanySettings, company_id)
     if settings is None:
         raise RuntimeError("La empresa no tiene company_settings")
@@ -90,7 +90,7 @@ async def _transfer_legs(
     session: AsyncSession, request: TransferBookingRequest, quote: Quote, company: Company
 ) -> list[BookingLeg]:
     """Tramos con hora de pickup. Rechaza horarios dentro de la anticipación mínima (F3.3)."""
-    settings = await _settings(session, company.id)
+    settings = await company_settings(session, company.id)
     zone = ZoneInfo(company.timezone)
     earliest = datetime.now(zone) + timedelta(hours=settings.min_notice_hours)
     hotel = (
@@ -250,7 +250,7 @@ async def change_booking(
     """
     if booking.status not in EDITABLE:
         raise AppError("not_editable", "This booking can no longer be changed.")
-    settings = await _settings(session, company.id)
+    settings = await company_settings(session, company.id)
     zone = ZoneInfo(company.timezone)
     limit = datetime.now(zone) + timedelta(hours=settings.change_hours)
     window = AppError(
@@ -303,7 +303,7 @@ async def cancel_booking(
     session: AsyncSession, booking: Booking, company: Company, reason: str | None, ip: str | None
 ) -> None:
     """Cancelación del cliente (F3.7) hasta `cancellation_hours` antes del primer servicio."""
-    settings = await _settings(session, company.id)
+    settings = await company_settings(session, company.id)
     zone = ZoneInfo(company.timezone)
     starts = [_start(leg, zone) for leg in booking.legs if leg.status is LegStatus.SCHEDULED]
     starts += [

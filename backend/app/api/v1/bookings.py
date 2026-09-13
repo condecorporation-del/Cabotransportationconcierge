@@ -1,6 +1,17 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Header, HTTPException, Path, Query, Request, status
+from fastapi import (
+    APIRouter,
+    Depends,
+    Header,
+    HTTPException,
+    Path,
+    Query,
+    Request,
+    Response,
+    status,
+)
+from fastapi.concurrency import run_in_threadpool
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy import func, select
 from sqlalchemy.orm import selectinload
@@ -18,7 +29,13 @@ from app.schemas.bookings import (
     BookingToken,
     CancelRequest,
 )
-from app.services.bookings import cancel_booking, change_booking, create_booking
+from app.services.bookings import (
+    cancel_booking,
+    change_booking,
+    company_settings,
+    create_booking,
+)
+from app.services.voucher import render_voucher
 
 router = APIRouter(prefix="/bookings", tags=["bookings"], dependencies=[Depends(rate_limit(10))])
 bearer = HTTPBearer(auto_error=False)
@@ -96,6 +113,28 @@ ManagedBooking = Annotated[Booking, Depends(managed_booking)]
 @router.get("/{code}")
 async def detail(booking: ManagedBooking) -> BookingDetail:
     return BookingDetail.model_validate(booking)
+
+
+@router.get(
+    "/{code}/voucher.pdf",
+    response_class=Response,
+    responses={200: {"content": {"application/pdf": {}}}},
+)
+async def voucher(booking: ManagedBooking, company: CurrentCompany, session: DbSession) -> Response:
+    customer = await session.get(Customer, booking.customer_id)
+    if customer is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, NOT_FOUND)
+    settings = await company_settings(session, company.id)
+    # El PDF se dibuja en un hilo para no frenar el resto de requests.
+    pdf = await run_in_threadpool(render_voucher, booking, customer, company, settings)
+    return Response(
+        pdf,
+        media_type="application/pdf",
+        headers={
+            "Content-Disposition": f'inline; filename="{booking.code}.pdf"',
+            "Cache-Control": "private, no-store",
+        },
+    )
 
 
 @router.patch("/{code}")

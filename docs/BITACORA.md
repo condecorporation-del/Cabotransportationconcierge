@@ -2,6 +2,30 @@
 
 Una entrada por sesión o tarea, la más reciente arriba (formato en `AGENTS.md` §10).
 
+## 2026-09-12 — F3.8 voucher PDF (F3 completa)
+
+**Qué se hizo**
+- `GET /bookings/{code}/voucher.pdf` con el token de la reserva → PDF `inline`, `Cache-Control: private, no-store`. Se dibuja en un hilo (`run_in_threadpool`) para no frenar otros requests.
+- `app/services/voucher.py`, formato carta en inglés o español según la reserva:
+  - Encabezado con el emblema del logo (vector) y el nombre en dorado.
+  - QR del código dibujado como vectores.
+  - Código, huésped y estado (traducido).
+  - Cada tramo: pickup, ruta, vuelo y pasajeros.
+  - Resumen con montos y fecha de actividades.
+  - Punto de encuentro (solo si hay llegada) y contacto.
+- **Punto de encuentro:** sale de `company_settings.arrival_instructions`. Si está vacío, el voucher remite al correo de confirmación. No se usa el texto del prototipo ("Canopy 3, Island Bar") porque viene de All Ways; el punto real está en el checklist del cliente.
+
+**Decisión: fpdf2 + segno en lugar de WeasyPrint.** WeasyPrint necesita GTK/Pango instalados en el sistema (difícil en Windows y más pesado en Railway). fpdf2 y segno son Python puro, generan un PDF de ~3 KB con texto seleccionable y funcionan igual en local, CI y producción. `pypdf` queda solo para los tests.
+
+**Archivos:** `backend/app/api/v1/bookings.py`, `backend/app/services/bookings.py` (`company_settings` público), `backend/app/services/voucher.py`, `backend/tests/test_voucher.py`, `backend/pyproject.toml`, `backend/uv.lock`, `packages/api-client/src/schema.d.ts`, `WORKPLAN.md`
+
+**Verificación**
+- `uv run pytest` → **151 passed** (2 nuevos): el texto extraído del PDF contiene código, "Ana López", hotel, vuelo y "Meeting point"; sin token → 401; token de otra reserva → 404.
+- Revisión visual de muestras en inglés y español: encabezado, QR, tramos, resumen y acentos correctos.
+- `ruff`, `mypy`, `alembic check`, `pip-audit` y `tsc` → sin errores.
+
+**Pendiente:** F4 (Stripe). Las descripciones de los ítems de traslado salen en inglés ("round trip"); se traducen al hacer bilingüe el motor en F8.
+
 ## 2026-09-12 — F3.9 auditoría, F3.10 contacto y F3.11 atribución
 
 **Qué se hizo**
