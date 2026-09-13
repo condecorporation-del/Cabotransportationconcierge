@@ -80,6 +80,16 @@ class CancelRequest(_Strict):
     reason: str | None = Field(default=None, max_length=300)
 
 
+class PaymentIntentOut(BaseModel):
+    """Va al Payment Element de Stripe en el navegador; no es sensible por sí solo."""
+
+    client_secret: str
+
+
+class PaymentConfirmIn(_Strict):
+    payment_intent_id: str = Field(min_length=1, max_length=255)
+
+
 class BookingItemOut(_FromOrm):
     item_type: ItemType
     service_date: date | None

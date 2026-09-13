@@ -61,7 +61,8 @@ class Booking(IdMixin, TenantMixin, TimestampMixin, Base):
         UniqueConstraint("company_id", "code"),
         CheckConstraint(
             "subtotal_cents >= 0 AND discount_cents >= 0 AND tax_cents >= 0 "
-            "AND total_cents = subtotal_cents - discount_cents + tax_cents AND total_cents >= 0",
+            "AND total_cents = subtotal_cents - discount_cents + tax_cents AND total_cents >= 0 "
+            "AND deposit_cents >= 0",
             name="totals",
         ),
         # Listado del admin: todos los estados, filtrables, más recientes primero (WORKPLAN E1).
@@ -88,6 +89,8 @@ class Booking(IdMixin, TenantMixin, TimestampMixin, Base):
     discount_cents: Mapped[int] = mapped_column(default=0)
     tax_cents: Mapped[int] = mapped_column(default=0)
     total_cents: Mapped[int]
+    # Vehículo premium en efectivo (F3.13) o depósito de actividad; se cobra aparte por Stripe.
+    deposit_cents: Mapped[int] = mapped_column(default=0, server_default="0")
     promotion_id: Mapped[uuid.UUID | None] = mapped_column(
         ForeignKey("promotions.id", ondelete="SET NULL")
     )

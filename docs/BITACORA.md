@@ -2,6 +2,29 @@
 
 Una entrada por sesión o tarea, la más reciente arriba (formato en `AGENTS.md` §10).
 
+## 2026-09-13 — F4.2 y F4.3: crear y confirmar el pago con Stripe
+
+**`app/services/payments.py`** (nuevo), usando el `stripe_gateway.py` de F4.1 sin agregarle lógica:
+- `create_or_reuse_intent`: si la reserva no está `pending_payment` → `not_payable` (400). El monto es el depósito (`booking.deposit_cents`) si el pago es en efectivo, o el total si es con tarjeta. Si ya hay un `Payment` `PENDING` de esta reserva, se reconsulta ese mismo intent en Stripe (mismo `client_secret`, cero intents nuevos); si no, se crea uno con una `Idempotency-Key` por reserva y se guarda el `Payment`.
+- `confirm_payment`: busca el `Payment` **de esa reserva** por `payment_intent_id` — si no aparece (es de otra reserva o no existe), 400 sin llamar a Stripe. Si aparece, consulta el intent y valida metadata (`booking_id`, `company_id`), monto, moneda y `status == "succeeded"`. Pasa la reserva a `PAID`; si el pago era el depósito en efectivo, de una vez a `CONFIRMED` (dos saltos permitidos por la máquina de estados: `PENDING_PAYMENT → PAID → CONFIRMED`, sin tocar la tabla de §8.2).
+
+**API**, anidada bajo `/bookings/{code}` para reutilizar `ManagedBooking` (el mismo token de reserva) en vez de recibir el código en el body como sugería el mapa de rutas de §7.1 — se actualizó esa tabla:
+- `POST /bookings/{code}/payments/intent` → `{"client_secret": "..."}`.
+- `POST /bookings/{code}/payments/confirm` → `{"payment_intent_id": "pi_..."}`, responde el detalle de la reserva ya actualizado.
+- Dependencia `Stripe` en `deps.py`: un `StripeGateway` por request, cerrado al terminar.
+
+**Esquema:** `bookings.deposit_cents` (antes se calculaba pero no se guardaba); el CHECK `ck_bookings_totals` ahora también exige `deposit_cents >= 0` (autogenerate no detecta cambios de CHECK, se escribió a mano). Migración `0e5b48905a6c`.
+
+**F4.9 queda completa de punta a punta:** la decisión de impuestos y efectivo (D-P5) ya se cobra correctamente con Stripe real, no solo en el motor de precios.
+
+**Archivos:** `backend/alembic/versions/20260913_0e5b48905a6c_deposito_de_la_reserva_para_el_pago_con_.py`, `backend/app/api/deps.py`, `backend/app/api/v1/bookings.py`, `backend/app/models/booking.py`, `backend/app/schemas/bookings.py`, `backend/app/services/bookings.py`, `backend/app/services/payments.py`, `backend/tests/test_payments.py`, `packages/api-client/src/schema.d.ts`, `WORKPLAN.md`
+
+**Verificación**
+- `uv run pytest` → **174 passed** (6 nuevos): el segundo `POST /payments/intent` no vuelve a llamar a Stripe y da el mismo `client_secret`; el monto es el depósito en Escalade; confirmar marca `PAID` y una segunda confirmación → `not_payable`; el depósito en efectivo confirma (`CONFIRMED`) en vez de `PAID`; el intent de otra reserva → `payment_mismatch`; una reserva ya cancelada no admite pago.
+- `ruff`, `mypy`, `alembic check`, `pip-audit` y `tsc` del cliente → sin errores.
+
+**Pendiente:** F4.4 (webhook, la fuente de verdad si el navegador se cierra antes de confirmar), F4.5 a F4.8 (correos, link de pago del admin, reembolsos, pagos manuales), F4.10 (prueba con Stripe CLI, necesita las llaves de prueba del cliente).
+
 ## 2026-09-13 — F3.12, F3.13 y F4.9: formulario de reserva y pago en efectivo como All Ways
 
 Continuación de la réplica de la referencia (§3.5), ahora en el formulario de reserva y el pago.

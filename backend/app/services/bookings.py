@@ -190,7 +190,7 @@ async def create_booking(
         booking_type = BookingType.TRANSFER
         payment_method = request.payment
         # Cash sin depósito (WORKPLAN §3.5.5, F3.13): se confirma sin pago en línea; el chofer
-        # cobra en efectivo. Con depósito (Escalade, Limousine) sigue pendiente hasta F4 (Stripe).
+        # cobra en efectivo. Con depósito (Escalade, Limousine) sigue pendiente hasta pagarlo.
         if request.payment == "cash" and quote.deposit_cents == 0:
             status = BookingStatus.CONFIRMED
 
@@ -229,6 +229,7 @@ async def create_booking(
         discount_cents=quote.discount_cents,
         tax_cents=quote.tax_cents,
         total_cents=quote.total_cents,
+        deposit_cents=quote.deposit_cents,
         promotion_id=quote._promotion_id,
         notes_customer=request.notes,
         idempotency_key=idempotency_key,

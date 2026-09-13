@@ -16,7 +16,7 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy import func, select
 from sqlalchemy.orm import selectinload
 
-from app.api.deps import CurrentCompany, DbSession, client_ip
+from app.api.deps import CurrentCompany, DbSession, Stripe, client_ip
 from app.core.rate_limit import rate_limit
 from app.core.security import booking_token, read_booking_token
 from app.models import Booking, Customer
@@ -28,6 +28,8 @@ from app.schemas.bookings import (
     BookingSummary,
     BookingToken,
     CancelRequest,
+    PaymentConfirmIn,
+    PaymentIntentOut,
 )
 from app.services.bookings import (
     cancel_booking,
@@ -35,6 +37,7 @@ from app.services.bookings import (
     company_settings,
     create_booking,
 )
+from app.services.payments import confirm_payment, create_or_reuse_intent
 from app.services.voucher import render_voucher
 
 router = APIRouter(prefix="/bookings", tags=["bookings"], dependencies=[Depends(rate_limit(10))])
@@ -161,5 +164,32 @@ async def cancel(
 ) -> BookingDetail:
     """Cancelación del cliente según política; ya cancelada o completada → 409."""
     await cancel_booking(session, booking, company, body.reason, client_ip(request))
+    await session.commit()
+    return BookingDetail.model_validate(booking)
+
+
+@router.post("/{code}/payments/intent")
+async def payment_intent(
+    booking: ManagedBooking, company: CurrentCompany, session: DbSession, stripe: Stripe
+) -> PaymentIntentOut:
+    """Crea o reutiliza el intent de la reserva (F4.2); dos llamadas dan el mismo secreto."""
+    secret = await create_or_reuse_intent(session, booking, company, stripe)
+    await session.commit()
+    return PaymentIntentOut(client_secret=secret)
+
+
+@router.post("/{code}/payments/confirm")
+async def payment_confirm(
+    body: PaymentConfirmIn,
+    booking: ManagedBooking,
+    company: CurrentCompany,
+    session: DbSession,
+    stripe: Stripe,
+    request: Request,
+) -> BookingDetail:
+    """Confirmación rápida verificada con Stripe (F4.3); un intent de otra reserva → 400."""
+    await confirm_payment(
+        session, booking, company, body.payment_intent_id, stripe, client_ip(request)
+    )
     await session.commit()
     return BookingDetail.model_validate(booking)

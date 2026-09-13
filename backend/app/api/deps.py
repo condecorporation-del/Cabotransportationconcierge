@@ -1,4 +1,5 @@
 import hashlib
+from collections.abc import AsyncIterator
 from typing import Annotated, Any
 
 from fastapi import Depends, HTTPException, Request, Response, status
@@ -9,6 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.config import get_settings
 from app.db import get_session
 from app.models import Company
+from app.services.stripe_gateway import StripeGateway
 
 DbSession = Annotated[AsyncSession, Depends(get_session)]
 
@@ -29,6 +31,18 @@ CurrentCompany = Annotated[Company, Depends(get_company)]
 
 def client_ip(request: Request) -> str | None:
     return request.client.host if request.client else None
+
+
+async def get_stripe() -> AsyncIterator[StripeGateway]:
+    """Un cliente HTTP por request; se cierra al terminar (F4.1)."""
+    gateway = StripeGateway(get_settings().stripe_secret_key)
+    try:
+        yield gateway
+    finally:
+        await gateway.aclose()
+
+
+Stripe = Annotated[StripeGateway, Depends(get_stripe)]
 
 
 def cached_json(request: Request, schema: Any, value: Any) -> Response:

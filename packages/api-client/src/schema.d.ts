@@ -281,6 +281,46 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/bookings/{code}/payments/intent": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Payment Intent
+         * @description Crea o reutiliza el intent de la reserva (F4.2); dos llamadas dan el mismo secreto.
+         */
+        post: operations["payment_intent_api_v1_bookings__code__payments_intent_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/bookings/{code}/payments/confirm": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Payment Confirm
+         * @description Confirmación rápida verificada con Stripe (F4.3); un intent de otra reserva → 400.
+         */
+        post: operations["payment_confirm_api_v1_bookings__code__payments_confirm_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/contact": {
         parameters: {
             query?: never;
@@ -695,6 +735,19 @@ export interface components {
             park_fee_cents: number;
             /** Deposit Cents */
             deposit_cents: number;
+        };
+        /** PaymentConfirmIn */
+        PaymentConfirmIn: {
+            /** Payment Intent Id */
+            payment_intent_id: string;
+        };
+        /**
+         * PaymentIntentOut
+         * @description Va al Payment Element de Stripe en el navegador; no es sensible por sí solo.
+         */
+        PaymentIntentOut: {
+            /** Client Secret */
+            client_secret: string;
         };
         /**
          * PricingMode
@@ -1344,6 +1397,72 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["CancelRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BookingDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    payment_intent_api_v1_bookings__code__payments_intent_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                code: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaymentIntentOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    payment_confirm_api_v1_bookings__code__payments_confirm_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                code: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PaymentConfirmIn"];
             };
         };
         responses: {
