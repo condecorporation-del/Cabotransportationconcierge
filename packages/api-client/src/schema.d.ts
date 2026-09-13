@@ -174,7 +174,7 @@ export interface paths {
         put?: never;
         /**
          * Create Quote
-         * @description Cotizaci�n autoritativa; los errores corregibles responden 422 con `code` estable.
+         * @description Cotización autoritativa; los errores corregibles responden 422 con `code` estable.
          */
         post: operations["create_quote_api_v1_quotes_post"];
         delete?: never;
