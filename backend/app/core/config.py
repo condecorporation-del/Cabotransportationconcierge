@@ -18,6 +18,9 @@ class Settings(BaseSettings):
     # Conexión Direct de Supabase: solo para migraciones (WORKPLAN D2). Si falta, usa database_url.
     database_url_direct: str | None = Field(default=None, repr=False)
     secret_key: str = Field(default="", repr=False)
+    # Stripe: llaves de prueba en local y staging; live solo en producción.
+    stripe_secret_key: str = Field(default="", repr=False)
+    stripe_webhook_secret: str = Field(default="", repr=False)
     # Cloudflare Turnstile en formularios públicos; vacía en local = no se exige.
     turnstile_secret_key: str = Field(default="", repr=False)
     # Empresa que atiende el sitio público mientras haya una sola (WORKPLAN D10).
@@ -34,8 +37,12 @@ class Settings(BaseSettings):
             errors.append("SECRET_KEY debe tener al menos 32 caracteres")
         if any(host in self.database_url for host in _LOCAL_HOSTS):
             errors.append("DATABASE_URL no puede apuntar a localhost")
-        if not self.turnstile_secret_key:
-            errors.append("TURNSTILE_SECRET_KEY es obligatoria")
+        required = {
+            "TURNSTILE_SECRET_KEY": self.turnstile_secret_key,
+            "STRIPE_SECRET_KEY": self.stripe_secret_key,
+            "STRIPE_WEBHOOK_SECRET": self.stripe_webhook_secret,
+        }
+        errors += [f"{name} es obligatoria" for name, value in required.items() if not value]
         if errors:
             raise ValueError("; ".join(errors))
         return self

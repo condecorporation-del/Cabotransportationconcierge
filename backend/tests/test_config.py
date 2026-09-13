@@ -5,6 +5,11 @@ from app.core.config import Settings
 
 REMOTE_DB = "postgresql+asyncpg://app:secret@db.example.com:5432/ctc"
 STRONG_KEY = "k" * 32
+PRODUCTION_SECRETS = {
+    "turnstile_secret_key": "turnstile-secret",
+    "stripe_secret_key": "sk_live_x",
+    "stripe_webhook_secret": "whsec_x",
+}
 
 
 @pytest.mark.parametrize(
@@ -13,6 +18,7 @@ STRONG_KEY = "k" * 32
         (REMOTE_DB, "short", "SECRET_KEY"),
         ("postgresql+asyncpg://app:secret@localhost:5432/ctc", STRONG_KEY, "localhost"),
         (REMOTE_DB, STRONG_KEY, "TURNSTILE_SECRET_KEY"),
+        (REMOTE_DB, STRONG_KEY, "STRIPE_WEBHOOK_SECRET"),
     ],
 )
 def test_production_refuses_insecure_config(database_url: str, secret_key: str, error: str) -> None:
@@ -40,6 +46,6 @@ def test_production_accepts_secure_config_and_hides_secrets() -> None:
         environment="production",
         database_url=REMOTE_DB,
         secret_key=STRONG_KEY,
-        turnstile_secret_key="turnstile-secret",
+        **PRODUCTION_SECRETS,
     )
     assert "secret" not in repr(settings)

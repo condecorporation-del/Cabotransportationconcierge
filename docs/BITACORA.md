@@ -2,6 +2,30 @@
 
 Una entrada por sesión o tarea, la más reciente arriba (formato en `AGENTS.md` §10).
 
+## 2026-09-12 — F4.1 cliente de Stripe
+
+**Qué se hizo**
+- `app/services/stripe_gateway.py`: envoltura fina sobre la API REST de Stripe con httpx, sin SDK y sin lógica de negocio.
+  - `create_payment_intent` (monto, moneda en minúsculas, `automatic_payment_methods`, metadata, `receipt_email` opcional) con `Idempotency-Key` obligatoria.
+  - `retrieve_payment_intent` y `create_refund` (total o parcial, con idempotencia).
+  - Errores: respuesta de Stripe → `StripeError("stripe_error")` con su mensaje; red caída o respuesta ilegible → `stripe_unavailable`. Ambos 502.
+  - `verify_webhook`: firma `Stripe-Signature` (HMAC-SHA256 de `t.payload`, varias `v1` aceptadas, comparación en tiempo constante) y tolerancia de 5 minutos → si no, `InvalidSignature` (400).
+- Config: `STRIPE_SECRET_KEY` y `STRIPE_WEBHOOK_SECRET`, obligatorias en producción junto con Turnstile.
+- `respx` como dependencia de desarrollo para simular Stripe.
+
+**Archivos:** `backend/app/core/config.py`, `backend/app/services/stripe_gateway.py`, `backend/tests/test_config.py`, `backend/tests/test_contact.py`, `backend/tests/test_stripe_gateway.py`, `backend/.env.example`, `backend/pyproject.toml`, `backend/uv.lock`, `WORKPLAN.md`
+
+**Verificación**
+- `uv run pytest` → **155 passed** (4 nuevos):
+  - El intent se envía con autenticación, `Idempotency-Key` y el formulario exacto (`metadata[booking_id]`, `automatic_payment_methods[enabled]=true`, `currency=usd`).
+  - Un 404 de Stripe → `stripe_error` con su mensaje; un timeout → `stripe_unavailable` (502).
+  - Firma válida → evento. Rechazados: cuerpo alterado, firma de hace más de 5 min, otro secreto y encabezado sin timestamp.
+  - Producción sin `STRIPE_WEBHOOK_SECRET` no arranca.
+- CI del commit anterior (F3 completa) en verde: run `34738195655`.
+- `ruff`, `mypy` y `pip-audit` → sin errores.
+
+**Pendiente:** F4.2 a F4.8. Necesito del cliente las llaves de prueba de Stripe (F4.10) y la decisión D-P5 sobre impuestos y efectivo (F4.9).
+
 ## 2026-09-12 — F3.8 voucher PDF (F3 completa)
 
 **Qué se hizo**

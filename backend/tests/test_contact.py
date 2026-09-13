@@ -18,6 +18,8 @@ PRODUCTION = Settings(
     database_url="postgresql+asyncpg://app:secret@db.example.com:5432/ctc",
     secret_key="k" * 32,
     turnstile_secret_key="turnstile-secret",
+    stripe_secret_key="sk_live_x",
+    stripe_webhook_secret="whsec_x",
 )
 
 
