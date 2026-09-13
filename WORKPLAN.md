@@ -12,23 +12,23 @@
 
 | Indicador | Estado |
 |---|---|
-| **Fase actual** | F1 — Base de datos y dominio: 8/12 (F1.1 a F1.8, con el modelo de datos completo de §6). F0 ✅ 9/9. CI verde (run `34727966391`). Vista previa del prototipo en https://cabotransportationconcierge.vercel.app (noindex). |
+| **Fase actual** | F1 — Base de datos y dominio: 9/12 (F1.1 a F1.9). Modelo de datos completo y catálogo cargable. F0 ✅ 9/9. CI verde (run `34728171656`). Vista previa del prototipo en https://cabotransportationconcierge.vercel.app (noindex). |
 | **Último avance** | 12 sep 2026 — F0:<br>• Repo git con prototipo aprobado.<br>• Backend mínimo FastAPI con `/api/v1/health` y `/health/ready`.<br>• Configuración fail-fast.<br>• Postgres 16 nativo con bases `ctc` y `ctc_test`.<br>• Cliente de API tipado generado desde OpenAPI.<br>• CI escrito.<br>• ADR-001 (entorno sin Docker).<br>• Checklist para el cliente. |
 | **Backend** | ✅ App mínima: health y readiness con Postgres real. Ruff (reglas de seguridad) y mypy estricto en 0 errores. |
-| **Base de datos** | ✅ Local: Postgres 16.15 nativo con `ctc` y `ctc_test`. Migraciones:<br>• `5721f5faa1c7`: empresas, ajustes, admins y sesiones.<br>• `4b96b66d17b0`: `pg_trgm`, zonas, hoteles, clases de vehículo, tarifas, extras, actividades, paquetes, promociones y clientes.<br>• `0b3217285efc`: reservas, tramos e ítems.<br>• `56ed3ca7c373`: pagos, eventos de Stripe y cuentas por cobrar.<br>• `a6a95d459beb`: choferes, vehículos, asignaciones, tareas, auditoría, cola de correos, IA, contacto y reseñas.<br>`alembic check` sin diferencias. |
+| **Base de datos** | ✅ Local: Postgres 16.15 nativo con `ctc` y `ctc_test`. Migraciones:<br>• `5721f5faa1c7`: empresas, ajustes, admins y sesiones.<br>• `4b96b66d17b0`: `pg_trgm`, zonas, hoteles, clases de vehículo, tarifas, extras, actividades, paquetes, promociones y clientes.<br>• `0b3217285efc`: reservas, tramos e ítems.<br>• `56ed3ca7c373`: pagos, eventos de Stripe y cuentas por cobrar.<br>• `a6a95d459beb`: choferes, vehículos, asignaciones, tareas, auditoría, cola de correos, IA, contacto y reseñas.<br>`alembic check` sin diferencias.<br>Catálogo de prueba cargado en `ctc` con `scripts/seed_catalog.py`: 226 hoteles, 24 tarifas, 15 extras. |
 | **Sitio público real** | ❌ Solo el prototipo estático `site/` (HTML generado por `site/build.js`). |
 | **Admin** | ❌ No existe. |
-| **Tests** | ✅ 34 tests pytest verdes contra Postgres real, incluidos el aislamiento por empresa y los constraints del catálogo, reservas, pagos, operación y comunicación. En cada corrida la migración va a base y de vuelta a head. pip-audit y npm audit sin vulnerabilidades. |
+| **Tests** | ✅ 37 tests pytest verdes contra Postgres real, incluidos el aislamiento por empresa, los constraints de todas las tablas y el seed idempotente del catálogo. En cada corrida la migración va a base y de vuelta a head. pip-audit y npm audit sin vulnerabilidades. |
 | **Deploy** | ❌ No configurado. |
 | **Git** | ✅ Remoto `github.com/condecorporation-del/Cabotransportationconcierge` (push por la deploy key `~/.ssh/deploy_cabo_concierge`, alias SSH `github-cabo`). Rama `main` subida; gitleaks sin hallazgos en el historial. |
 
-**Siguiente tarea:** F1.9, seed del catálogo desde los datos de ClassVIP. Con `--dry-run` imprime la matriz de tarifas para que Marlon la apruebe (D-P1).
+**Siguiente tarea:** F1.10 (`scripts/ensure_owner.py`), luego F1.11 (secuencia de códigos de reserva) y F1.12 (`scripts/check_db.py`).
 
 **Progreso por fase**
 
 ```
 F0  Fundación y decisiones          [██████████] 9/9 ✅
-F1  Base de datos y dominio         [███████---] 8/12
+F1  Base de datos y dominio         [████████--] 9/12
 F2  Motor de precios y catálogo     [----------] 0/9
 F3  Reservas públicas               [----------] 0/11
 F4  Pagos con Stripe                [----------] 0/10
@@ -786,7 +786,26 @@ Formato de cada tarea: `- [ ] ID — qué`, con **Verificar** (comando o prueba 
   - **Reseñas:** calificación entre 1 y 5.
 
   Verificar: tests de una asignación por tramo, chofer o vehículo obligatorio, placa repetida, cola con valores iniciales listos, borrado en cascada de mensajes y calificación fuera de rango.
-- [ ] **F1.9** — `scripts/seed_catalog.py`: importar de ClassVIP (`backend/scripts/data/*.json`) hoteles (sin duplicados, con slug y alias), 6 zonas, matriz de tarifas corregida (sin ceros ni duplicados), 16 extras, actividades y combos. Con la bandera `--dry-run` imprime la matriz para que Marlon la apruebe (D-P1). Verificar: reporte de conteos y matriz sin huecos.
+- [x] **F1.9** — Catálogo desde ClassVIP.
+  - **Datos** en `scripts/data/catalog.json` (versionado; el seed no depende de la carpeta de ClassVIP).
+  - **Carga** con `scripts/seed_catalog.py`: upsert por las llaves únicas, así que correrlo dos veces no duplica nada. `--dry-run` imprime la matriz de tarifas para que Marlon la apruebe (D-P1).
+  - **Contenido:**
+    - 6 zonas bilingües.
+    - 2 clases de vehículo.
+    - 24 tarifas: zona × vehículo × one way / round trip, sin huecos ni ceros.
+    - 15 extras: el kit básico incluido y un solo recargo nocturno de $20 (D-P12). ClassVIP tenía `LATE_NIGHT` y `EARLY_MORNING` por separado.
+    - 5 actividades y 2 combos.
+    - La promoción automática de septiembre.
+  - **Hoteles depurados:** ClassVIP tenía 252 activos, que en realidad eran 226.
+    - 23 eran el mismo hotel escrito distinto. Los nombres alternos quedaron como `aliases` para la búsqueda.
+    - 15 estaban en dos o más zonas, con precios distintos. Se asignó la zona por su ubicación real y queda registrado en `meta.hotel_zone_decisions`.
+    - Solo Los Cabos Golf Resort queda por confirmar (D-P13).
+
+  Verificar:
+  - Test de matriz sin huecos.
+  - Test de cada hotel una sola vez y en una zona existente.
+  - Test de seed idempotente.
+  - Carga real dos veces en `ctc` con los mismos conteos.
 - [ ] **F1.10** — `scripts/ensure_owner.py`: crea el usuario owner leyendo email y contraseña de variables de entorno, una sola vez. **No inventar contraseñas.** Verificar: si se corre dos veces, no duplica.
 - [ ] **F1.11** — Secuencia de código de reserva por empresa (`CTC-AAAA-NNNNNN`). Verificar: test de 50 inserts concurrentes sin colisión.
 - [ ] **F1.12** — `scripts/check_db.py` (SELECT 1, tablas y conteos). Verificar: corre contra local y staging.
@@ -1089,6 +1108,7 @@ Mientras no haya respuesta, se usa el **valor por defecto** para no bloquear el 
 | D-P10 | **Idiomas** | ✅ Decidido por Marlon (12 sep 2026): bilingüe desde el lanzamiento. | Inglés en `/`, español en `/es/` (D15). |
 | D-P11 | **Promoción de septiembre** | El video anuncia "SEPTEMBER 10% OFF" con viaje del 1 al 30 de sep de 2026. | Promoción automática configurada; si se lanza después, actualizar el video y la fecha. |
 | D-P12 | **Horario del recargo nocturno** | All Ways cobra "Night surcharge · 11 PM – 5 AM"; ClassVIP cobra LATE_NIGHT de 10 PM a 6 AM y EARLY_MORNING antes de las 6 AM. | Horario configurable en settings; por defecto 11 PM – 5 AM (réplica de All Ways) con el precio del extra de ClassVIP ($20). |
+| D-P13 | **Zona de Los Cabos Golf Resort** | ClassVIP lo tenía en Cabo San Lucas y también en San José del Cabo, con precios distintos; no se pudo verificar su ubicación. Los otros 14 hoteles con dos zonas se corrigieron por ubicación real (`catalog.json` → `meta.hotel_zone_decisions`). | Cabo San Lucas. |
 
 ---
 

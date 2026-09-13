@@ -2,6 +2,60 @@
 
 Una entrada por sesión o tarea, la más reciente arriba (formato en `AGENTS.md` §10).
 
+## 2026-09-12 — F1.9 Seed del catálogo y depuración de hoteles
+
+**Qué se hizo**
+- `backend/scripts/data/catalog.json` (versionado), para que el seed no dependa de la carpeta de ClassVIP y funcione igual en CI. Contiene:
+  - Empresa.
+  - 6 zonas bilingües con tiempos desde SJD.
+  - 2 clases de vehículo: Suburban de 1 a 5 pasajeros y Sprinter de 6 a 14.
+  - 24 tarifas en centavos.
+  - 15 extras.
+  - 5 actividades y 2 combos.
+  - La promoción automática "September 10% off".
+  - `meta.status = pending_approval`.
+- `backend/scripts/seed_catalog.py`:
+  - Upsert con `INSERT … ON CONFLICT DO UPDATE` por la llave única de cada tabla, así que es idempotente. Devuelve los ids para ligar hoteles y tarifas a zonas y vehículos.
+  - Las promociones sin código se reconocen por su nombre.
+  - `--dry-run` imprime la matriz de tarifas en español sin tocar la base; `sys.stdout` va en UTF-8 para que los acentos salgan bien en la consola de Windows.
+- **Depuración de hoteles de ClassVIP** (reporte agrupando por nombre normalizado):
+  - 252 hoteles activos que en realidad eran **226**.
+  - 23 eran el mismo hotel escrito distinto ("&" / "and", con o sin "Resort and Spa"). El nombre más completo quedó como principal y los demás como `aliases` para la búsqueda (17 hoteles con alias). Se quitó un alias que solo cambiaba mayúsculas ("ME Cabo" = "Me Cabo").
+  - **15 estaban en dos o más zonas, con precios distintos.** Se asignó la zona por ubicación real:
+    - Hard Rock, Nobu y Pueblo Bonito Pacifica → Lado Pacífico.
+    - Breathless, Riu Palace, Marina Fiesta y Cabo Vista → Cabo San Lucas.
+    - One&Only Palmilla, Grand Velas, Hilton y Marbella Suites → Corredor Turístico.
+    - JW Marriott, Secrets y El Ganzo → Puerto Los Cabos.
+    - Queda registrado en `meta.hotel_zone_decisions`.
+  - **Los Cabos Golf Resort queda por confirmar** (D-P13, agregado al checklist del cliente).
+- **Extras:** `LATE_NIGHT` y `EARLY_MORNING` de ClassVIP se unieron en un solo `NIGHT_SURCHARGE` de $20, 11 PM – 5 AM (D-P12), y se agregó el kit básico incluido ("Cold beer and water").
+- CI: `mypy app scripts` (antes solo revisaba `app`).
+
+**Archivos:** `backend/scripts/__init__.py`, `backend/scripts/seed_catalog.py`, `backend/scripts/data/catalog.json`, `backend/tests/test_seed_catalog.py`, `.github/workflows/ci.yml`, `docs/content/checklist-cliente.md`, `WORKPLAN.md`
+
+**Verificación**
+- `uv run pytest` → **37 passed**. Tests nuevos:
+  - Matriz sin huecos: cada zona × vehículo × tipo de viaje, con precio > 0.
+  - Cada hotel aparece una sola vez (nombre y aliases sin repetir) y en una zona existente.
+  - Seed idempotente: dos corridas dan los mismos conteos en la base.
+- `uv run python -m scripts.seed_catalog` dos veces en `ctc` → ambas `hotels 226, rates 24, zones 6, extras 15, activities 5, activity_packages 2, promotions 1`. En Postgres: `hotels=226 rates=24 zones=6 extras=15 promos=1 companies=1`.
+- Zonas corregidas en la base: Hard Rock → `pacific-side`, Marina Fiesta → `cabo-san-lucas`, One and Only Palmilla → `tourist-corridor`.
+- `ruff check`, `ruff format` y `mypy app scripts` → 0 errores.
+- CI del commit anterior `e08d0cd` (run `34728171656`) → los 3 jobs en success.
+
+**Matriz de tarifas por aprobar** (`--dry-run`):
+
+| Zona | Suburban ida / redondo | Sprinter ida / redondo |
+|---|---|---|
+| San José del Cabo | $90 / $162 | $130 / $234 |
+| Puerto Los Cabos | $95 / $171 | $135 / $243 |
+| Corredor Turístico | $100 / $180 | $145 / $261 |
+| Cabo San Lucas | $110 / $198 | $155 / $279 |
+| Lado Pacífico | $130 / $234 | $175 / $315 |
+| East Cape y Todos Santos | $150 / $270 | $205 / $369 |
+
+**Pendiente:** F1.10 (owner), F1.11 (secuencia de códigos), F1.12 (`check_db`); aprobación de tarifas (D-P1) y zona de Los Cabos Golf Resort (D-P13).
+
 ## 2026-09-12 — F1.8 Operación y comunicación
 
 **Qué se hizo**

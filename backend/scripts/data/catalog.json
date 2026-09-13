@@ -1,0 +1,2116 @@
+{
+  "meta": {
+    "status": "pending_approval",
+    "note": "Tarifas de ClassVIP (6 zonas); round trip de Sprinter = 1.8 x one way. Pendiente de aprobación de Marlon (WORKPLAN D-P1, D-P12).",
+    "source": "ClassVIP backend/scripts/data/hotels.json, agrupado por nombre normalizado",
+    "hotel_zone_decisions": [
+      {
+        "hotel": "Hard Rock Hotel Los Cabos",
+        "classvip_zones": [
+          "pacific-side",
+          "cabo-san-lucas"
+        ],
+        "zone": "pacific-side",
+        "reason": "Diamante, lado Pacífico"
+      },
+      {
+        "hotel": "Nobu Hotel Los Cabos",
+        "classvip_zones": [
+          "pacific-side",
+          "tourist-corridor"
+        ],
+        "zone": "pacific-side",
+        "reason": "Diamante, lado Pacífico"
+      },
+      {
+        "hotel": "Pueblo Bonito Pacifica Golf and Spa Resort",
+        "classvip_zones": [
+          "pacific-side",
+          "cabo-san-lucas"
+        ],
+        "zone": "pacific-side",
+        "reason": "Quivira, lado Pacífico"
+      },
+      {
+        "hotel": "Breathless Cabo San Lucas Resort and Spa",
+        "classvip_zones": [
+          "cabo-san-lucas",
+          "tourist-corridor"
+        ],
+        "zone": "cabo-san-lucas",
+        "reason": "Playa El Médano"
+      },
+      {
+        "hotel": "Cabo Vista Hotel",
+        "classvip_zones": [
+          "cabo-san-lucas",
+          "tourist-corridor"
+        ],
+        "zone": "cabo-san-lucas",
+        "reason": "Centro de Cabo San Lucas"
+      },
+      {
+        "hotel": "Los Cabos Golf Resort",
+        "classvip_zones": [
+          "cabo-san-lucas",
+          "san-jose-del-cabo"
+        ],
+        "zone": "cabo-san-lucas",
+        "reason": "POR CONFIRMAR: ubicación no verificada"
+      },
+      {
+        "hotel": "Marbella Suites en la Playa",
+        "classvip_zones": [
+          "cabo-san-lucas",
+          "tourist-corridor"
+        ],
+        "zone": "tourist-corridor",
+        "reason": "Corredor turístico km 17"
+      },
+      {
+        "hotel": "Marina Fiesta Resort and Spa",
+        "classvip_zones": [
+          "cabo-san-lucas",
+          "east-cape-todos-santos",
+          "puerto-los-cabos"
+        ],
+        "zone": "cabo-san-lucas",
+        "reason": "Marina de Cabo San Lucas"
+      },
+      {
+        "hotel": "Riu Palace Cabo San Lucas",
+        "classvip_zones": [
+          "cabo-san-lucas",
+          "tourist-corridor"
+        ],
+        "zone": "cabo-san-lucas",
+        "reason": "Playa El Médano"
+      },
+      {
+        "hotel": "One and Only Palmilla",
+        "classvip_zones": [
+          "east-cape-todos-santos",
+          "tourist-corridor"
+        ],
+        "zone": "tourist-corridor",
+        "reason": "Palmilla, corredor turístico"
+      },
+      {
+        "hotel": "Grand Velas Los Cabos",
+        "classvip_zones": [
+          "puerto-los-cabos",
+          "tourist-corridor"
+        ],
+        "zone": "tourist-corridor",
+        "reason": "Corredor turístico km 17.3"
+      },
+      {
+        "hotel": "Hotel El Ganzo",
+        "classvip_zones": [
+          "puerto-los-cabos",
+          "san-jose-del-cabo"
+        ],
+        "zone": "puerto-los-cabos",
+        "reason": "Puerto Los Cabos"
+      },
+      {
+        "hotel": "JW Marriott Los Cabos Beach Resort and Spa",
+        "classvip_zones": [
+          "puerto-los-cabos",
+          "san-jose-del-cabo"
+        ],
+        "zone": "puerto-los-cabos",
+        "reason": "Puerto Los Cabos"
+      },
+      {
+        "hotel": "Secrets Puerto Los Cabos Golf and Spa Resort",
+        "classvip_zones": [
+          "puerto-los-cabos",
+          "san-jose-del-cabo"
+        ],
+        "zone": "puerto-los-cabos",
+        "reason": "Puerto Los Cabos"
+      },
+      {
+        "hotel": "Hilton Los Cabos Beach & Golf Resort",
+        "classvip_zones": [
+          "san-jose-del-cabo",
+          "tourist-corridor"
+        ],
+        "zone": "tourist-corridor",
+        "reason": "Corredor turístico km 19.5"
+      }
+    ]
+  },
+  "company": {
+    "slug": "cabo-transportation-concierge",
+    "name": "Cabo Transportation Concierge"
+  },
+  "zones": [
+    {
+      "slug": "san-jose-del-cabo",
+      "name": {
+        "en": "San José del Cabo",
+        "es": "San José del Cabo"
+      },
+      "drive_minutes_min": 10,
+      "drive_minutes_max": 20,
+      "sort": 0
+    },
+    {
+      "slug": "puerto-los-cabos",
+      "name": {
+        "en": "Puerto Los Cabos",
+        "es": "Puerto Los Cabos"
+      },
+      "drive_minutes_min": 20,
+      "drive_minutes_max": 30,
+      "sort": 1
+    },
+    {
+      "slug": "tourist-corridor",
+      "name": {
+        "en": "Tourist Corridor",
+        "es": "Corredor Turístico"
+      },
+      "drive_minutes_min": 20,
+      "drive_minutes_max": 35,
+      "sort": 2
+    },
+    {
+      "slug": "cabo-san-lucas",
+      "name": {
+        "en": "Cabo San Lucas",
+        "es": "Cabo San Lucas"
+      },
+      "drive_minutes_min": 40,
+      "drive_minutes_max": 50,
+      "sort": 3
+    },
+    {
+      "slug": "pacific-side",
+      "name": {
+        "en": "Pacific Side",
+        "es": "Lado Pacífico"
+      },
+      "drive_minutes_min": 50,
+      "drive_minutes_max": 65,
+      "sort": 4
+    },
+    {
+      "slug": "east-cape-todos-santos",
+      "name": {
+        "en": "East Cape & Todos Santos",
+        "es": "East Cape y Todos Santos"
+      },
+      "drive_minutes_min": 70,
+      "drive_minutes_max": 95,
+      "sort": 5
+    }
+  ],
+  "vehicle_classes": [
+    {
+      "code": "SUBURBAN",
+      "name": "Chevrolet Suburban",
+      "min_pax": 1,
+      "max_pax": 5,
+      "max_bags": 5,
+      "sort": 0
+    },
+    {
+      "code": "SPRINTER",
+      "name": "Mercedes-Benz Sprinter",
+      "min_pax": 6,
+      "max_pax": 14,
+      "max_bags": 14,
+      "sort": 1
+    }
+  ],
+  "rates": [
+    {
+      "zone": "san-jose-del-cabo",
+      "vehicle_class": "SUBURBAN",
+      "trip_type": "one_way",
+      "service_scope": "airport",
+      "price_cents": 9000
+    },
+    {
+      "zone": "san-jose-del-cabo",
+      "vehicle_class": "SUBURBAN",
+      "trip_type": "round_trip",
+      "service_scope": "airport",
+      "price_cents": 16200
+    },
+    {
+      "zone": "san-jose-del-cabo",
+      "vehicle_class": "SPRINTER",
+      "trip_type": "one_way",
+      "service_scope": "airport",
+      "price_cents": 13000
+    },
+    {
+      "zone": "san-jose-del-cabo",
+      "vehicle_class": "SPRINTER",
+      "trip_type": "round_trip",
+      "service_scope": "airport",
+      "price_cents": 23400
+    },
+    {
+      "zone": "puerto-los-cabos",
+      "vehicle_class": "SUBURBAN",
+      "trip_type": "one_way",
+      "service_scope": "airport",
+      "price_cents": 9500
+    },
+    {
+      "zone": "puerto-los-cabos",
+      "vehicle_class": "SUBURBAN",
+      "trip_type": "round_trip",
+      "service_scope": "airport",
+      "price_cents": 17100
+    },
+    {
+      "zone": "puerto-los-cabos",
+      "vehicle_class": "SPRINTER",
+      "trip_type": "one_way",
+      "service_scope": "airport",
+      "price_cents": 13500
+    },
+    {
+      "zone": "puerto-los-cabos",
+      "vehicle_class": "SPRINTER",
+      "trip_type": "round_trip",
+      "service_scope": "airport",
+      "price_cents": 24300
+    },
+    {
+      "zone": "tourist-corridor",
+      "vehicle_class": "SUBURBAN",
+      "trip_type": "one_way",
+      "service_scope": "airport",
+      "price_cents": 10000
+    },
+    {
+      "zone": "tourist-corridor",
+      "vehicle_class": "SUBURBAN",
+      "trip_type": "round_trip",
+      "service_scope": "airport",
+      "price_cents": 18000
+    },
+    {
+      "zone": "tourist-corridor",
+      "vehicle_class": "SPRINTER",
+      "trip_type": "one_way",
+      "service_scope": "airport",
+      "price_cents": 14500
+    },
+    {
+      "zone": "tourist-corridor",
+      "vehicle_class": "SPRINTER",
+      "trip_type": "round_trip",
+      "service_scope": "airport",
+      "price_cents": 26100
+    },
+    {
+      "zone": "cabo-san-lucas",
+      "vehicle_class": "SUBURBAN",
+      "trip_type": "one_way",
+      "service_scope": "airport",
+      "price_cents": 11000
+    },
+    {
+      "zone": "cabo-san-lucas",
+      "vehicle_class": "SUBURBAN",
+      "trip_type": "round_trip",
+      "service_scope": "airport",
+      "price_cents": 19800
+    },
+    {
+      "zone": "cabo-san-lucas",
+      "vehicle_class": "SPRINTER",
+      "trip_type": "one_way",
+      "service_scope": "airport",
+      "price_cents": 15500
+    },
+    {
+      "zone": "cabo-san-lucas",
+      "vehicle_class": "SPRINTER",
+      "trip_type": "round_trip",
+      "service_scope": "airport",
+      "price_cents": 27900
+    },
+    {
+      "zone": "pacific-side",
+      "vehicle_class": "SUBURBAN",
+      "trip_type": "one_way",
+      "service_scope": "airport",
+      "price_cents": 13000
+    },
+    {
+      "zone": "pacific-side",
+      "vehicle_class": "SUBURBAN",
+      "trip_type": "round_trip",
+      "service_scope": "airport",
+      "price_cents": 23400
+    },
+    {
+      "zone": "pacific-side",
+      "vehicle_class": "SPRINTER",
+      "trip_type": "one_way",
+      "service_scope": "airport",
+      "price_cents": 17500
+    },
+    {
+      "zone": "pacific-side",
+      "vehicle_class": "SPRINTER",
+      "trip_type": "round_trip",
+      "service_scope": "airport",
+      "price_cents": 31500
+    },
+    {
+      "zone": "east-cape-todos-santos",
+      "vehicle_class": "SUBURBAN",
+      "trip_type": "one_way",
+      "service_scope": "airport",
+      "price_cents": 15000
+    },
+    {
+      "zone": "east-cape-todos-santos",
+      "vehicle_class": "SUBURBAN",
+      "trip_type": "round_trip",
+      "service_scope": "airport",
+      "price_cents": 27000
+    },
+    {
+      "zone": "east-cape-todos-santos",
+      "vehicle_class": "SPRINTER",
+      "trip_type": "one_way",
+      "service_scope": "airport",
+      "price_cents": 20500
+    },
+    {
+      "zone": "east-cape-todos-santos",
+      "vehicle_class": "SPRINTER",
+      "trip_type": "round_trip",
+      "service_scope": "airport",
+      "price_cents": 36900
+    }
+  ],
+  "hotels": [
+    {
+      "slug": "acre-resort",
+      "name": "Acre Resort",
+      "zone": "puerto-los-cabos",
+      "aliases": []
+    },
+    {
+      "slug": "araiza-palmira-hotel",
+      "name": "Araiza Palmira Hotel",
+      "zone": "east-cape-todos-santos",
+      "aliases": []
+    },
+    {
+      "slug": "bahia-hotel-and-beach-house",
+      "name": "Bahia Hotel & Beach House",
+      "zone": "cabo-san-lucas",
+      "aliases": []
+    },
+    {
+      "slug": "bahia-hotel-and-beach-club",
+      "name": "Bahia Hotel and Beach Club",
+      "zone": "cabo-san-lucas",
+      "aliases": []
+    },
+    {
+      "slug": "baja-camp",
+      "name": "Baja Camp",
+      "zone": "east-cape-todos-santos",
+      "aliases": []
+    },
+    {
+      "slug": "baja-point",
+      "name": "Baja Point",
+      "zone": "tourist-corridor",
+      "aliases": []
+    },
+    {
+      "slug": "barcelo-grand-faro-los-cabos",
+      "name": "Barceló Grand Faro Los Cabos",
+      "zone": "san-jose-del-cabo",
+      "aliases": []
+    },
+    {
+      "slug": "blarney-castle-inn",
+      "name": "Blarney Castle Inn",
+      "zone": "cabo-san-lucas",
+      "aliases": []
+    },
+    {
+      "slug": "breathless-cabo-san-lucas-resort-and-spa",
+      "name": "Breathless Cabo San Lucas Resort and Spa",
+      "zone": "cabo-san-lucas",
+      "aliases": [
+        "Breathless Cabo San Lucas"
+      ]
+    },
+    {
+      "slug": "brisas-del-mar",
+      "name": "Brisas del Mar",
+      "zone": "san-jose-del-cabo",
+      "aliases": []
+    },
+    {
+      "slug": "cabo-azul-resort",
+      "name": "Cabo Azul Resort",
+      "zone": "san-jose-del-cabo",
+      "aliases": []
+    },
+    {
+      "slug": "cabo-del-sol-oceanfront",
+      "name": "Cabo del Sol Oceanfront",
+      "zone": "tourist-corridor",
+      "aliases": []
+    },
+    {
+      "slug": "cabo-del-sol-residential-area",
+      "name": "Cabo Del Sol Residential Area",
+      "zone": "tourist-corridor",
+      "aliases": []
+    },
+    {
+      "slug": "cabo-inn",
+      "name": "Cabo Inn",
+      "zone": "cabo-san-lucas",
+      "aliases": []
+    },
+    {
+      "slug": "cabo-san-lucas-downtown-centro",
+      "name": "Cabo San Lucas Downtown/Centro",
+      "zone": "cabo-san-lucas",
+      "aliases": []
+    },
+    {
+      "slug": "cabo-surf-hotel-and-spa",
+      "name": "Cabo Surf Hotel and Spa",
+      "zone": "tourist-corridor",
+      "aliases": []
+    },
+    {
+      "slug": "cabo-vista-hotel",
+      "name": "Cabo Vista Hotel",
+      "zone": "cabo-san-lucas",
+      "aliases": []
+    },
+    {
+      "slug": "cabo-vista-hotel-san-jose",
+      "name": "Cabo Vista Hotel San Jose",
+      "zone": "san-jose-del-cabo",
+      "aliases": []
+    },
+    {
+      "slug": "cachet-beach-hotel-los-cabos",
+      "name": "Cachet Beach Hotel Los Cabos",
+      "zone": "cabo-san-lucas",
+      "aliases": []
+    },
+    {
+      "slug": "casa-costa-azul",
+      "name": "Casa Costa Azul",
+      "zone": "san-jose-del-cabo",
+      "aliases": []
+    },
+    {
+      "slug": "casa-del-mar-golf-resort-and-spa",
+      "name": "Casa del Mar Golf Resort & Spa",
+      "zone": "san-jose-del-cabo",
+      "aliases": []
+    },
+    {
+      "slug": "casa-dorada-los-cabos-resort-and-spa",
+      "name": "Casa Dorada Los Cabos, Resort and Spa",
+      "zone": "cabo-san-lucas",
+      "aliases": [
+        "Casa Dorada Los Cabos"
+      ]
+    },
+    {
+      "slug": "casa-florencia",
+      "name": "Casa Florencia",
+      "zone": "tourist-corridor",
+      "aliases": []
+    },
+    {
+      "slug": "casa-natalia",
+      "name": "Casa Natalia",
+      "zone": "san-jose-del-cabo",
+      "aliases": []
+    },
+    {
+      "slug": "casa-pablito",
+      "name": "Casa Pablito",
+      "zone": "cabo-san-lucas",
+      "aliases": []
+    },
+    {
+      "slug": "chileno-bay-resort-and-residences",
+      "name": "Chileno Bay Resort and Residences",
+      "zone": "tourist-corridor",
+      "aliases": [
+        "Chileno Bay Resort & Residences"
+      ]
+    },
+    {
+      "slug": "city-express-by-marriott-la-paz",
+      "name": "City Express by Marriott La Paz",
+      "zone": "east-cape-todos-santos",
+      "aliases": []
+    },
+    {
+      "slug": "city-express-plus-by-marriott-cabo-san-lucas",
+      "name": "City Express Plus by Marriott Cabo San Lucas",
+      "zone": "cabo-san-lucas",
+      "aliases": []
+    },
+    {
+      "slug": "city-express-suites-by-marriott-cabo-san-lucas",
+      "name": "City Express Suites by Marriott Cabo San Lucas",
+      "zone": "cabo-san-lucas",
+      "aliases": []
+    },
+    {
+      "slug": "club-cascadas-de-baja",
+      "name": "Club Cascadas de Baja",
+      "zone": "cabo-san-lucas",
+      "aliases": []
+    },
+    {
+      "slug": "club-el-moro",
+      "name": "Club El Moro",
+      "zone": "east-cape-todos-santos",
+      "aliases": []
+    },
+    {
+      "slug": "club-hotel-cantamar",
+      "name": "Club Hotel Cantamar",
+      "zone": "east-cape-todos-santos",
+      "aliases": []
+    },
+    {
+      "slug": "club-la-costa",
+      "name": "Club La Costa",
+      "zone": "san-jose-del-cabo",
+      "aliases": []
+    },
+    {
+      "slug": "club-regina-los-cabos",
+      "name": "Club Regina Los Cabos",
+      "zone": "tourist-corridor",
+      "aliases": []
+    },
+    {
+      "slug": "comfort-inn-and-suites-los-cabos",
+      "name": "Comfort Inn and Suites Los Cabos",
+      "zone": "cabo-san-lucas",
+      "aliases": []
+    },
+    {
+      "slug": "corazon-cabo-resort-and-spa",
+      "name": "Corazón Cabo Resort and Spa",
+      "zone": "cabo-san-lucas",
+      "aliases": []
+    },
+    {
+      "slug": "costa-palmas-resort",
+      "name": "Costa Palmas Resort",
+      "zone": "east-cape-todos-santos",
+      "aliases": [
+        "Costa Palmas"
+      ]
+    },
+    {
+      "slug": "crown-paradise-club",
+      "name": "Crown Paradise Club",
+      "zone": "san-jose-del-cabo",
+      "aliases": []
+    },
+    {
+      "slug": "diamante-cabo-san-lucas-resort",
+      "name": "Diamante Cabo San Lucas Resort",
+      "zone": "pacific-side",
+      "aliases": []
+    },
+    {
+      "slug": "dreams-los-cabos-suites-golf-resort-and-spa",
+      "name": "Dreams Los Cabos Suites Golf Resort and Spa",
+      "zone": "tourist-corridor",
+      "aliases": [
+        "Dreams Los Cabos Suites Golf & Spa"
+      ]
+    },
+    {
+      "slug": "drift-san-jose",
+      "name": "Drift San José",
+      "zone": "san-jose-del-cabo",
+      "aliases": []
+    },
+    {
+      "slug": "el-ameyal",
+      "name": "El Ameyal",
+      "zone": "cabo-san-lucas",
+      "aliases": []
+    },
+    {
+      "slug": "el-dorado-residential-area",
+      "name": "El Dorado Residential Area",
+      "zone": "tourist-corridor",
+      "aliases": []
+    },
+    {
+      "slug": "el-encanto-in-and-suites-hotel-boutique",
+      "name": "El Encanto In and Suites Hotel Boutique",
+      "zone": "san-jose-del-cabo",
+      "aliases": []
+    },
+    {
+      "slug": "el-encanto-inn",
+      "name": "El Encanto Inn",
+      "zone": "san-jose-del-cabo",
+      "aliases": []
+    },
+    {
+      "slug": "el-zalate-rentals",
+      "name": "El Zalate Rentals",
+      "zone": "san-jose-del-cabo",
+      "aliases": []
+    },
+    {
+      "slug": "esperanza-an-auberge-resort",
+      "name": "Esperanza an Auberge Resort",
+      "zone": "cabo-san-lucas",
+      "aliases": []
+    },
+    {
+      "slug": "esperanza-resort",
+      "name": "Esperanza Resort",
+      "zone": "cabo-san-lucas",
+      "aliases": []
+    },
+    {
+      "slug": "estancia-real-los-cabos",
+      "name": "Estancia Real Los Cabos",
+      "zone": "cabo-san-lucas",
+      "aliases": []
+    },
+    {
+      "slug": "fairfield-inn-los-cabos",
+      "name": "Fairfield Inn Los Cabos",
+      "zone": "cabo-san-lucas",
+      "aliases": []
+    },
+    {
+      "slug": "fiesta-americana-grand-los-cabos",
+      "name": "Fiesta Americana Grand Los Cabos",
+      "zone": "cabo-san-lucas",
+      "aliases": []
+    },
+    {
+      "slug": "four-seasons-resort-and-residences-cabo-san-lucas-at-cabo-del-sol",
+      "name": "Four Seasons Resort and Residences Cabo San Lucas at Cabo Del Sol",
+      "zone": "tourist-corridor",
+      "aliases": []
+    },
+    {
+      "slug": "four-seasons-resort-cabo-del-sol",
+      "name": "Four Seasons Resort Cabo del Sol",
+      "zone": "cabo-san-lucas",
+      "aliases": []
+    },
+    {
+      "slug": "four-seasons-resort-los-cabos-at-costa-palmas",
+      "name": "Four Seasons Resort Los Cabos at Costa Palmas",
+      "zone": "east-cape-todos-santos",
+      "aliases": []
+    },
+    {
+      "slug": "garza-blanca-resort-and-spa-los-cabos",
+      "name": "Garza Blanca Resort and Spa Los Cabos",
+      "zone": "tourist-corridor",
+      "aliases": []
+    },
+    {
+      "slug": "gr-solaris-lighthouse-los-cabos",
+      "name": "GR Solaris Lighthouse Los Cabos",
+      "zone": "san-jose-del-cabo",
+      "aliases": []
+    },
+    {
+      "slug": "grand-fiesta-americana-los-cabos",
+      "name": "Grand Fiesta Americana Los Cabos",
+      "zone": "tourist-corridor",
+      "aliases": []
+    },
+    {
+      "slug": "grand-plaza-la-paz",
+      "name": "Grand Plaza La Paz",
+      "zone": "east-cape-todos-santos",
+      "aliases": []
+    },
+    {
+      "slug": "grand-solmar-at-rancho-san-lucas",
+      "name": "Grand Solmar at Rancho San Lucas",
+      "zone": "pacific-side",
+      "aliases": []
+    },
+    {
+      "slug": "grand-solmar-land-s-end",
+      "name": "Grand Solmar Land's End",
+      "zone": "cabo-san-lucas",
+      "aliases": []
+    },
+    {
+      "slug": "grand-solmar-lands-end-resort-and-spa",
+      "name": "Grand Solmar Lands End Resort and Spa",
+      "zone": "cabo-san-lucas",
+      "aliases": []
+    },
+    {
+      "slug": "grand-solmar-pacific-dunes-golf-and-spa",
+      "name": "Grand Solmar Pacific Dunes Golf and Spa",
+      "zone": "pacific-side",
+      "aliases": []
+    },
+    {
+      "slug": "grand-solmar-pacific-resort-and-spa",
+      "name": "Grand Solmar Pacific Resort & Spa",
+      "zone": "pacific-side",
+      "aliases": []
+    },
+    {
+      "slug": "grand-velas-boutique",
+      "name": "Grand Velas Boutique",
+      "zone": "tourist-corridor",
+      "aliases": []
+    },
+    {
+      "slug": "grand-velas-los-cabos",
+      "name": "Grand Velas Los Cabos",
+      "zone": "tourist-corridor",
+      "aliases": []
+    },
+    {
+      "slug": "guaycura-boutique-hotel-beach-club-and-spa",
+      "name": "Guaycura Boutique Hotel Beach Club and Spa",
+      "zone": "east-cape-todos-santos",
+      "aliases": []
+    },
+    {
+      "slug": "hacienda-beach-club-and-residences",
+      "name": "Hacienda Beach Club and Residences",
+      "zone": "cabo-san-lucas",
+      "aliases": []
+    },
+    {
+      "slug": "hacienda-del-mar",
+      "name": "Hacienda Del Mar",
+      "zone": "tourist-corridor",
+      "aliases": []
+    },
+    {
+      "slug": "hacienda-encantada-resort-and-spa",
+      "name": "Hacienda Encantada Resort & Spa",
+      "zone": "cabo-san-lucas",
+      "aliases": []
+    },
+    {
+      "slug": "hacienda-encantada-resort-and-residences",
+      "name": "Hacienda Encantada Resort and Residences",
+      "zone": "cabo-san-lucas",
+      "aliases": []
+    },
+    {
+      "slug": "hampton-inn-and-suites-by-hilton-los-cabos",
+      "name": "Hampton Inn and Suites by Hilton Los Cabos",
+      "zone": "puerto-los-cabos",
+      "aliases": []
+    },
+    {
+      "slug": "hampton-inn-los-cabos",
+      "name": "Hampton Inn Los Cabos",
+      "zone": "san-jose-del-cabo",
+      "aliases": []
+    },
+    {
+      "slug": "hard-rock-hotel-los-cabos",
+      "name": "Hard Rock Hotel Los Cabos",
+      "zone": "pacific-side",
+      "aliases": [
+        "Hard Rock Los Cabos"
+      ]
+    },
+    {
+      "slug": "hilton-los-cabos-beach-and-golf-resort",
+      "name": "Hilton Los Cabos Beach & Golf Resort",
+      "zone": "tourist-corridor",
+      "aliases": [
+        "Hilton Los Cabos"
+      ]
+    },
+    {
+      "slug": "hilton-los-cabos-beach-and-golf-resort-corridor",
+      "name": "Hilton Los Cabos Beach & Golf Resort Corridor",
+      "zone": "tourist-corridor",
+      "aliases": []
+    },
+    {
+      "slug": "holiday-inn",
+      "name": "Holiday Inn",
+      "zone": "san-jose-del-cabo",
+      "aliases": []
+    },
+    {
+      "slug": "holiday-inn-express-cabo-san-lucas",
+      "name": "Holiday Inn Express Cabo San Lucas",
+      "zone": "cabo-san-lucas",
+      "aliases": []
+    },
+    {
+      "slug": "hotel-and-suites-las-palmas",
+      "name": "Hotel and Suites Las Palmas",
+      "zone": "san-jose-del-cabo",
+      "aliases": []
+    },
+    {
+      "slug": "hotel-california",
+      "name": "Hotel California",
+      "zone": "east-cape-todos-santos",
+      "aliases": []
+    },
+    {
+      "slug": "hotel-california-todos-santos",
+      "name": "Hotel California Todos Santos",
+      "zone": "east-cape-todos-santos",
+      "aliases": []
+    },
+    {
+      "slug": "hotel-el-encanto",
+      "name": "Hotel El Encanto",
+      "zone": "san-jose-del-cabo",
+      "aliases": []
+    },
+    {
+      "slug": "hotel-el-ganzo",
+      "name": "Hotel El Ganzo",
+      "zone": "puerto-los-cabos",
+      "aliases": [
+        "El Ganzo"
+      ]
+    },
+    {
+      "slug": "hotel-indigo-la-paz-puerta-cortes",
+      "name": "Hotel Indigo La Paz Puerta Cortés",
+      "zone": "east-cape-todos-santos",
+      "aliases": []
+    },
+    {
+      "slug": "hotel-palmas-de-cortez",
+      "name": "Hotel Palmas de Cortez",
+      "zone": "east-cape-todos-santos",
+      "aliases": []
+    },
+    {
+      "slug": "hotel-perla",
+      "name": "Hotel Perla",
+      "zone": "east-cape-todos-santos",
+      "aliases": []
+    },
+    {
+      "slug": "hyatt-place-la-paz",
+      "name": "Hyatt Place La Paz",
+      "zone": "east-cape-todos-santos",
+      "aliases": []
+    },
+    {
+      "slug": "hyatt-place-los-cabos",
+      "name": "Hyatt Place Los Cabos",
+      "zone": "san-jose-del-cabo",
+      "aliases": []
+    },
+    {
+      "slug": "hyatt-ziva-los-cabos",
+      "name": "Hyatt Ziva Los Cabos",
+      "zone": "san-jose-del-cabo",
+      "aliases": []
+    },
+    {
+      "slug": "hyatt-ziva-puerto-los-cabos",
+      "name": "Hyatt Ziva Puerto Los Cabos",
+      "zone": "puerto-los-cabos",
+      "aliases": []
+    },
+    {
+      "slug": "jw-marriott-los-cabos-beach-resort-and-spa",
+      "name": "JW Marriott Los Cabos Beach Resort and Spa",
+      "zone": "puerto-los-cabos",
+      "aliases": [
+        "JW Marriott Los Cabos Beach Resort & Spa"
+      ]
+    },
+    {
+      "slug": "kadun-hotel-boutique",
+      "name": "Kadun Hotel Boutique",
+      "zone": "cabo-san-lucas",
+      "aliases": []
+    },
+    {
+      "slug": "kimpton-mas-olas-resort-and-spa",
+      "name": "Kimpton Mas Olas Resort and Spa",
+      "zone": "east-cape-todos-santos",
+      "aliases": []
+    },
+    {
+      "slug": "krystal",
+      "name": "Krystal",
+      "zone": "san-jose-del-cabo",
+      "aliases": []
+    },
+    {
+      "slug": "la-concha-beach-resort",
+      "name": "La Concha Beach Resort",
+      "zone": "east-cape-todos-santos",
+      "aliases": []
+    },
+    {
+      "slug": "la-jolla",
+      "name": "La Jolla",
+      "zone": "san-jose-del-cabo",
+      "aliases": []
+    },
+    {
+      "slug": "la-marina-inn",
+      "name": "La Marina Inn",
+      "zone": "tourist-corridor",
+      "aliases": []
+    },
+    {
+      "slug": "la-paz",
+      "name": "La Paz",
+      "zone": "east-cape-todos-santos",
+      "aliases": []
+    },
+    {
+      "slug": "las-mananitas",
+      "name": "Las Mañanitas",
+      "zone": "san-jose-del-cabo",
+      "aliases": []
+    },
+    {
+      "slug": "las-olas",
+      "name": "Las Olas",
+      "zone": "san-jose-del-cabo",
+      "aliases": []
+    },
+    {
+      "slug": "las-ventanas-al-paraiso",
+      "name": "Las Ventanas al Paraíso",
+      "zone": "tourist-corridor",
+      "aliases": []
+    },
+    {
+      "slug": "le-blanc-spa-resort-los-cabos",
+      "name": "Le Blanc Spa Resort Los Cabos",
+      "zone": "tourist-corridor",
+      "aliases": []
+    },
+    {
+      "slug": "live-aqua-private-residences-los-cabos",
+      "name": "Live Aqua Private Residences Los Cabos",
+      "zone": "tourist-corridor",
+      "aliases": []
+    },
+    {
+      "slug": "los-barriles",
+      "name": "Los Barriles",
+      "zone": "east-cape-todos-santos",
+      "aliases": []
+    },
+    {
+      "slug": "los-barriles-hotels",
+      "name": "Los Barriles Hotels",
+      "zone": "east-cape-todos-santos",
+      "aliases": []
+    },
+    {
+      "slug": "los-cabos-golf-resort",
+      "name": "Los Cabos Golf Resort",
+      "zone": "cabo-san-lucas",
+      "aliases": []
+    },
+    {
+      "slug": "los-milagros",
+      "name": "Los Milagros",
+      "zone": "cabo-san-lucas",
+      "aliases": []
+    },
+    {
+      "slug": "los-patios",
+      "name": "Los Patios",
+      "zone": "cabo-san-lucas",
+      "aliases": []
+    },
+    {
+      "slug": "mar-de-cortez",
+      "name": "Mar De Cortez",
+      "zone": "cabo-san-lucas",
+      "aliases": []
+    },
+    {
+      "slug": "mar-del-cabo-by-velas-resorts",
+      "name": "Mar Del Cabo by VELAS RESORTS",
+      "zone": "tourist-corridor",
+      "aliases": []
+    },
+    {
+      "slug": "maravilla-los-cabos",
+      "name": "Maravilla Los Cabos",
+      "zone": "tourist-corridor",
+      "aliases": []
+    },
+    {
+      "slug": "marbella-suites-en-la-playa",
+      "name": "Marbella Suites en la Playa",
+      "zone": "tourist-corridor",
+      "aliases": []
+    },
+    {
+      "slug": "marella-cabo",
+      "name": "Marella Cabo",
+      "zone": "tourist-corridor",
+      "aliases": []
+    },
+    {
+      "slug": "marina-cabo-plaza",
+      "name": "Marina Cabo Plaza",
+      "zone": "cabo-san-lucas",
+      "aliases": []
+    },
+    {
+      "slug": "marina-fiesta-resort-and-spa",
+      "name": "Marina Fiesta Resort and Spa",
+      "zone": "cabo-san-lucas",
+      "aliases": [
+        "Marina Fiesta Resort & Spa",
+        "Marina Fiesta Resort"
+      ]
+    },
+    {
+      "slug": "marina-resort-cabo-san-lucas",
+      "name": "Marina Resort Cabo San Lucas",
+      "zone": "cabo-san-lucas",
+      "aliases": []
+    },
+    {
+      "slug": "marina-sol-resort",
+      "name": "Marina Sol Resort",
+      "zone": "cabo-san-lucas",
+      "aliases": []
+    },
+    {
+      "slug": "marina-view-villas",
+      "name": "Marina View Villas",
+      "zone": "cabo-san-lucas",
+      "aliases": []
+    },
+    {
+      "slug": "marisol",
+      "name": "Marisol",
+      "zone": "san-jose-del-cabo",
+      "aliases": []
+    },
+    {
+      "slug": "marquis-los-cabos-all-inclusive",
+      "name": "Marquis Los Cabos All Inclusive",
+      "zone": "tourist-corridor",
+      "aliases": []
+    },
+    {
+      "slug": "marquis-los-cabos-resort-and-spa",
+      "name": "Marquis Los Cabos Resort and Spa",
+      "zone": "tourist-corridor",
+      "aliases": [
+        "Marquis Los Cabos"
+      ]
+    },
+    {
+      "slug": "marriott-puerto-los-cabos-beach-resort-and-spa",
+      "name": "Marriott Puerto Los Cabos Beach Resort & Spa",
+      "zone": "puerto-los-cabos",
+      "aliases": []
+    },
+    {
+      "slug": "mayan-monkey-los-cabos",
+      "name": "Mayan Monkey Los Cabos",
+      "zone": "cabo-san-lucas",
+      "aliases": []
+    },
+    {
+      "slug": "me-cabo",
+      "name": "Me Cabo",
+      "zone": "cabo-san-lucas",
+      "aliases": []
+    },
+    {
+      "slug": "medano-hotel-and-suites",
+      "name": "Medano Hotel and Suites",
+      "zone": "cabo-san-lucas",
+      "aliases": []
+    },
+    {
+      "slug": "mikonos",
+      "name": "Mikonos",
+      "zone": "san-jose-del-cabo",
+      "aliases": []
+    },
+    {
+      "slug": "mira-vista",
+      "name": "Mira Vista",
+      "zone": "san-jose-del-cabo",
+      "aliases": []
+    },
+    {
+      "slug": "misiones-del-cabo",
+      "name": "Misiones Del Cabo",
+      "zone": "cabo-san-lucas",
+      "aliases": []
+    },
+    {
+      "slug": "montage-los-cabos",
+      "name": "Montage Los Cabos",
+      "zone": "tourist-corridor",
+      "aliases": []
+    },
+    {
+      "slug": "montage-los-cabos-twin-dolphin",
+      "name": "Montage Los Cabos (Twin Dolphin)",
+      "zone": "tourist-corridor",
+      "aliases": []
+    },
+    {
+      "slug": "montecristo-estates-by-pueblo-bonito",
+      "name": "Montecristo Estates by Pueblo Bonito",
+      "zone": "pacific-side",
+      "aliases": []
+    },
+    {
+      "slug": "montecristo-residential-area",
+      "name": "Montecristo Residential Area",
+      "zone": "cabo-san-lucas",
+      "aliases": []
+    },
+    {
+      "slug": "nobu-hotel-los-cabos",
+      "name": "Nobu Hotel Los Cabos",
+      "zone": "pacific-side",
+      "aliases": [
+        "Nobu Los Cabos"
+      ]
+    },
+    {
+      "slug": "nobu-hotel-los-cabos-pacific",
+      "name": "Nobu Hotel Los Cabos Pacific",
+      "zone": "pacific-side",
+      "aliases": []
+    },
+    {
+      "slug": "one-and-only-palmilla",
+      "name": "One and Only Palmilla",
+      "zone": "tourist-corridor",
+      "aliases": [
+        "One&Only Palmilla"
+      ]
+    },
+    {
+      "slug": "one-la-paz",
+      "name": "One La Paz",
+      "zone": "east-cape-todos-santos",
+      "aliases": []
+    },
+    {
+      "slug": "palmas-del-cortez",
+      "name": "Palmas del Cortez",
+      "zone": "east-cape-todos-santos",
+      "aliases": []
+    },
+    {
+      "slug": "paradero-todos-santos",
+      "name": "Paradero Todos Santos",
+      "zone": "east-cape-todos-santos",
+      "aliases": []
+    },
+    {
+      "slug": "paradisus-los-cabos",
+      "name": "Paradisus Los Cabos",
+      "zone": "tourist-corridor",
+      "aliases": []
+    },
+    {
+      "slug": "park-hyatt-los-cabos-at-cabo-del-sol",
+      "name": "Park Hyatt Los Cabos at Cabo del Sol",
+      "zone": "tourist-corridor",
+      "aliases": []
+    },
+    {
+      "slug": "park-royal-hotels-and-resorts",
+      "name": "Park Royal Hotels and Resorts",
+      "zone": "san-jose-del-cabo",
+      "aliases": []
+    },
+    {
+      "slug": "pedregal-residential-area",
+      "name": "Pedregal Residential Area",
+      "zone": "cabo-san-lucas",
+      "aliases": []
+    },
+    {
+      "slug": "pescadero",
+      "name": "Pescadero",
+      "zone": "east-cape-todos-santos",
+      "aliases": []
+    },
+    {
+      "slug": "playa-grande-resort",
+      "name": "Playa Grande Resort",
+      "zone": "cabo-san-lucas",
+      "aliases": []
+    },
+    {
+      "slug": "portofino-condos-in-pedregal",
+      "name": "Portofino Condos in Pedregal",
+      "zone": "cabo-san-lucas",
+      "aliases": []
+    },
+    {
+      "slug": "posada-de-las-flores-la-paz",
+      "name": "Posada de las Flores La Paz",
+      "zone": "east-cape-todos-santos",
+      "aliases": []
+    },
+    {
+      "slug": "posada-real-los-cabos",
+      "name": "Posada Real Los Cabos",
+      "zone": "san-jose-del-cabo",
+      "aliases": []
+    },
+    {
+      "slug": "pueblo-bonito-blanco-los-cabos-beach-resort",
+      "name": "Pueblo Bonito Blanco Los Cabos Beach Resort",
+      "zone": "cabo-san-lucas",
+      "aliases": []
+    },
+    {
+      "slug": "pueblo-bonito-montecristo",
+      "name": "Pueblo Bonito Montecristo",
+      "zone": "cabo-san-lucas",
+      "aliases": []
+    },
+    {
+      "slug": "pueblo-bonito-pacifica-golf-and-spa-resort",
+      "name": "Pueblo Bonito Pacifica Golf and Spa Resort",
+      "zone": "pacific-side",
+      "aliases": [
+        "Pueblo Bonito Pacifica"
+      ]
+    },
+    {
+      "slug": "pueblo-bonito-rose-resort-and-spa",
+      "name": "Pueblo Bonito Rosé Resort and Spa",
+      "zone": "cabo-san-lucas",
+      "aliases": [
+        "Pueblo Bonito Rosé"
+      ]
+    },
+    {
+      "slug": "pueblo-bonito-sunset-beach-golf-and-spa-resort",
+      "name": "Pueblo Bonito Sunset Beach Golf and Spa Resort",
+      "zone": "cabo-san-lucas",
+      "aliases": [
+        "Pueblo Bonito Sunset Beach"
+      ]
+    },
+    {
+      "slug": "pueblo-bonito-sunset-beach-pacific",
+      "name": "Pueblo Bonito Sunset Beach Pacific",
+      "zone": "pacific-side",
+      "aliases": []
+    },
+    {
+      "slug": "puerta-del-sol",
+      "name": "Puerta Del Sol",
+      "zone": "puerto-los-cabos",
+      "aliases": []
+    },
+    {
+      "slug": "puerto-los-cabos-residential-area",
+      "name": "Puerto Los Cabos Residential Area",
+      "zone": "puerto-los-cabos",
+      "aliases": []
+    },
+    {
+      "slug": "punta-ballena-area",
+      "name": "Punta Ballena Area",
+      "zone": "cabo-san-lucas",
+      "aliases": []
+    },
+    {
+      "slug": "punta-pescadero-paradise",
+      "name": "Punta Pescadero Paradise",
+      "zone": "east-cape-todos-santos",
+      "aliases": []
+    },
+    {
+      "slug": "punto-nima",
+      "name": "Punto Nima",
+      "zone": "san-jose-del-cabo",
+      "aliases": []
+    },
+    {
+      "slug": "querencia-residential-area",
+      "name": "Querencia Residential Area",
+      "zone": "tourist-corridor",
+      "aliases": []
+    },
+    {
+      "slug": "quinta-del-sol",
+      "name": "Quinta Del Sol",
+      "zone": "cabo-san-lucas",
+      "aliases": []
+    },
+    {
+      "slug": "rancho-buena-vista",
+      "name": "Rancho Buena Vista",
+      "zone": "east-cape-todos-santos",
+      "aliases": []
+    },
+    {
+      "slug": "rancho-leonero",
+      "name": "Rancho Leonero",
+      "zone": "east-cape-todos-santos",
+      "aliases": []
+    },
+    {
+      "slug": "residence-inn-puerto-los-cabos",
+      "name": "Residence Inn Puerto Los Cabos",
+      "zone": "puerto-los-cabos",
+      "aliases": []
+    },
+    {
+      "slug": "residencial-diamante",
+      "name": "Residencial Diamante",
+      "zone": "pacific-side",
+      "aliases": []
+    },
+    {
+      "slug": "riu-palace-baja-california",
+      "name": "Riu Palace Baja California",
+      "zone": "cabo-san-lucas",
+      "aliases": []
+    },
+    {
+      "slug": "riu-palace-cabo-san-lucas",
+      "name": "Riu Palace Cabo San Lucas",
+      "zone": "cabo-san-lucas",
+      "aliases": []
+    },
+    {
+      "slug": "riu-santa-fe",
+      "name": "Riu Santa Fe",
+      "zone": "cabo-san-lucas",
+      "aliases": []
+    },
+    {
+      "slug": "royal-decameron-los-cabos",
+      "name": "Royal Decameron Los Cabos",
+      "zone": "san-jose-del-cabo",
+      "aliases": []
+    },
+    {
+      "slug": "royal-solaris",
+      "name": "Royal Solaris",
+      "zone": "san-jose-del-cabo",
+      "aliases": []
+    },
+    {
+      "slug": "royal-solaris-los-cabos",
+      "name": "Royal Solaris Los Cabos",
+      "zone": "san-jose-del-cabo",
+      "aliases": []
+    },
+    {
+      "slug": "sampaguita-villas-baja",
+      "name": "Sampaguita Villas Baja",
+      "zone": "san-jose-del-cabo",
+      "aliases": []
+    },
+    {
+      "slug": "san-angel-suites",
+      "name": "San Angel Suites",
+      "zone": "cabo-san-lucas",
+      "aliases": []
+    },
+    {
+      "slug": "san-jose-del-cabo-downtown-centro",
+      "name": "San Jose del Cabo Downtown/Centro",
+      "zone": "san-jose-del-cabo",
+      "aliases": []
+    },
+    {
+      "slug": "sandbar-los-cabos",
+      "name": "Sandbar Los Cabos",
+      "zone": "cabo-san-lucas",
+      "aliases": []
+    },
+    {
+      "slug": "sandos-finest-playa-los-cabos",
+      "name": "Sandos Finest Playa Los Cabos",
+      "zone": "san-jose-del-cabo",
+      "aliases": []
+    },
+    {
+      "slug": "sandos-finisterra-los-cabos",
+      "name": "Sandos Finisterra Los Cabos",
+      "zone": "cabo-san-lucas",
+      "aliases": []
+    },
+    {
+      "slug": "sandos-palm-bay",
+      "name": "Sandos Palm Bay",
+      "zone": "tourist-corridor",
+      "aliases": []
+    },
+    {
+      "slug": "santa-fe-cabo-san-lucas",
+      "name": "Santa Fé Cabo San Lucas",
+      "zone": "cabo-san-lucas",
+      "aliases": []
+    },
+    {
+      "slug": "santa-maria-del-cabo",
+      "name": "Santa María del Cabo",
+      "zone": "san-jose-del-cabo",
+      "aliases": []
+    },
+    {
+      "slug": "secrets-marquis-los-cabos",
+      "name": "Secrets Marquis Los Cabos",
+      "zone": "tourist-corridor",
+      "aliases": []
+    },
+    {
+      "slug": "secrets-puerto-los-cabos-golf-and-spa-resort",
+      "name": "Secrets Puerto Los Cabos Golf and Spa Resort",
+      "zone": "puerto-los-cabos",
+      "aliases": [
+        "Secrets Puerto Los Cabos Golf & Spa",
+        "Secrets Puerto Los Cabos"
+      ]
+    },
+    {
+      "slug": "seven-crown-express-and-suites",
+      "name": "Seven Crown Express and Suites",
+      "zone": "cabo-san-lucas",
+      "aliases": []
+    },
+    {
+      "slug": "seven-crown-la-paz-centro",
+      "name": "Seven Crown La Paz - Centro",
+      "zone": "east-cape-todos-santos",
+      "aliases": []
+    },
+    {
+      "slug": "seven-crown-la-paz-malecon",
+      "name": "Seven Crown La Paz - Malecon",
+      "zone": "east-cape-todos-santos",
+      "aliases": []
+    },
+    {
+      "slug": "sheraton-grand-los-cabos",
+      "name": "Sheraton Grand Los Cabos",
+      "zone": "tourist-corridor",
+      "aliases": []
+    },
+    {
+      "slug": "siesta-suites-boutique",
+      "name": "Siesta Suites Boutique",
+      "zone": "cabo-san-lucas",
+      "aliases": []
+    },
+    {
+      "slug": "sirena-del-mar",
+      "name": "Sirena Del Mar",
+      "zone": "cabo-san-lucas",
+      "aliases": []
+    },
+    {
+      "slug": "six-two-four-urban-beach",
+      "name": "Six two four urban beach",
+      "zone": "san-jose-del-cabo",
+      "aliases": []
+    },
+    {
+      "slug": "soho-house-los-cabos",
+      "name": "Soho House Los Cabos",
+      "zone": "tourist-corridor",
+      "aliases": []
+    },
+    {
+      "slug": "solaz-a-luxury-collection-resort",
+      "name": "Solaz a Luxury Collection Resort",
+      "zone": "tourist-corridor",
+      "aliases": []
+    },
+    {
+      "slug": "solaz-a-luxury-collection-resort-los-cabos",
+      "name": "Solaz, a Luxury Collection Resort, Los Cabos",
+      "zone": "tourist-corridor",
+      "aliases": []
+    },
+    {
+      "slug": "solmar-resort",
+      "name": "Solmar Resort",
+      "zone": "cabo-san-lucas",
+      "aliases": []
+    },
+    {
+      "slug": "sunrock-hotel-and-suites-los-cabos",
+      "name": "Sunrock Hotel and Suites Los Cabos",
+      "zone": "cabo-san-lucas",
+      "aliases": []
+    },
+    {
+      "slug": "terrasol",
+      "name": "Terrasol",
+      "zone": "cabo-san-lucas",
+      "aliases": []
+    },
+    {
+      "slug": "tesoro-los-cabos",
+      "name": "Tesoro Los Cabos",
+      "zone": "cabo-san-lucas",
+      "aliases": []
+    },
+    {
+      "slug": "the-bungalows-hotel",
+      "name": "The Bungalows Hotel",
+      "zone": "cabo-san-lucas",
+      "aliases": []
+    },
+    {
+      "slug": "the-cape-a-thompson-hotel",
+      "name": "The Cape a Thompson Hotel",
+      "zone": "cabo-san-lucas",
+      "aliases": []
+    },
+    {
+      "slug": "the-cape-hotel",
+      "name": "The Cape Hotel",
+      "zone": "cabo-san-lucas",
+      "aliases": []
+    },
+    {
+      "slug": "the-club-at-presidente-los-cabos",
+      "name": "The Club at Presidente Los Cabos",
+      "zone": "san-jose-del-cabo",
+      "aliases": []
+    },
+    {
+      "slug": "the-grand-mayan-los-cabos",
+      "name": "The Grand Mayan Los Cabos",
+      "zone": "san-jose-del-cabo",
+      "aliases": []
+    },
+    {
+      "slug": "the-residences-at-hacienda-encantada",
+      "name": "The Residences at Hacienda Encantada",
+      "zone": "cabo-san-lucas",
+      "aliases": []
+    },
+    {
+      "slug": "the-ridge-at-playa-grande-luxury-villas",
+      "name": "The Ridge at Playa Grande Luxury Villas",
+      "zone": "cabo-san-lucas",
+      "aliases": []
+    },
+    {
+      "slug": "the-westin-resort-and-spa",
+      "name": "The Westin Resort and Spa",
+      "zone": "tourist-corridor",
+      "aliases": []
+    },
+    {
+      "slug": "todos-santos",
+      "name": "Todos Santos",
+      "zone": "east-cape-todos-santos",
+      "aliases": []
+    },
+    {
+      "slug": "tropicana-inn",
+      "name": "Tropicana Inn",
+      "zone": "san-jose-del-cabo",
+      "aliases": []
+    },
+    {
+      "slug": "tropicana-inn-hotel-and-restaurant",
+      "name": "Tropicana Inn Hotel and Restaurant",
+      "zone": "san-jose-del-cabo",
+      "aliases": []
+    },
+    {
+      "slug": "ventanas-al-paraiso",
+      "name": "Ventanas al Paraíso",
+      "zone": "east-cape-todos-santos",
+      "aliases": []
+    },
+    {
+      "slug": "viceroy-los-cabos",
+      "name": "Viceroy Los Cabos",
+      "zone": "san-jose-del-cabo",
+      "aliases": []
+    },
+    {
+      "slug": "vidanta-east-cape",
+      "name": "Vidanta East Cape",
+      "zone": "east-cape-todos-santos",
+      "aliases": []
+    },
+    {
+      "slug": "vidanta-los-cabos",
+      "name": "Vidanta Los Cabos",
+      "zone": "san-jose-del-cabo",
+      "aliases": []
+    },
+    {
+      "slug": "villa-del-arco-beach-resort-and-spa-cabo-san-lucas",
+      "name": "Villa del Arco Beach Resort and Spa Cabo San Lucas",
+      "zone": "cabo-san-lucas",
+      "aliases": []
+    },
+    {
+      "slug": "villa-del-mar-palmilla",
+      "name": "Villa del Mar Palmilla",
+      "zone": "tourist-corridor",
+      "aliases": []
+    },
+    {
+      "slug": "villa-del-palmar-beach-resort-and-spa-cabo-san-lucas",
+      "name": "Villa Del Palmar Beach Resort and Spa Cabo San Lucas",
+      "zone": "cabo-san-lucas",
+      "aliases": []
+    },
+    {
+      "slug": "villa-del-palmar-cabo",
+      "name": "Villa del Palmar Cabo",
+      "zone": "tourist-corridor",
+      "aliases": []
+    },
+    {
+      "slug": "villa-finca-tezal",
+      "name": "Villa Finca Tezal",
+      "zone": "cabo-san-lucas",
+      "aliases": []
+    },
+    {
+      "slug": "villa-la-estancia-cabo",
+      "name": "Villa La Estancia Cabo",
+      "zone": "tourist-corridor",
+      "aliases": []
+    },
+    {
+      "slug": "villa-la-estancia-cabo-san-lucas",
+      "name": "Villa La Estancia Cabo San Lucas",
+      "zone": "cabo-san-lucas",
+      "aliases": []
+    },
+    {
+      "slug": "villa-la-estancia-los-cabos",
+      "name": "Villa La Estancia Los Cabos",
+      "zone": "pacific-side",
+      "aliases": []
+    },
+    {
+      "slug": "villa-serena",
+      "name": "Villa Serena",
+      "zone": "cabo-san-lucas",
+      "aliases": []
+    },
+    {
+      "slug": "vista-azul",
+      "name": "Vista Azul",
+      "zone": "cabo-san-lucas",
+      "aliases": []
+    },
+    {
+      "slug": "vista-encantada-spa-resort-and-residences",
+      "name": "Vista Encantada Spa Resort and Residences",
+      "zone": "cabo-san-lucas",
+      "aliases": []
+    },
+    {
+      "slug": "waldorf-astoria-los-cabos-pedregal",
+      "name": "Waldorf Astoria Los Cabos Pedregal",
+      "zone": "cabo-san-lucas",
+      "aliases": []
+    },
+    {
+      "slug": "westin-los-cabos",
+      "name": "Westin Los Cabos",
+      "zone": "san-jose-del-cabo",
+      "aliases": []
+    },
+    {
+      "slug": "worldmark-coral-baja",
+      "name": "Worldmark Coral Baja",
+      "zone": "san-jose-del-cabo",
+      "aliases": []
+    },
+    {
+      "slug": "zadun-a-ritz-carlton-reserve",
+      "name": "Zadun, a Ritz Carlton Reserve",
+      "zone": "puerto-los-cabos",
+      "aliases": []
+    },
+    {
+      "slug": "zoetry-casa-del-mar",
+      "name": "Zoëtry Casa del Mar",
+      "zone": "tourist-corridor",
+      "aliases": []
+    },
+    {
+      "slug": "zoetry-casa-del-mar-los-cabos",
+      "name": "Zoetry Casa Del Mar Los Cabos",
+      "zone": "tourist-corridor",
+      "aliases": []
+    }
+  ],
+  "extras": [
+    {
+      "code": "INCLUDED_BASIC_KIT",
+      "name": {
+        "en": "Cold beer and water",
+        "es": "Cerveza y agua fría"
+      },
+      "description": {
+        "en": "Included with every transfer",
+        "es": "Incluido en cada traslado"
+      },
+      "price_cents": 0,
+      "pricing_mode": "per_booking",
+      "max_qty": 1,
+      "included": true,
+      "auto_rule": null,
+      "sort": 0
+    },
+    {
+      "code": "GROCERY_STOP",
+      "name": {
+        "en": "Grocery Stop",
+        "es": "Parada en Supermercado"
+      },
+      "description": {
+        "en": "Stop at grocery store"
+      },
+      "price_cents": 5000,
+      "pricing_mode": "per_booking",
+      "max_qty": 1,
+      "included": false,
+      "auto_rule": null,
+      "sort": 1
+    },
+    {
+      "code": "EXTRA_STOP",
+      "name": {
+        "en": "Extra Stop",
+        "es": "Parada Extra"
+      },
+      "description": {
+        "en": "Additional stop"
+      },
+      "price_cents": 2000,
+      "pricing_mode": "per_stop",
+      "max_qty": 3,
+      "included": false,
+      "auto_rule": null,
+      "sort": 2
+    },
+    {
+      "code": "BABY_SEAT",
+      "name": {
+        "en": "Baby Seat",
+        "es": "Silla para Bebé"
+      },
+      "description": {
+        "en": "Baby seat"
+      },
+      "price_cents": 1500,
+      "pricing_mode": "per_seat",
+      "max_qty": 2,
+      "included": false,
+      "auto_rule": null,
+      "sort": 3
+    },
+    {
+      "code": "BOOSTER",
+      "name": {
+        "en": "Booster Seat",
+        "es": "Silla Elevadora"
+      },
+      "description": {
+        "en": "Booster seat"
+      },
+      "price_cents": 1000,
+      "pricing_mode": "per_seat",
+      "max_qty": 2,
+      "included": false,
+      "auto_rule": null,
+      "sort": 4
+    },
+    {
+      "code": "SPECIAL_ASSISTANCE",
+      "name": {
+        "en": "Special Assistance",
+        "es": "Asistencia Especial"
+      },
+      "description": {
+        "en": "Wheelchair, mobility assistance"
+      },
+      "price_cents": 2500,
+      "pricing_mode": "per_booking",
+      "max_qty": 1,
+      "included": false,
+      "auto_rule": null,
+      "sort": 5
+    },
+    {
+      "code": "OVERSIZE_LUGGAGE",
+      "name": {
+        "en": "Oversize / Large Luggage",
+        "es": "Equipaje Grande / Sobredimensionado"
+      },
+      "description": {
+        "en": "Golf bags, surfboards, etc."
+      },
+      "price_cents": 2000,
+      "pricing_mode": "per_booking",
+      "max_qty": 2,
+      "included": false,
+      "auto_rule": null,
+      "sort": 6
+    },
+    {
+      "code": "WAIT_TIME",
+      "name": {
+        "en": "Wait Time (per hour)",
+        "es": "Tiempo de Espera (por hora)"
+      },
+      "description": {
+        "en": "Additional wait time"
+      },
+      "price_cents": 3000,
+      "pricing_mode": "per_hour",
+      "max_qty": 4,
+      "included": false,
+      "auto_rule": null,
+      "sort": 7
+    },
+    {
+      "code": "NIGHT_SURCHARGE",
+      "name": {
+        "en": "Night surcharge (11 PM - 5 AM)",
+        "es": "Recargo nocturno (11 PM - 5 AM)"
+      },
+      "description": {
+        "en": "Late night surcharge"
+      },
+      "price_cents": 2000,
+      "pricing_mode": "per_booking",
+      "max_qty": 1,
+      "included": false,
+      "auto_rule": "night_surcharge",
+      "sort": 8
+    },
+    {
+      "code": "CHAMPAGNE",
+      "name": {
+        "en": "Champagne",
+        "es": "Champagne"
+      },
+      "description": {
+        "en": "Bottle of champagne on arrival"
+      },
+      "price_cents": 4000,
+      "pricing_mode": "per_booking",
+      "max_qty": 1,
+      "included": false,
+      "auto_rule": null,
+      "sort": 9
+    },
+    {
+      "code": "CHAMPAGNE_UPGRADE",
+      "name": {
+        "en": "Champagne Moët & Chandon",
+        "es": "Champagne Moët & Chandon"
+      },
+      "description": {
+        "en": "Bottle of Moët & Chandon on arrival"
+      },
+      "price_cents": 8000,
+      "pricing_mode": "per_booking",
+      "max_qty": 1,
+      "included": false,
+      "auto_rule": null,
+      "sort": 10
+    },
+    {
+      "code": "LUXURY_WELCOME",
+      "name": {
+        "en": "Premium Welcome Kit",
+        "es": "Kit de Bienvenida Premium"
+      },
+      "description": {
+        "en": "Champagne · cheese board · celebration detail"
+      },
+      "price_cents": 10000,
+      "pricing_mode": "per_booking",
+      "max_qty": 1,
+      "included": false,
+      "auto_rule": null,
+      "sort": 11
+    },
+    {
+      "code": "ROMANTIC_KIT",
+      "name": {
+        "en": "Romantic Kit",
+        "es": "Kit Romántico"
+      },
+      "description": {
+        "en": "Roses, chocolate, champagne"
+      },
+      "price_cents": 10000,
+      "pricing_mode": "per_booking",
+      "max_qty": 1,
+      "included": false,
+      "auto_rule": null,
+      "sort": 12
+    },
+    {
+      "code": "BIRTHDAY_KIT",
+      "name": {
+        "en": "Birthday Kit",
+        "es": "Kit Cumpleaños"
+      },
+      "description": {
+        "en": "Balloons, cupcake, celebration"
+      },
+      "price_cents": 10000,
+      "pricing_mode": "per_booking",
+      "max_qty": 1,
+      "included": false,
+      "auto_rule": null,
+      "sort": 13
+    },
+    {
+      "code": "DELUXE_ARRIVAL_KIT",
+      "name": {
+        "en": "Deluxe Arrival Kit",
+        "es": "Kit de Llegada Deluxe"
+      },
+      "description": {
+        "en": "Decoration + champagne + cold towels"
+      },
+      "price_cents": 13000,
+      "pricing_mode": "per_booking",
+      "max_qty": 1,
+      "included": false,
+      "auto_rule": null,
+      "sort": 14
+    }
+  ],
+  "activities": [
+    {
+      "slug": "atv",
+      "name": {
+        "en": "ATV",
+        "es": "Cuatrimoto (ATV)"
+      },
+      "duration_minutes": 60
+    },
+    {
+      "slug": "rzr",
+      "name": {
+        "en": "RZR side-by-side",
+        "es": "RZR side-by-side"
+      },
+      "duration_minutes": 60
+    },
+    {
+      "slug": "camel-ride",
+      "name": {
+        "en": "Camel ride",
+        "es": "Paseo en camello"
+      },
+      "duration_minutes": 60
+    },
+    {
+      "slug": "horseback-riding",
+      "name": {
+        "en": "Horseback riding",
+        "es": "Cabalgata"
+      },
+      "duration_minutes": 60
+    },
+    {
+      "slug": "sky-bikes",
+      "name": {
+        "en": "Sky Bikes",
+        "es": "Sky Bikes"
+      },
+      "duration_minutes": 60
+    }
+  ],
+  "activity_packages": [
+    {
+      "slug": "combo-2",
+      "name": {
+        "en": "Combo (2 activities)",
+        "es": "Combo (2 actividades)"
+      },
+      "activity_count": 2,
+      "price_per_person_cents": 10000,
+      "park_fee_cents": 2500,
+      "deposit_cents": 0
+    },
+    {
+      "slug": "crazy-combo-3",
+      "name": {
+        "en": "Crazy Combo (3 activities)",
+        "es": "Crazy Combo (3 actividades)"
+      },
+      "activity_count": 3,
+      "price_per_person_cents": 12500,
+      "park_fee_cents": 2500,
+      "deposit_cents": 0
+    }
+  ],
+  "promotions": [
+    {
+      "code": null,
+      "name": {
+        "en": "September 10% off",
+        "es": "10% de descuento en septiembre"
+      },
+      "discount_type": "percent",
+      "value": 10,
+      "applies_to": "transfer_base",
+      "travel_from": "2026-09-01",
+      "travel_to": "2026-09-30"
+    }
+  ]
+}

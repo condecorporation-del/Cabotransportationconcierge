@@ -10,7 +10,8 @@ Lo que necesitamos del cliente antes de publicar (WORKPLAN §16). Mientras no ll
 - [ ] Logo en vector (SVG o AI) y guía de colores si existe.
 
 ## Precios y políticas
-- [ ] **Tabla de precios** por zona y vehículo (one way y round trip). Por defecto: la matriz de ClassVIP con 6 zonas.
+- [ ] **Tabla de precios** por zona y vehículo (one way y round trip). Por defecto: la matriz de ClassVIP con 6 zonas. Se ve con `uv run python -m scripts.seed_catalog --dry-run`.
+- [ ] **Zona de Los Cabos Golf Resort.** ClassVIP lo tenía en Cabo San Lucas y en San José del Cabo; por ahora quedó en Cabo San Lucas. Los otros 14 hoteles que tenían dos zonas se corrigieron según su ubicación real (lista en `backend/scripts/data/catalog.json` → `meta.hotel_zone_decisions`).
 - [ ] **Cancelación y cambios.** Por defecto: cancelación gratis hasta 24 h y cambios hasta 5 h antes.
 - [ ] **Recargo nocturno:** horario y monto. Por defecto: 11 PM – 5 AM, $20.
 - [ ] **Impuestos:** ¿precios con IVA incluido? ¿Se acepta efectivo al chofer?
