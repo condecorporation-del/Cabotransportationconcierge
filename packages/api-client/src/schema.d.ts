@@ -264,12 +264,36 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/contact": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Contact
+         * @description Formulario de contacto. A un bot (honeypot con texto) se le responde igual sin guardar.
+         */
+        post: operations["contact_api_v1_contact_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
         /** ActivityBookingRequest */
         ActivityBookingRequest: {
+            customer: components["schemas"]["CustomerIn"];
+            /** Notes */
+            notes?: string | null;
+            attribution?: components["schemas"]["Attribution"];
             /**
              * @description discriminator enum property added by openapi-typescript
              * @enum {string}
@@ -292,9 +316,6 @@ export interface components {
              * @enum {string}
              */
             language: "en" | "es";
-            customer: components["schemas"]["CustomerIn"];
-            /** Notes */
-            notes?: string | null;
         };
         /** ActivityOut */
         ActivityOut: {
@@ -335,6 +356,24 @@ export interface components {
              * @enum {string}
              */
             language: "en" | "es";
+        };
+        /**
+         * Attribution
+         * @description Origen de la visita (F3.11): UTM y referrer que la web captura al entrar.
+         */
+        Attribution: {
+            /** Utm Source */
+            utm_source?: string | null;
+            /** Utm Medium */
+            utm_medium?: string | null;
+            /** Utm Campaign */
+            utm_campaign?: string | null;
+            /** Utm Term */
+            utm_term?: string | null;
+            /** Utm Content */
+            utm_content?: string | null;
+            /** Referrer */
+            referrer?: string | null;
         };
         /** BookingChange */
         BookingChange: {
@@ -441,6 +480,41 @@ export interface components {
         CancelRequest: {
             /** Reason */
             reason?: string | null;
+        };
+        /** ContactIn */
+        ContactIn: {
+            /** Name */
+            name: string;
+            /**
+             * Email
+             * Format: email
+             */
+            email: string;
+            /** Phone */
+            phone?: string | null;
+            /** Message */
+            message: string;
+            /** Source Page */
+            source_page?: string | null;
+            /**
+             * Language
+             * @default en
+             * @enum {string}
+             */
+            language: "en" | "es";
+            /** Website */
+            website?: string | null;
+            /** Turnstile Token */
+            turnstile_token?: string | null;
+        };
+        /** ContactReceived */
+        ContactReceived: {
+            /**
+             * Status
+             * @default received
+             * @constant
+             */
+            status: "received";
         };
         /** CustomerIn */
         CustomerIn: {
@@ -648,6 +722,10 @@ export interface components {
         ServiceScope: "airport" | "local";
         /** TransferBookingRequest */
         TransferBookingRequest: {
+            customer: components["schemas"]["CustomerIn"];
+            /** Notes */
+            notes?: string | null;
+            attribution?: components["schemas"]["Attribution"];
             /**
              * @description discriminator enum property added by openapi-typescript
              * @enum {string}
@@ -683,9 +761,6 @@ export interface components {
              * @enum {string}
              */
             direction: "arrival" | "departure";
-            customer: components["schemas"]["CustomerIn"];
-            /** Notes */
-            notes?: string | null;
         };
         /** TransferQuoteRequest */
         TransferQuoteRequest: {
@@ -1175,6 +1250,39 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["BookingDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    contact_api_v1_contact_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ContactIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ContactReceived"];
                 };
             };
             /** @description Validation Error */

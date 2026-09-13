@@ -27,6 +27,10 @@ async def get_company(session: DbSession) -> Company:
 CurrentCompany = Annotated[Company, Depends(get_company)]
 
 
+def client_ip(request: Request) -> str | None:
+    return request.client.host if request.client else None
+
+
 def cached_json(request: Request, schema: Any, value: Any) -> Response:
     """JSON con ETag: si el cliente ya tiene esta versión responde 304 sin cuerpo."""
     body = TypeAdapter(schema).dump_json(value)

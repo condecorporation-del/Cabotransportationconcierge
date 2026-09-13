@@ -12,6 +12,7 @@ STRONG_KEY = "k" * 32
     [
         (REMOTE_DB, "short", "SECRET_KEY"),
         ("postgresql+asyncpg://app:secret@localhost:5432/ctc", STRONG_KEY, "localhost"),
+        (REMOTE_DB, STRONG_KEY, "TURNSTILE_SECRET_KEY"),
     ],
 )
 def test_production_refuses_insecure_config(database_url: str, secret_key: str, error: str) -> None:
@@ -35,6 +36,10 @@ def test_local_without_secret_gets_a_random_strong_key() -> None:
 
 def test_production_accepts_secure_config_and_hides_secrets() -> None:
     settings = Settings(
-        _env_file=None, environment="production", database_url=REMOTE_DB, secret_key=STRONG_KEY
+        _env_file=None,
+        environment="production",
+        database_url=REMOTE_DB,
+        secret_key=STRONG_KEY,
+        turnstile_secret_key="turnstile-secret",
     )
     assert "secret" not in repr(settings)

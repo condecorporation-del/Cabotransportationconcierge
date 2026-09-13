@@ -7,7 +7,17 @@ from httpx import AsyncClient
 from sqlalchemy import func, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models import Booking, BookingItem, BookingLeg, Customer, Hotel, LegType, Rate
+from app.models import (
+    AuditActor,
+    AuditLog,
+    Booking,
+    BookingItem,
+    BookingLeg,
+    Customer,
+    Hotel,
+    LegType,
+    Rate,
+)
 
 ARRIVAL = date.today() + timedelta(days=30)
 URL = "/api/v1/bookings"
@@ -49,6 +59,26 @@ async def test_round_trip_booking_is_created_with_frozen_prices(
         (LegType.DEPARTURE, "SJD Los Cabos International Airport"),
     ]
     assert legs[0].flight_number == "AA1245"
+
+
+async def test_booking_keeps_attribution_and_is_audited(api: AsyncClient, db: AsyncSession) -> None:
+    """F3.11 y F3.9."""
+    attribution = {
+        "utm_source": "instagram",
+        "utm_campaign": "september",
+        "referrer": "https://www.instagram.com/",
+    }
+    created = (await api.post(URL, json=await _transfer(db, attribution=attribution))).json()
+    booking = await db.scalar(select(Booking).where(Booking.code == created["code"]))
+    assert booking is not None
+    assert booking.utm == attribution
+    log = await db.scalar(select(AuditLog).where(AuditLog.entity_id == booking.id))
+    assert log is not None
+    assert (log.actor, log.action, log.after["code"]) == (
+        AuditActor.CUSTOMER,
+        "create",
+        created["code"],
+    )
 
 
 async def test_same_idempotency_key_creates_one_booking(api: AsyncClient, db: AsyncSession) -> None:

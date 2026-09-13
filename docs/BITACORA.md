@@ -2,6 +2,32 @@
 
 Una entrada por sesión o tarea, la más reciente arriba (formato en `AGENTS.md` §10).
 
+## 2026-09-12 — F3.9 auditoría, F3.10 contacto y F3.11 atribución
+
+**Qué se hizo**
+- **F3.9:** crear una reserva deja `audit_logs` (`create`, actor `customer`, código, estado, total e IP). Con cambios (`customer_change`) y cancelación (`status_change`), toda mutación pública queda auditada. Un reintento con la misma `Idempotency-Key` no duplica el registro.
+- **F3.11:** `attribution` en la solicitud de reserva (`utm_source`, `utm_medium`, `utm_campaign`, `utm_term`, `utm_content`, `referrer`) → `bookings.utm`, solo con los campos presentes.
+- **F3.10:** `POST /api/v1/contact` (5/min) → 202.
+  - Honeypot `website`: si llega con texto, responde igual pero no guarda.
+  - `app/core/turnstile.py`: verifica el token con Cloudflare (timeout 5 s; error de red = verificación fallida). Sin token → 400 `captcha_required`; rechazado → 400 `captcha_failed`.
+  - `TURNSTILE_SECRET_KEY` vacía en local = no se exige; **obligatoria en producción** (config fail-fast).
+  - El aviso por correo a la empresa llega con la cola de F5.
+- `client_ip` en `deps.py` compartido por reservas y contacto. `httpx` pasa a dependencia de ejecución.
+
+**Archivos:** `backend/app/api/deps.py`, `backend/app/api/v1/bookings.py`, `backend/app/api/v1/contact.py`, `backend/app/core/config.py`, `backend/app/core/turnstile.py`, `backend/app/main.py`, `backend/app/schemas/bookings.py`, `backend/app/schemas/contact.py`, `backend/app/services/bookings.py`, `backend/tests/test_booking_state.py`, `backend/tests/test_bookings.py`, `backend/tests/test_config.py`, `backend/tests/test_contact.py`, `backend/.env.example`, `backend/pyproject.toml`, `backend/uv.lock`, `packages/api-client/src/schema.d.ts`, `WORKPLAN.md`
+
+**Verificación**
+- `uv run pytest` → **149 passed** (6 nuevos):
+  - La reserva guarda la UTM exacta y el registro `create` con su código.
+  - El mensaje de contacto se guarda con su página de origen.
+  - El honeypot con texto → 202 y ningún mensaje guardado.
+  - Con Turnstile configurado y sin token → 400 `captcha_required`, sin guardar.
+  - Con configuración de producción: sin token → 400; token aceptado por un Cloudflare simulado → pasa y envía secreto, token e IP; token rechazado → `captcha_failed`.
+  - Producción sin `TURNSTILE_SECRET_KEY` no arranca.
+- `ruff`, `mypy`, `alembic check`, `pip-audit` y `tsc` → sin errores.
+
+**Pendiente:** F3.8 (voucher PDF).
+
 ## 2026-09-12 — F3.7 cambios y cancelación del cliente
 
 **Qué se hizo**

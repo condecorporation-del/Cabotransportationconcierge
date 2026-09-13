@@ -48,7 +48,9 @@ async def test_cancellation_is_audited(api: AsyncClient, db: AsyncSession) -> No
     assert booking is not None
     transition(db, booking, S.CANCELLED, actor=AuditActor.CUSTOMER, reason="Flight cancelled")
     await db.flush()
-    log = await db.scalar(select(AuditLog).where(AuditLog.entity_id == booking.id))
+    log = await db.scalar(
+        select(AuditLog).where(AuditLog.entity_id == booking.id, AuditLog.action == "status_change")
+    )
     assert log is not None
     assert (log.actor, log.after["reason"]) == (AuditActor.CUSTOMER, "Flight cancelled")
     assert booking.cancelled_at is not None

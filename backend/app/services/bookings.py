@@ -138,6 +138,7 @@ async def create_booking(
     request: TransferBookingRequest | ActivityBookingRequest,
     company: Company,
     idempotency_key: str | None,
+    ip: str | None = None,
 ) -> Booking:
     if idempotency_key:
         # Dos POST con la misma clave se forman; el segundo encuentra la reserva del primero.
@@ -205,11 +206,26 @@ async def create_booking(
         promotion_id=quote._promotion_id,
         notes_customer=request.notes,
         idempotency_key=idempotency_key,
+        utm=request.attribution.model_dump(exclude_none=True),
         legs=legs,
         items=items,
     )
     session.add(booking)
     await session.flush()
+    session.add(
+        AuditLog(
+            actor=AuditActor.CUSTOMER,
+            action="create",
+            entity="booking",
+            entity_id=booking.id,
+            after={
+                "code": booking.code,
+                "status": booking.status.value,
+                "total": booking.total_cents,
+            },
+            ip=ip,
+        )
+    )
     return booking
 
 

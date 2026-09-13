@@ -15,16 +15,30 @@ class CustomerIn(_Strict):
     marketing_opt_in: bool = False
 
 
-class TransferBookingRequest(TransferQuoteRequest):
+class Attribution(_Strict):
+    """Origen de la visita (F3.11): UTM y referrer que la web captura al entrar."""
+
+    utm_source: str | None = Field(default=None, max_length=100)
+    utm_medium: str | None = Field(default=None, max_length=100)
+    utm_campaign: str | None = Field(default=None, max_length=100)
+    utm_term: str | None = Field(default=None, max_length=100)
+    utm_content: str | None = Field(default=None, max_length=100)
+    referrer: str | None = Field(default=None, max_length=500)
+
+
+class _BookingFields(_Strict):
+    customer: CustomerIn
+    notes: str | None = Field(default=None, max_length=1000)
+    attribution: Attribution = Field(default_factory=Attribution)
+
+
+class TransferBookingRequest(TransferQuoteRequest, _BookingFields):
     # Solo para one way: llegada (aeropuerto → hotel) o salida (hotel → aeropuerto).
     direction: Literal["arrival", "departure"] = "arrival"
-    customer: CustomerIn
-    notes: str | None = Field(default=None, max_length=1000)
 
 
-class ActivityBookingRequest(ActivityQuoteRequest):
-    customer: CustomerIn
-    notes: str | None = Field(default=None, max_length=1000)
+class ActivityBookingRequest(ActivityQuoteRequest, _BookingFields):
+    pass
 
 
 BookingRequest = Annotated[
