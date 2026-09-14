@@ -2,6 +2,26 @@
 
 Una entrada por sesión o tarea, la más reciente arriba (formato en `AGENTS.md` §10).
 
+## 2026-09-13 — F6.8: flota CRUD y cuentas por cobrar completas
+
+Seguí con F6.8 porque cierra el último bloque grande de "administrar cosas que no son reservas" antes de tareas (F6.9) y auditoría automática (F6.10). Los modelos de flota y cuentas ya existían desde F1.7/F1.8; aquí solo faltaba la API.
+
+**Sin `DELETE`, otra vez a propósito.** `Driver` y `Vehicle` tienen `RESTRICT` desde `booking_assignments` (un chofer o vehículo ya asignado no se puede borrar), y borrar una `VehicleClass` referenciada por tarifas o tramos rompería reservas viejas. En vez de manejar el `IntegrityError` de un borrado que a veces sí y a veces no funciona, se siguió la misma convención que `seed_catalog.py` ya usa para el catálogo: `PATCH is_active=false` retira algo del uso diario sin borrar nada. Las tres CRUD (`/admin/drivers`, `/admin/vehicles`, `/admin/vehicle-classes`) quedaron como `GET` (lista), `POST` (alta) y `PATCH` (edición parcial, con `exclude_unset` para no pisar campos que no vinieron en el body) — sin ruta de borrado.
+
+**El saldo de una cuenta nunca se guarda, se calcula** (el comentario ya estaba en el modelo desde F1.7): `services/accounts.py` suma los cargos que no están `VOID` y resta los abonos, en dos consultas agregadas. Anular un cargo (`PATCH .../charges/{id}` con `status: void`) lo saca del cálculo sin borrar el registro — queda la auditoría de que existió.
+
+**`POST /admin/accounts/{id}/bookings`** es distinto de lo que ya hacía F6.6: en F6.6, `payment: "account"` crea el cargo en el mismo momento en que nace la reserva. Esta ruta es para una reserva que **ya existía** con otro método de pago y que el cliente después pide facturar a su cuenta — valida que sea del mismo cliente (`booking_not_found` si no) y que no se haya facturado ya (`already_charged` si sí), y no toca el estado ni el `payment_method` de la reserva: son dos cosas independientes (cómo se paga la reserva y a qué cuenta se factura).
+
+**Archivos:** `backend/app/schemas/fleet.py` (nuevo), `backend/app/api/v1/admin/fleet.py` (nuevo), `backend/app/schemas/accounts.py` (nuevo), `backend/app/services/accounts.py` (nuevo), `backend/app/api/v1/admin/accounts.py` (nuevo), `backend/app/main.py`, `backend/tests/test_admin_fleet.py` (nuevo), `backend/tests/test_admin_accounts.py` (nuevo), `packages/api-client/src/schema.d.ts`, `WORKPLAN.md`
+
+**Verificación**
+- `uv run pytest` → **267 passed** (12 nuevos): un chofer se crea y aparece en la lista; `PATCH` desactiva sin tocar el nombre; lo mismo para vehículos y clases de vehículo; `viewer` puede ver la flota pero no crear; sin el header CSRF, 403; una cuenta con un cargo de $50 tiene saldo $50; un abono de $20 lo baja a $30; anular el cargo lo deja en $0; facturar una reserva existente deja el saldo en su total exacto y una segunda vez es `already_charged`; facturar la reserva de otro cliente es `booking_not_found`.
+- `uv run ruff format --check . && uv run ruff check .` → sin errores. `uv run mypy app scripts` → sin errores.
+- `uv run alembic check` (sin migración: todos los modelos ya existían desde F1.7/F1.8) y `uv run pip-audit` → sin diferencias ni vulnerabilidades.
+- `npm run gen && npm run check` en `packages/api-client` → contrato regenerado, `tsc` sin errores.
+
+**Pendiente:** F6.9 (tareas compartidas CRUD) es lo siguiente, sobre el modelo `admin_tasks` que ya existe.
+
 ## 2026-09-13 — F6.7: despacho (tablero del día, asignar chofer y vehículo)
 
 Con reservas ya completas (F6.4-F6.6), seguí con despacho porque desbloquea F5.9 (aviso al chofer) y es el último bloque de reservas antes de flota/cuentas (F6.8). Los modelos (`booking_assignments`, `drivers`, `vehicles`) ya existían desde F1.8, incluido el índice por chofer que F1.8 dejó puesto "para detectar choques de horario (F6.7)" — aquí por fin se usa.

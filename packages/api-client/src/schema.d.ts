@@ -626,10 +626,293 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/drivers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Drivers */
+        get: operations["list_drivers_api_v1_admin_drivers_get"];
+        put?: never;
+        /** Create Driver */
+        post: operations["create_driver_api_v1_admin_drivers_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/drivers/{driver_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Patch Driver */
+        patch: operations["patch_driver_api_v1_admin_drivers__driver_id__patch"];
+        trace?: never;
+    };
+    "/api/v1/admin/vehicles": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Vehicles */
+        get: operations["list_vehicles_api_v1_admin_vehicles_get"];
+        put?: never;
+        /** Create Vehicle */
+        post: operations["create_vehicle_api_v1_admin_vehicles_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/vehicles/{vehicle_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Patch Vehicle */
+        patch: operations["patch_vehicle_api_v1_admin_vehicles__vehicle_id__patch"];
+        trace?: never;
+    };
+    "/api/v1/admin/vehicle-classes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Vehicle Classes */
+        get: operations["list_vehicle_classes_api_v1_admin_vehicle_classes_get"];
+        put?: never;
+        /** Create Vehicle Class */
+        post: operations["create_vehicle_class_api_v1_admin_vehicle_classes_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/vehicle-classes/{vehicle_class_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Patch Vehicle Class */
+        patch: operations["patch_vehicle_class_api_v1_admin_vehicle_classes__vehicle_class_id__patch"];
+        trace?: never;
+    };
+    "/api/v1/admin/accounts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Accounts */
+        get: operations["list_accounts_api_v1_admin_accounts_get"];
+        put?: never;
+        /** Create Account */
+        post: operations["create_account_api_v1_admin_accounts_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/accounts/{account_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Detail Route */
+        get: operations["detail_route_api_v1_admin_accounts__account_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Patch Account */
+        patch: operations["patch_account_api_v1_admin_accounts__account_id__patch"];
+        trace?: never;
+    };
+    "/api/v1/admin/accounts/{account_id}/charges": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Create Charge */
+        post: operations["create_charge_api_v1_admin_accounts__account_id__charges_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/accounts/{account_id}/charges/{charge_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Patch Charge */
+        patch: operations["patch_charge_api_v1_admin_accounts__account_id__charges__charge_id__patch"];
+        trace?: never;
+    };
+    "/api/v1/admin/accounts/{account_id}/payments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Create Payment */
+        post: operations["create_payment_api_v1_admin_accounts__account_id__payments_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/accounts/{account_id}/bookings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Link Booking
+         * @description Factura una reserva ya existente a la cuenta, sin tocar su estado (F6.8).
+         */
+        post: operations["link_booking_api_v1_admin_accounts__account_id__bookings_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** AccountChargeIn */
+        AccountChargeIn: {
+            /** Description */
+            description: string;
+            /** Amount Cents */
+            amount_cents: number;
+        };
+        /** AccountChargeOut */
+        AccountChargeOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Booking Id */
+            booking_id: string | null;
+            /** Description */
+            description: string;
+            /** Amount Cents */
+            amount_cents: number;
+            status: components["schemas"]["ChargeStatus"];
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+        };
+        /** AccountChargePatch */
+        AccountChargePatch: {
+            /** Description */
+            description?: string | null;
+            /** Amount Cents */
+            amount_cents?: number | null;
+            status?: components["schemas"]["ChargeStatus"] | null;
+        };
+        /** AccountPaymentIn */
+        AccountPaymentIn: {
+            method: components["schemas"]["AccountPaymentMethod"];
+            /** Amount Cents */
+            amount_cents: number;
+            /** Reference */
+            reference?: string | null;
+        };
+        /**
+         * AccountPaymentMethod
+         * @enum {string}
+         */
+        AccountPaymentMethod: "cash" | "bank_transfer" | "card" | "manual";
+        /** AccountPaymentOut */
+        AccountPaymentOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            method: components["schemas"]["AccountPaymentMethod"];
+            /** Amount Cents */
+            amount_cents: number;
+            /** Reference */
+            reference: string | null;
+            /**
+             * Received At
+             * Format: date-time
+             */
+            received_at: string;
+        };
+        /**
+         * AccountStatus
+         * @enum {string}
+         */
+        AccountStatus: "open" | "on_hold" | "settled" | "closed";
         /** ActivityBookingRequest */
         ActivityBookingRequest: {
             customer: components["schemas"]["CustomerIn"];
@@ -1049,6 +1332,76 @@ export interface components {
             /** Reason */
             reason?: string | null;
         };
+        /**
+         * ChargeStatus
+         * @enum {string}
+         */
+        ChargeStatus: "pending" | "invoiced" | "paid" | "void";
+        /** ClientAccountDetail */
+        ClientAccountDetail: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Customer Id
+             * Format: uuid
+             */
+            customer_id: string;
+            /** Name */
+            name: string;
+            status: components["schemas"]["AccountStatus"];
+            /** Credit Limit Cents */
+            credit_limit_cents: number;
+            /** Balance Cents */
+            balance_cents: number;
+            /** Charges */
+            charges: components["schemas"]["AccountChargeOut"][];
+            /** Payments */
+            payments: components["schemas"]["AccountPaymentOut"][];
+        };
+        /** ClientAccountIn */
+        ClientAccountIn: {
+            /**
+             * Customer Id
+             * Format: uuid
+             */
+            customer_id: string;
+            /** Name */
+            name: string;
+            /**
+             * Credit Limit Cents
+             * @default 0
+             */
+            credit_limit_cents: number;
+        };
+        /** ClientAccountOut */
+        ClientAccountOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Customer Id
+             * Format: uuid
+             */
+            customer_id: string;
+            /** Name */
+            name: string;
+            status: components["schemas"]["AccountStatus"];
+            /** Credit Limit Cents */
+            credit_limit_cents: number;
+        };
+        /** ClientAccountPatch */
+        ClientAccountPatch: {
+            /** Name */
+            name?: string | null;
+            status?: components["schemas"]["AccountStatus"] | null;
+            /** Credit Limit Cents */
+            credit_limit_cents?: number | null;
+        };
         /** ContactIn */
         ContactIn: {
             /** Name */
@@ -1150,6 +1503,65 @@ export interface components {
             vehicle_count: number;
             /** Assignments */
             assignments: components["schemas"]["DispatchAssignmentOut"][];
+        };
+        /** DriverIn */
+        DriverIn: {
+            /** Name */
+            name: string;
+            /** Phone */
+            phone: string;
+            /** Whatsapp */
+            whatsapp?: string | null;
+            /** License Number */
+            license_number?: string | null;
+            /** License Expires On */
+            license_expires_on?: string | null;
+            /** Languages */
+            languages?: string[];
+            /**
+             * Is Active
+             * @default true
+             */
+            is_active: boolean;
+        };
+        /** DriverOut */
+        DriverOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Name */
+            name: string;
+            /** Phone */
+            phone: string;
+            /** Whatsapp */
+            whatsapp: string | null;
+            /** License Number */
+            license_number: string | null;
+            /** License Expires On */
+            license_expires_on: string | null;
+            /** Languages */
+            languages: string[];
+            /** Is Active */
+            is_active: boolean;
+        };
+        /** DriverPatch */
+        DriverPatch: {
+            /** Name */
+            name?: string | null;
+            /** Phone */
+            phone?: string | null;
+            /** Whatsapp */
+            whatsapp?: string | null;
+            /** License Number */
+            license_number?: string | null;
+            /** License Expires On */
+            license_expires_on?: string | null;
+            /** Languages */
+            languages?: string[] | null;
+            /** Is Active */
+            is_active?: boolean | null;
         };
         /** ExtraIn */
         ExtraIn: {
@@ -1265,6 +1677,14 @@ export interface components {
          * @enum {string}
          */
         LegType: "arrival" | "departure" | "local";
+        /** LinkBookingIn */
+        LinkBookingIn: {
+            /**
+             * Booking Id
+             * Format: uuid
+             */
+            booking_id: string;
+        };
         /** LoginIn */
         LoginIn: {
             /**
@@ -1534,8 +1954,169 @@ export interface components {
             /** Context */
             ctx?: Record<string, never>;
         };
+        /** VehicleClassIn */
+        VehicleClassIn: {
+            /** Code */
+            code: string;
+            /** Name */
+            name: string;
+            /**
+             * Min Pax
+             * @default 1
+             */
+            min_pax: number;
+            /** Max Pax */
+            max_pax: number;
+            /** Max Bags */
+            max_bags: number;
+            /** Included Pax */
+            included_pax?: number | null;
+            /**
+             * Extra Pax Cents
+             * @default 0
+             */
+            extra_pax_cents: number;
+            /**
+             * Extra Hour Cents
+             * @default 0
+             */
+            extra_hour_cents: number;
+            /**
+             * Cash Deposit Cents
+             * @default 0
+             */
+            cash_deposit_cents: number;
+            /**
+             * Sort
+             * @default 0
+             */
+            sort: number;
+            /**
+             * Is Active
+             * @default true
+             */
+            is_active: boolean;
+        };
+        /** VehicleClassOut */
+        VehicleClassOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Code */
+            code: string;
+            /** Name */
+            name: string;
+            /** Min Pax */
+            min_pax: number;
+            /** Max Pax */
+            max_pax: number;
+            /** Max Bags */
+            max_bags: number;
+            /** Included Pax */
+            included_pax: number | null;
+            /** Extra Pax Cents */
+            extra_pax_cents: number;
+            /** Extra Hour Cents */
+            extra_hour_cents: number;
+            /** Cash Deposit Cents */
+            cash_deposit_cents: number;
+            /** Sort */
+            sort: number;
+            /** Is Active */
+            is_active: boolean;
+        };
+        /** VehicleClassPatch */
+        VehicleClassPatch: {
+            /** Code */
+            code?: string | null;
+            /** Name */
+            name?: string | null;
+            /** Min Pax */
+            min_pax?: number | null;
+            /** Max Pax */
+            max_pax?: number | null;
+            /** Max Bags */
+            max_bags?: number | null;
+            /** Included Pax */
+            included_pax?: number | null;
+            /** Extra Pax Cents */
+            extra_pax_cents?: number | null;
+            /** Extra Hour Cents */
+            extra_hour_cents?: number | null;
+            /** Cash Deposit Cents */
+            cash_deposit_cents?: number | null;
+            /** Sort */
+            sort?: number | null;
+            /** Is Active */
+            is_active?: boolean | null;
+        };
+        /** VehicleIn */
+        VehicleIn: {
+            /**
+             * Vehicle Class Id
+             * Format: uuid
+             */
+            vehicle_class_id: string;
+            /** Plate */
+            plate: string;
+            /** Make */
+            make: string;
+            /** Model */
+            model: string;
+            /** Year */
+            year?: number | null;
+            /** Color */
+            color?: string | null;
+            /** Capacity */
+            capacity: number;
+            /** Insurance Expires On */
+            insurance_expires_on?: string | null;
+            /**
+             * Is Active
+             * @default true
+             */
+            is_active: boolean;
+        };
+        /** VehiclePatch */
+        VehiclePatch: {
+            /** Vehicle Class Id */
+            vehicle_class_id?: string | null;
+            /** Plate */
+            plate?: string | null;
+            /** Make */
+            make?: string | null;
+            /** Model */
+            model?: string | null;
+            /** Year */
+            year?: number | null;
+            /** Color */
+            color?: string | null;
+            /** Capacity */
+            capacity?: number | null;
+            /** Insurance Expires On */
+            insurance_expires_on?: string | null;
+            /** Is Active */
+            is_active?: boolean | null;
+        };
+        /** ZoneOut */
+        ZoneOut: {
+            /** Slug */
+            slug: string;
+            /** Name */
+            name: {
+                [key: string]: string;
+            };
+            /** Drive Minutes Min */
+            drive_minutes_min: number;
+            /** Drive Minutes Max */
+            drive_minutes_max: number;
+            /** From Price Cents */
+            from_price_cents?: number | null;
+        };
         /** VehicleOut */
-        VehicleOut: {
+        app__schemas__catalog__VehicleOut: {
             /** Code */
             code: string;
             /** Name */
@@ -1555,20 +2136,34 @@ export interface components {
             /** Cash Deposit Cents */
             cash_deposit_cents: number;
         };
-        /** ZoneOut */
-        ZoneOut: {
-            /** Slug */
-            slug: string;
-            /** Name */
-            name: {
-                [key: string]: string;
-            };
-            /** Drive Minutes Min */
-            drive_minutes_min: number;
-            /** Drive Minutes Max */
-            drive_minutes_max: number;
-            /** From Price Cents */
-            from_price_cents?: number | null;
+        /** VehicleOut */
+        app__schemas__fleet__VehicleOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Vehicle Class Id
+             * Format: uuid
+             */
+            vehicle_class_id: string;
+            /** Plate */
+            plate: string;
+            /** Make */
+            make: string;
+            /** Model */
+            model: string;
+            /** Year */
+            year: number | null;
+            /** Color */
+            color: string | null;
+            /** Capacity */
+            capacity: number;
+            /** Insurance Expires On */
+            insurance_expires_on: string | null;
+            /** Is Active */
+            is_active: boolean;
         };
     };
     responses: never;
@@ -1720,7 +2315,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["VehicleOut"][];
+                    "application/json": components["schemas"]["app__schemas__catalog__VehicleOut"][];
                 };
             };
         };
@@ -2673,6 +3268,530 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_drivers_api_v1_admin_drivers_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DriverOut"][];
+                };
+            };
+        };
+    };
+    create_driver_api_v1_admin_drivers_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DriverIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DriverOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    patch_driver_api_v1_admin_drivers__driver_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                driver_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DriverPatch"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DriverOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_vehicles_api_v1_admin_vehicles_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["app__schemas__fleet__VehicleOut"][];
+                };
+            };
+        };
+    };
+    create_vehicle_api_v1_admin_vehicles_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["VehicleIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["app__schemas__fleet__VehicleOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    patch_vehicle_api_v1_admin_vehicles__vehicle_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                vehicle_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["VehiclePatch"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["app__schemas__fleet__VehicleOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_vehicle_classes_api_v1_admin_vehicle_classes_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VehicleClassOut"][];
+                };
+            };
+        };
+    };
+    create_vehicle_class_api_v1_admin_vehicle_classes_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["VehicleClassIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VehicleClassOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    patch_vehicle_class_api_v1_admin_vehicle_classes__vehicle_class_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                vehicle_class_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["VehicleClassPatch"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VehicleClassOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_accounts_api_v1_admin_accounts_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClientAccountOut"][];
+                };
+            };
+        };
+    };
+    create_account_api_v1_admin_accounts_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ClientAccountIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClientAccountOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    detail_route_api_v1_admin_accounts__account_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                account_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClientAccountDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    patch_account_api_v1_admin_accounts__account_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                account_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ClientAccountPatch"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClientAccountDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_charge_api_v1_admin_accounts__account_id__charges_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                account_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AccountChargeIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AccountChargeOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    patch_charge_api_v1_admin_accounts__account_id__charges__charge_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                charge_id: string;
+                account_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AccountChargePatch"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AccountChargeOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_payment_api_v1_admin_accounts__account_id__payments_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                account_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AccountPaymentIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AccountPaymentOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    link_booking_api_v1_admin_accounts__account_id__bookings_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                account_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LinkBookingIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AccountChargeOut"];
+                };
             };
             /** @description Validation Error */
             422: {
