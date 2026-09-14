@@ -2,6 +2,24 @@
 
 Una entrada por sesión o tarea, la más reciente arriba (formato en `AGENTS.md` §10).
 
+## 2026-09-13 — F6.7: despacho (tablero del día, asignar chofer y vehículo)
+
+Con reservas ya completas (F6.4-F6.6), seguí con despacho porque desbloquea F5.9 (aviso al chofer) y es el último bloque de reservas antes de flota/cuentas (F6.8). Los modelos (`booking_assignments`, `drivers`, `vehicles`) ya existían desde F1.8, incluido el índice por chofer que F1.8 dejó puesto "para detectar choques de horario (F6.7)" — aquí por fin se usa.
+
+**Decisión: ventana fija de ±2 h, no la duración real del viaje.** El criterio de verificación pide que asignar el mismo chofer a dos tramos solapados avise el conflicto, pero no dice cómo medir el solape. Calcularlo bien (tiempo de manejo por zona + regreso a base + tráfico) es trabajo real que no tiene sentido meter aquí a medias; `zones.drive_minutes_min/max` ya existe para eso, pero combinarlo con el resto queda para cuando el despacho necesite ser más preciso. Por ahora, dos tramos del mismo chofer cuyo pickup cae a menos de 2 horas uno de otro son un conflicto (`driver_conflict`, 409); más separados que eso, no. Es una simplificación a propósito, documentada en el código y aquí, no un descuido.
+
+**`app/services/dispatch.py`** (nuevo): `dispatch_board(date)` arma el tablero con dos consultas (tramos del día que no están cancelados ni borrados, más sus asignaciones con el nombre del chofer y la placa del vehículo ya resueltos) y las junta en memoria — más simple que un `outerjoin` con duplicados por unidad. `assign()` valida que la unidad exista (`1..vehicle_count`, para los tramos con varias unidades de F2.11) y el choque de horario antes de crear o actualizar la fila de `booking_assignments` (unique por `leg_id` + `unit_index`, así reasignar es un upsert en la práctica). `unassign()` la borra.
+
+**Archivos:** `backend/app/services/dispatch.py` (nuevo), `backend/app/schemas/dispatch.py` (nuevo), `backend/app/api/v1/admin/dispatch.py` (nuevo), `backend/app/api/v1/admin/deps.py` (`CAN_EDIT` se movió aquí, compartido ahora por `bookings.py` y `dispatch.py`), `backend/app/api/v1/admin/bookings.py`, `backend/app/main.py`, `backend/tests/test_admin_dispatch.py` (nuevo), `packages/api-client/src/schema.d.ts`, `WORKPLAN.md`
+
+**Verificación**
+- `uv run pytest` → **255 passed** (9 nuevos): el tablero muestra un tramo sin asignar; asignar chofer y vehículo se refleja con su nombre y placa; reasignar reemplaza al chofer anterior en vez de duplicar la fila; quitar la asignación la borra; una unidad fuera de rango es 422 `invalid_unit`; dos tramos con el mismo chofer a menos de 2 h son 409 `driver_conflict`, a más de 2 h se permiten los dos; una reserva cancelada no aparece en el tablero; sin el header CSRF, 403.
+- `uv run ruff format --check . && uv run ruff check .` → sin errores. `uv run mypy app scripts` → sin errores.
+- `uv run alembic check` (sin migración: los modelos ya existían desde F1.8) y `uv run pip-audit` → sin diferencias ni vulnerabilidades.
+- `npm run gen && npm run check` en `packages/api-client` → contrato regenerado, `tsc` sin errores.
+
+**Pendiente:** F6.8 (flota CRUD y cuentas por cobrar completas) es lo siguiente; hoy no hay forma de dar de alta un chofer o vehículo desde el admin, solo se prueban con filas creadas a mano.
+
 ## 2026-09-13 — F6.6: reserva manual del admin (none, cash, stripe, account)
 
 Seguí con F6.6 porque completa el ciclo de vida de una reserva en el admin antes de pasar a despacho (F6.7): hasta ahora solo se podía actuar sobre una reserva que ya existía (F6.5); esta es la que el admin arma desde cero cuando el cliente reserva por teléfono o WhatsApp.

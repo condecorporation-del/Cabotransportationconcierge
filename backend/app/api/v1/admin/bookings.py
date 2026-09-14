@@ -7,10 +7,9 @@ from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 
 from app.api.deps import CurrentCompany, DbSession, Stripe, client_ip
-from app.api.v1.admin.deps import CurrentAdmin, require_csrf, require_role
+from app.api.v1.admin.deps import CAN_EDIT, CurrentAdmin, require_csrf
 from app.core.rate_limit import rate_limit
 from app.models import (
-    AdminRole,
     AdminUser,
     AuditLog,
     Booking,
@@ -45,8 +44,6 @@ router = APIRouter(
     prefix="/admin/bookings", tags=["admin-bookings"], dependencies=[Depends(rate_limit(60))]
 )
 NOT_FOUND = "Booking not found."
-# Ver una reserva es cualquier rol; hacerle algo, cualquiera menos viewer (F6.5).
-CAN_EDIT = require_role(AdminRole.OWNER, AdminRole.MANAGER, AdminRole.DISPATCHER, AdminRole.FINANCE)
 
 
 @router.get("")

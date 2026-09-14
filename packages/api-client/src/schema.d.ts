@@ -588,6 +588,44 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/dispatch": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Board Route */
+        get: operations["board_route_api_v1_admin_dispatch_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/dispatch/legs/{leg_id}/assign": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Assign Route
+         * @description Elegir el mismo chofer para dos tramos que se pisan (±2 h) responde 409 (F6.7).
+         */
+        post: operations["assign_route_api_v1_admin_dispatch_legs__leg_id__assign_post"];
+        /** Unassign Route */
+        delete: operations["unassign_route_api_v1_admin_dispatch_legs__leg_id__assign_delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -837,6 +875,18 @@ export interface components {
             /** Paid At */
             paid_at: string | null;
         };
+        /** AssignIn */
+        AssignIn: {
+            /**
+             * Unit Index
+             * @default 1
+             */
+            unit_index: number;
+            /** Driver Id */
+            driver_id?: string | null;
+            /** Vehicle Id */
+            vehicle_id?: string | null;
+        };
         /**
          * Attribution
          * @description Origen de la visita (F3.11): UTM y referrer que la web captura al entrar.
@@ -1059,6 +1109,47 @@ export interface components {
              * @default false
              */
             marketing_opt_in: boolean;
+        };
+        /** DispatchAssignmentOut */
+        DispatchAssignmentOut: {
+            /** Unit Index */
+            unit_index: number;
+            /** Driver Id */
+            driver_id: string | null;
+            /** Driver Name */
+            driver_name: string | null;
+            /** Vehicle Id */
+            vehicle_id: string | null;
+            /** Vehicle Plate */
+            vehicle_plate: string | null;
+        };
+        /** DispatchLegOut */
+        DispatchLegOut: {
+            /**
+             * Leg Id
+             * Format: uuid
+             */
+            leg_id: string;
+            /** Booking Code */
+            booking_code: string;
+            /** Leg Type */
+            leg_type: string;
+            /** Pickup Time */
+            pickup_time: string | null;
+            /** Origin */
+            origin: string;
+            /** Destination */
+            destination: string;
+            /** Pax Adults */
+            pax_adults: number;
+            /** Pax Children */
+            pax_children: number;
+            /** Vehicle Class Code */
+            vehicle_class_code: string;
+            /** Vehicle Count */
+            vehicle_count: number;
+            /** Assignments */
+            assignments: components["schemas"]["DispatchAssignmentOut"][];
         };
         /** ExtraIn */
         ExtraIn: {
@@ -2474,6 +2565,103 @@ export interface operations {
             header?: never;
             path: {
                 booking_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    board_route_api_v1_admin_dispatch_get: {
+        parameters: {
+            query: {
+                date: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DispatchLegOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    assign_route_api_v1_admin_dispatch_legs__leg_id__assign_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                leg_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AssignIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    unassign_route_api_v1_admin_dispatch_legs__leg_id__assign_delete: {
+        parameters: {
+            query?: {
+                unit_index?: number;
+            };
+            header?: never;
+            path: {
+                leg_id: string;
             };
             cookie?: never;
         };
