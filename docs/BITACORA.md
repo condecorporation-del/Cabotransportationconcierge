@@ -2,6 +2,26 @@
 
 Una entrada por sesión o tarea, la más reciente arriba (formato en `AGENTS.md` §10).
 
+## 2026-09-14 — F6.12: catálogo CRUD y settings
+
+El último bloque grande de F6 antes de usuarios y roles (F6.13). Siete recursos (zonas, hoteles, tarifas, extras, actividades, paquetes, promociones) más los ajustes de la empresa, todos con el mismo patrón que ya probó F6.8 (flota): `GET` lista, `POST` alta, `PATCH` edición parcial, sin `DELETE` — `is_active=false` retira una fila del catálogo sin romper una tarifa, un hotel o una reserva vieja que todavía la referencia. `PATCH` en tarifas es a propósito angosto (`price_cents`, `is_active`): la zona, el vehículo, el tipo de viaje y el alcance forman la llave única de la tabla, así que cambiarlos ahí sería en realidad crear una tarifa distinta, no editar la existente.
+
+**Cierra de verdad el criterio de F6.10.** Cuando se escribió la auditoría automática todavía no existía `/admin/rates`, así que se probó con choferes y tareas y quedó anotado que Rate se sumaría a `AUDITED_MODELS` en cuanto existiera. Ahora existe: se agregaron `Zone`, `Hotel`, `Rate`, `Extra`, `Activity`, `ActivityPackage` y `Promotion` a la lista, y `test_create_and_patch_a_rate_is_audited` prueba exactamente el ejemplo que usa el propio WORKPLAN ("editar una tarifa deja un log con el diff") — cero código nuevo en `audit.py` para lograrlo, tal como estaba pensado.
+
+**Un vacío real que quedó anotado, no resuelto:** las siete rutas nuevas usan el mismo `CAN_EDIT` de F6.5 (cualquier rol menos `viewer`), así que hoy un `dispatcher` sí puede editar una tarifa. El criterio de verificación de F6.13 ("un dispatcher no puede editar tarifas, 403") es precisamente sobre esto — F6.13 le pondrá a `/admin/rates` (y probablemente al resto del catálogo) un permiso más fino que excluya `dispatcher`. No se adelantó ese trabajo aquí porque F6.12 no lo pedía y mezclarlo habría hecho más difícil ver qué prueba qué.
+
+**Bug de nombres, no de código:** los primeros intentos de las pruebas de hotel y tarifa usaban `zone.slug == "cabo-san-lucas"`, que no existe en el catálogo real (el slug es `cabo-san-lucas-marina`) — un recordatorio de revisar los datos reales del seed en vez de adivinar nombres de zonas por memoria.
+
+**Archivos:** `backend/app/schemas/catalog_admin.py` (nuevo), `backend/app/api/v1/admin/catalog.py` (nuevo), `backend/app/services/audit.py`, `backend/app/main.py`, `backend/tests/test_admin_catalog.py` (nuevo), `packages/api-client/src/schema.d.ts`, `WORKPLAN.md`
+
+**Verificación**
+- `uv run pytest` → **292 passed** (10 nuevos): alta y edición de cada uno de los siete recursos y de los ajustes de la empresa; editar una tarifa dos veces (`5000` → `6000`) deja el `AuditLog` con `before`/`after` exactos; sin el header CSRF, 403; `viewer` no puede crear una zona.
+- `uv run ruff format --check . && uv run ruff check .` → sin errores. `uv run mypy app scripts` → sin errores.
+- `uv run alembic check` (sin migración: los siete modelos ya existían desde F1.6) y `uv run pip-audit` → sin diferencias ni vulnerabilidades.
+- `npm run gen && npm run check` en `packages/api-client` → contrato regenerado, `tsc` sin errores.
+
+**Pendiente:** F6.13 (usuarios y roles, solo owner, y lista de auditoría) es la última tarea de F6 — con eso completo, F6 (Auth y API del admin) queda en 13/13.
+
 ## 2026-09-13 — F6.11: dashboard y KPIs de finanzas y marketing
 
 El único F6 con un número en el criterio de verificación: < 300 ms con 10 000 reservas. Todo lo demás de la tarea (qué muestra cada pantalla) sale directo de las filas del E-table del WORKPLAN ("Dashboard: servicios de hoy y mañana, resumen mensual, atención requerida"; "Finanzas: revenue de 30 días, cobradas, cuentas por cobrar, cuentas abiertas"; "Marketing: ... conversión, valor promedio, día pico, zona más reservada" — sin la conversión, que pediría guardar cada cotización que nunca se reservó, algo que no existe hoy y que no vale la pena inventar solo para esta métrica).

@@ -18,13 +18,20 @@ from sqlalchemy.orm import Session
 from app.models import (
     AccountCharge,
     AccountPayment,
+    Activity,
+    ActivityPackage,
     AdminTask,
     AuditActor,
     AuditLog,
     ClientAccount,
     Driver,
+    Extra,
+    Hotel,
+    Promotion,
+    Rate,
     Vehicle,
     VehicleClass,
+    Zone,
 )
 
 # Modelos que hoy no arman su propio AuditLog a mano. Las reservas ya tienen una bitácora más
@@ -37,6 +44,13 @@ AUDITED_MODELS = (
     ClientAccount,
     AccountCharge,
     AccountPayment,
+    Zone,
+    Hotel,
+    Rate,
+    Extra,
+    Activity,
+    ActivityPackage,
+    Promotion,
 )
 
 

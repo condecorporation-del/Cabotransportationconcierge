@@ -925,6 +925,272 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/zones": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Zones */
+        get: operations["list_zones_api_v1_admin_zones_get"];
+        put?: never;
+        /** Create Zone */
+        post: operations["create_zone_api_v1_admin_zones_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/zones/{zone_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Patch Zone */
+        patch: operations["patch_zone_api_v1_admin_zones__zone_id__patch"];
+        trace?: never;
+    };
+    "/api/v1/admin/hotels": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Hotels */
+        get: operations["list_hotels_api_v1_admin_hotels_get"];
+        put?: never;
+        /** Create Hotel */
+        post: operations["create_hotel_api_v1_admin_hotels_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/hotels/{hotel_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Patch Hotel */
+        patch: operations["patch_hotel_api_v1_admin_hotels__hotel_id__patch"];
+        trace?: never;
+    };
+    "/api/v1/admin/rates": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Rates */
+        get: operations["list_rates_api_v1_admin_rates_get"];
+        put?: never;
+        /** Create Rate */
+        post: operations["create_rate_api_v1_admin_rates_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/rates/{rate_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Patch Rate
+         * @description Editar el precio de una tarifa (F6.10, F6.12): queda auditada por `AUDITED_MODELS`.
+         */
+        patch: operations["patch_rate_api_v1_admin_rates__rate_id__patch"];
+        trace?: never;
+    };
+    "/api/v1/admin/extras": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Extras */
+        get: operations["list_extras_api_v1_admin_extras_get"];
+        put?: never;
+        /** Create Extra */
+        post: operations["create_extra_api_v1_admin_extras_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/extras/{extra_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Patch Extra */
+        patch: operations["patch_extra_api_v1_admin_extras__extra_id__patch"];
+        trace?: never;
+    };
+    "/api/v1/admin/activities": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Activities */
+        get: operations["list_activities_api_v1_admin_activities_get"];
+        put?: never;
+        /** Create Activity */
+        post: operations["create_activity_api_v1_admin_activities_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/activities/{activity_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Patch Activity */
+        patch: operations["patch_activity_api_v1_admin_activities__activity_id__patch"];
+        trace?: never;
+    };
+    "/api/v1/admin/packages": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Packages */
+        get: operations["list_packages_api_v1_admin_packages_get"];
+        put?: never;
+        /** Create Package */
+        post: operations["create_package_api_v1_admin_packages_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/packages/{package_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Patch Package */
+        patch: operations["patch_package_api_v1_admin_packages__package_id__patch"];
+        trace?: never;
+    };
+    "/api/v1/admin/promotions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Promotions */
+        get: operations["list_promotions_api_v1_admin_promotions_get"];
+        put?: never;
+        /** Create Promotion */
+        post: operations["create_promotion_api_v1_admin_promotions_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/promotions/{promotion_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Patch Promotion */
+        patch: operations["patch_promotion_api_v1_admin_promotions__promotion_id__patch"];
+        trace?: never;
+    };
+    "/api/v1/admin/settings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Settings Route */
+        get: operations["get_settings_route_api_v1_admin_settings_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Patch Settings Route */
+        patch: operations["patch_settings_route_api_v1_admin_settings_patch"];
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1031,8 +1297,8 @@ export interface components {
              */
             language: "en" | "es";
         };
-        /** ActivityOut */
-        ActivityOut: {
+        /** ActivityIn */
+        ActivityIn: {
             /** Slug */
             slug: string;
             /** Name */
@@ -1040,11 +1306,100 @@ export interface components {
                 [key: string]: string;
             };
             /** Description */
-            description: {
+            description?: {
                 [key: string]: string;
             };
             /** Duration Minutes */
             duration_minutes: number;
+            /**
+             * Is Active
+             * @default true
+             */
+            is_active: boolean;
+        };
+        /** ActivityPackageIn */
+        ActivityPackageIn: {
+            /** Slug */
+            slug: string;
+            /** Name */
+            name: {
+                [key: string]: string;
+            };
+            /** Activity Count */
+            activity_count: number;
+            /** Price Per Person Cents */
+            price_per_person_cents: number;
+            /**
+             * Park Fee Cents
+             * @default 0
+             */
+            park_fee_cents: number;
+            /**
+             * Deposit Cents
+             * @default 0
+             */
+            deposit_cents: number;
+            /**
+             * Is Active
+             * @default true
+             */
+            is_active: boolean;
+        };
+        /** ActivityPackageOut */
+        ActivityPackageOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Slug */
+            slug: string;
+            /** Name */
+            name: {
+                [key: string]: string;
+            };
+            /** Activity Count */
+            activity_count: number;
+            /** Price Per Person Cents */
+            price_per_person_cents: number;
+            /** Park Fee Cents */
+            park_fee_cents: number;
+            /** Deposit Cents */
+            deposit_cents: number;
+            /** Is Active */
+            is_active: boolean;
+        };
+        /** ActivityPackagePatch */
+        ActivityPackagePatch: {
+            /** Name */
+            name?: {
+                [key: string]: string;
+            } | null;
+            /** Activity Count */
+            activity_count?: number | null;
+            /** Price Per Person Cents */
+            price_per_person_cents?: number | null;
+            /** Park Fee Cents */
+            park_fee_cents?: number | null;
+            /** Deposit Cents */
+            deposit_cents?: number | null;
+            /** Is Active */
+            is_active?: boolean | null;
+        };
+        /** ActivityPatch */
+        ActivityPatch: {
+            /** Name */
+            name?: {
+                [key: string]: string;
+            } | null;
+            /** Description */
+            description?: {
+                [key: string]: string;
+            } | null;
+            /** Duration Minutes */
+            duration_minutes?: number | null;
+            /** Is Active */
+            is_active?: boolean | null;
         };
         /** ActivityQuoteRequest */
         ActivityQuoteRequest: {
@@ -1210,7 +1565,7 @@ export interface components {
             /** Legs */
             legs: components["schemas"]["LegIn"][];
             /** Extras */
-            extras?: components["schemas"]["ExtraIn"][];
+            extras?: components["schemas"]["app__schemas__quotes__ExtraIn"][];
             /** Promo Code */
             promo_code?: string | null;
             /**
@@ -1544,6 +1899,94 @@ export interface components {
             /** Credit Limit Cents */
             credit_limit_cents?: number | null;
         };
+        /** CompanySettingsOut */
+        CompanySettingsOut: {
+            /** Phone */
+            phone: string | null;
+            /** Whatsapp */
+            whatsapp: string | null;
+            /** Email Ops */
+            email_ops: string | null;
+            /** Email From */
+            email_from: string | null;
+            /** Offices */
+            offices: {
+                [key: string]: unknown;
+            };
+            /** Social Links */
+            social_links: {
+                [key: string]: unknown;
+            };
+            /** Cancellation Hours */
+            cancellation_hours: number;
+            /** Change Hours */
+            change_hours: number;
+            /** Min Notice Hours */
+            min_notice_hours: number;
+            /** Card Tax Percent */
+            card_tax_percent: number;
+            /** Terms Version */
+            terms_version: string;
+            /**
+             * Night Surcharge Start
+             * Format: time
+             */
+            night_surcharge_start: string;
+            /**
+             * Night Surcharge End
+             * Format: time
+             */
+            night_surcharge_end: string;
+            /** Arrival Instructions */
+            arrival_instructions: {
+                [key: string]: unknown;
+            };
+            /** Policies */
+            policies: {
+                [key: string]: unknown;
+            };
+        };
+        /** CompanySettingsPatch */
+        CompanySettingsPatch: {
+            /** Phone */
+            phone?: string | null;
+            /** Whatsapp */
+            whatsapp?: string | null;
+            /** Email Ops */
+            email_ops?: string | null;
+            /** Email From */
+            email_from?: string | null;
+            /** Offices */
+            offices?: {
+                [key: string]: unknown;
+            } | null;
+            /** Social Links */
+            social_links?: {
+                [key: string]: unknown;
+            } | null;
+            /** Cancellation Hours */
+            cancellation_hours?: number | null;
+            /** Change Hours */
+            change_hours?: number | null;
+            /** Min Notice Hours */
+            min_notice_hours?: number | null;
+            /** Card Tax Percent */
+            card_tax_percent?: number | null;
+            /** Terms Version */
+            terms_version?: string | null;
+            /** Night Surcharge Start */
+            night_surcharge_start?: string | null;
+            /** Night Surcharge End */
+            night_surcharge_end?: string | null;
+            /** Arrival Instructions */
+            arrival_instructions?: {
+                [key: string]: unknown;
+            } | null;
+            /** Policies */
+            policies?: {
+                [key: string]: unknown;
+            } | null;
+        };
         /** ContactIn */
         ContactIn: {
             /** Name */
@@ -1625,6 +2068,11 @@ export interface components {
             /** Unpaid Bookings */
             unpaid_bookings: number;
         };
+        /**
+         * DiscountType
+         * @enum {string}
+         */
+        DiscountType: "percent" | "fixed";
         /** DispatchAssignmentOut */
         DispatchAssignmentOut: {
             /** Unit Index */
@@ -1725,40 +2173,41 @@ export interface components {
             /** Is Active */
             is_active?: boolean | null;
         };
-        /** ExtraIn */
-        ExtraIn: {
-            /** Code */
-            code: string;
-            /** Quantity */
-            quantity: number;
-        };
-        /** ExtraOut */
-        ExtraOut: {
-            /** Code */
-            code: string;
+        /**
+         * ExtraAutoRule
+         * @enum {string}
+         */
+        ExtraAutoRule: "night_surcharge";
+        /** ExtraPatch */
+        ExtraPatch: {
             /** Name */
-            name: {
+            name?: {
                 [key: string]: string;
-            };
+            } | null;
             /** Description */
-            description: {
+            description?: {
                 [key: string]: string;
-            };
+            } | null;
             /** Price Cents */
-            price_cents: number;
-            pricing_mode: components["schemas"]["PricingMode"];
+            price_cents?: number | null;
+            pricing_mode?: components["schemas"]["PricingMode"] | null;
             /** Max Qty */
-            max_qty: number;
+            max_qty?: number | null;
             /** Included */
-            included: boolean;
+            included?: boolean | null;
             /** Free Qty */
-            free_qty: number;
+            free_qty?: number | null;
             /** Vehicle Prices */
-            vehicle_prices: {
+            vehicle_prices?: {
                 [key: string]: number;
-            };
+            } | null;
             /** One Per Vehicle */
-            one_per_vehicle: boolean;
+            one_per_vehicle?: boolean | null;
+            auto_rule?: components["schemas"]["ExtraAutoRule"] | null;
+            /** Sort */
+            sort?: number | null;
+            /** Is Active */
+            is_active?: boolean | null;
         };
         /** FinanceSummaryOut */
         FinanceSummaryOut: {
@@ -1775,6 +2224,25 @@ export interface components {
         HTTPValidationError: {
             /** Detail */
             detail?: components["schemas"]["ValidationError"][];
+        };
+        /** HotelIn */
+        HotelIn: {
+            /**
+             * Zone Id
+             * Format: uuid
+             */
+            zone_id: string;
+            /** Slug */
+            slug: string;
+            /** Name */
+            name: string;
+            /** Aliases */
+            aliases?: string[];
+            /**
+             * Is Active
+             * @default true
+             */
+            is_active: boolean;
         };
         /** HotelMatch */
         HotelMatch: {
@@ -1794,6 +2262,27 @@ export interface components {
                 [key: string]: string;
             };
         };
+        /** HotelOut */
+        HotelOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Zone Id
+             * Format: uuid
+             */
+            zone_id: string;
+            /** Slug */
+            slug: string;
+            /** Name */
+            name: string;
+            /** Aliases */
+            aliases: string[];
+            /** Is Active */
+            is_active: boolean;
+        };
         /** HotelPage */
         HotelPage: {
             /**
@@ -1805,9 +2294,22 @@ export interface components {
             slug: string;
             /** Name */
             name: string;
-            zone: components["schemas"]["ZoneOut"];
+            zone: components["schemas"]["app__schemas__catalog__ZoneOut"];
             /** Rates */
-            rates: components["schemas"]["RateOut"][];
+            rates: components["schemas"]["app__schemas__catalog__RateOut"][];
+        };
+        /** HotelPatch */
+        HotelPatch: {
+            /** Zone Id */
+            zone_id?: string | null;
+            /** Slug */
+            slug?: string | null;
+            /** Name */
+            name?: string | null;
+            /** Aliases */
+            aliases?: string[] | null;
+            /** Is Active */
+            is_active?: boolean | null;
         };
         /**
          * ItemType
@@ -1934,6 +2436,95 @@ export interface components {
          * @enum {string}
          */
         PricingMode: "per_booking" | "per_stop" | "per_seat" | "per_hour";
+        /** PromotionIn */
+        PromotionIn: {
+            /** Code */
+            code?: string | null;
+            /** Name */
+            name: {
+                [key: string]: string;
+            };
+            discount_type: components["schemas"]["DiscountType"];
+            /** Value */
+            value: number;
+            /** @default transfer_base */
+            applies_to: components["schemas"]["PromotionScope"];
+            /** Travel From */
+            travel_from?: string | null;
+            /** Travel To */
+            travel_to?: string | null;
+            /** Book From */
+            book_from?: string | null;
+            /** Book To */
+            book_to?: string | null;
+            /** Max Uses */
+            max_uses?: number | null;
+            /**
+             * Is Active
+             * @default true
+             */
+            is_active: boolean;
+        };
+        /** PromotionOut */
+        PromotionOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Code */
+            code: string | null;
+            /** Name */
+            name: {
+                [key: string]: string;
+            };
+            discount_type: components["schemas"]["DiscountType"];
+            /** Value */
+            value: number;
+            applies_to: components["schemas"]["PromotionScope"];
+            /** Travel From */
+            travel_from: string | null;
+            /** Travel To */
+            travel_to: string | null;
+            /** Book From */
+            book_from: string | null;
+            /** Book To */
+            book_to: string | null;
+            /** Max Uses */
+            max_uses: number | null;
+            /** Used Count */
+            used_count: number;
+            /** Is Active */
+            is_active: boolean;
+        };
+        /** PromotionPatch */
+        PromotionPatch: {
+            /** Name */
+            name?: {
+                [key: string]: string;
+            } | null;
+            discount_type?: components["schemas"]["DiscountType"] | null;
+            /** Value */
+            value?: number | null;
+            applies_to?: components["schemas"]["PromotionScope"] | null;
+            /** Travel From */
+            travel_from?: string | null;
+            /** Travel To */
+            travel_to?: string | null;
+            /** Book From */
+            book_from?: string | null;
+            /** Book To */
+            book_to?: string | null;
+            /** Max Uses */
+            max_uses?: number | null;
+            /** Is Active */
+            is_active?: boolean | null;
+        };
+        /**
+         * PromotionScope
+         * @enum {string}
+         */
+        PromotionScope: "transfer_base" | "all";
         /** Quote */
         Quote: {
             /** Currency */
@@ -1984,14 +2575,35 @@ export interface components {
             /** Total Cents */
             total_cents: number;
         };
-        /** RateOut */
-        RateOut: {
-            /** Vehicle Class */
-            vehicle_class: string;
+        /** RateIn */
+        RateIn: {
+            /**
+             * Zone Id
+             * Format: uuid
+             */
+            zone_id: string;
+            /**
+             * Vehicle Class Id
+             * Format: uuid
+             */
+            vehicle_class_id: string;
             trip_type: components["schemas"]["TripType"];
+            /** @default airport */
             service_scope: components["schemas"]["ServiceScope"];
             /** Price Cents */
             price_cents: number;
+            /**
+             * Is Active
+             * @default true
+             */
+            is_active: boolean;
+        };
+        /** RatePatch */
+        RatePatch: {
+            /** Price Cents */
+            price_cents?: number | null;
+            /** Is Active */
+            is_active?: boolean | null;
         };
         /**
          * ServiceScope
@@ -2078,7 +2690,7 @@ export interface components {
             /** Legs */
             legs: components["schemas"]["LegIn"][];
             /** Extras */
-            extras?: components["schemas"]["ExtraIn"][];
+            extras?: components["schemas"]["app__schemas__quotes__ExtraIn"][];
             /** Promo Code */
             promo_code?: string | null;
             /**
@@ -2122,7 +2734,7 @@ export interface components {
             /** Legs */
             legs: components["schemas"]["LegIn"][];
             /** Extras */
-            extras?: components["schemas"]["ExtraIn"][];
+            extras?: components["schemas"]["app__schemas__quotes__ExtraIn"][];
             /** Promo Code */
             promo_code?: string | null;
             /**
@@ -2296,20 +2908,97 @@ export interface components {
             /** Is Active */
             is_active?: boolean | null;
         };
-        /** ZoneOut */
-        ZoneOut: {
+        /** ZoneIn */
+        ZoneIn: {
             /** Slug */
             slug: string;
             /** Name */
             name: {
                 [key: string]: string;
             };
+            /**
+             * Sort
+             * @default 0
+             */
+            sort: number;
             /** Drive Minutes Min */
             drive_minutes_min: number;
             /** Drive Minutes Max */
             drive_minutes_max: number;
-            /** From Price Cents */
-            from_price_cents?: number | null;
+            /**
+             * Is Active
+             * @default true
+             */
+            is_active: boolean;
+        };
+        /** ZonePatch */
+        ZonePatch: {
+            /** Slug */
+            slug?: string | null;
+            /** Name */
+            name?: {
+                [key: string]: string;
+            } | null;
+            /** Sort */
+            sort?: number | null;
+            /** Drive Minutes Min */
+            drive_minutes_min?: number | null;
+            /** Drive Minutes Max */
+            drive_minutes_max?: number | null;
+            /** Is Active */
+            is_active?: boolean | null;
+        };
+        /** ActivityOut */
+        app__schemas__catalog__ActivityOut: {
+            /** Slug */
+            slug: string;
+            /** Name */
+            name: {
+                [key: string]: string;
+            };
+            /** Description */
+            description: {
+                [key: string]: string;
+            };
+            /** Duration Minutes */
+            duration_minutes: number;
+        };
+        /** ExtraOut */
+        app__schemas__catalog__ExtraOut: {
+            /** Code */
+            code: string;
+            /** Name */
+            name: {
+                [key: string]: string;
+            };
+            /** Description */
+            description: {
+                [key: string]: string;
+            };
+            /** Price Cents */
+            price_cents: number;
+            pricing_mode: components["schemas"]["PricingMode"];
+            /** Max Qty */
+            max_qty: number;
+            /** Included */
+            included: boolean;
+            /** Free Qty */
+            free_qty: number;
+            /** Vehicle Prices */
+            vehicle_prices: {
+                [key: string]: number;
+            };
+            /** One Per Vehicle */
+            one_per_vehicle: boolean;
+        };
+        /** RateOut */
+        app__schemas__catalog__RateOut: {
+            /** Vehicle Class */
+            vehicle_class: string;
+            trip_type: components["schemas"]["TripType"];
+            service_scope: components["schemas"]["ServiceScope"];
+            /** Price Cents */
+            price_cents: number;
         };
         /** VehicleOut */
         app__schemas__catalog__VehicleOut: {
@@ -2331,6 +3020,178 @@ export interface components {
             extra_hour_cents: number;
             /** Cash Deposit Cents */
             cash_deposit_cents: number;
+        };
+        /** ZoneOut */
+        app__schemas__catalog__ZoneOut: {
+            /** Slug */
+            slug: string;
+            /** Name */
+            name: {
+                [key: string]: string;
+            };
+            /** Drive Minutes Min */
+            drive_minutes_min: number;
+            /** Drive Minutes Max */
+            drive_minutes_max: number;
+            /** From Price Cents */
+            from_price_cents?: number | null;
+        };
+        /** ActivityOut */
+        app__schemas__catalog_admin__ActivityOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Slug */
+            slug: string;
+            /** Name */
+            name: {
+                [key: string]: string;
+            };
+            /** Description */
+            description: {
+                [key: string]: string;
+            };
+            /** Duration Minutes */
+            duration_minutes: number;
+            /** Is Active */
+            is_active: boolean;
+        };
+        /** ExtraIn */
+        app__schemas__catalog_admin__ExtraIn: {
+            /** Code */
+            code: string;
+            /** Name */
+            name: {
+                [key: string]: string;
+            };
+            /** Description */
+            description?: {
+                [key: string]: string;
+            };
+            /** Price Cents */
+            price_cents: number;
+            pricing_mode: components["schemas"]["PricingMode"];
+            /**
+             * Max Qty
+             * @default 1
+             */
+            max_qty: number;
+            /**
+             * Included
+             * @default false
+             */
+            included: boolean;
+            /**
+             * Free Qty
+             * @default 0
+             */
+            free_qty: number;
+            /** Vehicle Prices */
+            vehicle_prices?: {
+                [key: string]: number;
+            };
+            /**
+             * One Per Vehicle
+             * @default false
+             */
+            one_per_vehicle: boolean;
+            auto_rule?: components["schemas"]["ExtraAutoRule"] | null;
+            /**
+             * Sort
+             * @default 0
+             */
+            sort: number;
+            /**
+             * Is Active
+             * @default true
+             */
+            is_active: boolean;
+        };
+        /** ExtraOut */
+        app__schemas__catalog_admin__ExtraOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Code */
+            code: string;
+            /** Name */
+            name: {
+                [key: string]: string;
+            };
+            /** Description */
+            description: {
+                [key: string]: string;
+            };
+            /** Price Cents */
+            price_cents: number;
+            pricing_mode: components["schemas"]["PricingMode"];
+            /** Max Qty */
+            max_qty: number;
+            /** Included */
+            included: boolean;
+            /** Free Qty */
+            free_qty: number;
+            /** Vehicle Prices */
+            vehicle_prices: {
+                [key: string]: unknown;
+            };
+            /** One Per Vehicle */
+            one_per_vehicle: boolean;
+            auto_rule: components["schemas"]["ExtraAutoRule"] | null;
+            /** Sort */
+            sort: number;
+            /** Is Active */
+            is_active: boolean;
+        };
+        /** RateOut */
+        app__schemas__catalog_admin__RateOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Zone Id
+             * Format: uuid
+             */
+            zone_id: string;
+            /**
+             * Vehicle Class Id
+             * Format: uuid
+             */
+            vehicle_class_id: string;
+            trip_type: components["schemas"]["TripType"];
+            service_scope: components["schemas"]["ServiceScope"];
+            /** Price Cents */
+            price_cents: number;
+            /** Is Active */
+            is_active: boolean;
+        };
+        /** ZoneOut */
+        app__schemas__catalog_admin__ZoneOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Slug */
+            slug: string;
+            /** Name */
+            name: {
+                [key: string]: string;
+            };
+            /** Sort */
+            sort: number;
+            /** Drive Minutes Min */
+            drive_minutes_min: number;
+            /** Drive Minutes Max */
+            drive_minutes_max: number;
+            /** Is Active */
+            is_active: boolean;
         };
         /** VehicleOut */
         app__schemas__fleet__VehicleOut: {
@@ -2360,6 +3221,13 @@ export interface components {
             insurance_expires_on: string | null;
             /** Is Active */
             is_active: boolean;
+        };
+        /** ExtraIn */
+        app__schemas__quotes__ExtraIn: {
+            /** Code */
+            code: string;
+            /** Quantity */
+            quantity: number;
         };
     };
     responses: never;
@@ -2429,7 +3297,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ZoneOut"][];
+                    "application/json": components["schemas"]["app__schemas__catalog__ZoneOut"][];
                 };
             };
         };
@@ -2531,7 +3399,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ExtraOut"][];
+                    "application/json": components["schemas"]["app__schemas__catalog__ExtraOut"][];
                 };
             };
         };
@@ -2551,7 +3419,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ActivityOut"][];
+                    "application/json": components["schemas"]["app__schemas__catalog__ActivityOut"][];
                 };
             };
         };
@@ -4196,6 +5064,675 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["MarketingKpisOut"];
+                };
+            };
+        };
+    };
+    list_zones_api_v1_admin_zones_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["app__schemas__catalog_admin__ZoneOut"][];
+                };
+            };
+        };
+    };
+    create_zone_api_v1_admin_zones_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ZoneIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["app__schemas__catalog_admin__ZoneOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    patch_zone_api_v1_admin_zones__zone_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                zone_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ZonePatch"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["app__schemas__catalog_admin__ZoneOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_hotels_api_v1_admin_hotels_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HotelOut"][];
+                };
+            };
+        };
+    };
+    create_hotel_api_v1_admin_hotels_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["HotelIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HotelOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    patch_hotel_api_v1_admin_hotels__hotel_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                hotel_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["HotelPatch"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HotelOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_rates_api_v1_admin_rates_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["app__schemas__catalog_admin__RateOut"][];
+                };
+            };
+        };
+    };
+    create_rate_api_v1_admin_rates_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RateIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["app__schemas__catalog_admin__RateOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    patch_rate_api_v1_admin_rates__rate_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                rate_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RatePatch"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["app__schemas__catalog_admin__RateOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_extras_api_v1_admin_extras_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["app__schemas__catalog_admin__ExtraOut"][];
+                };
+            };
+        };
+    };
+    create_extra_api_v1_admin_extras_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["app__schemas__catalog_admin__ExtraIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["app__schemas__catalog_admin__ExtraOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    patch_extra_api_v1_admin_extras__extra_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                extra_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ExtraPatch"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["app__schemas__catalog_admin__ExtraOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_activities_api_v1_admin_activities_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["app__schemas__catalog_admin__ActivityOut"][];
+                };
+            };
+        };
+    };
+    create_activity_api_v1_admin_activities_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ActivityIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["app__schemas__catalog_admin__ActivityOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    patch_activity_api_v1_admin_activities__activity_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                activity_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ActivityPatch"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["app__schemas__catalog_admin__ActivityOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_packages_api_v1_admin_packages_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ActivityPackageOut"][];
+                };
+            };
+        };
+    };
+    create_package_api_v1_admin_packages_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ActivityPackageIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ActivityPackageOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    patch_package_api_v1_admin_packages__package_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                package_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ActivityPackagePatch"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ActivityPackageOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_promotions_api_v1_admin_promotions_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PromotionOut"][];
+                };
+            };
+        };
+    };
+    create_promotion_api_v1_admin_promotions_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PromotionIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PromotionOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    patch_promotion_api_v1_admin_promotions__promotion_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                promotion_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PromotionPatch"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PromotionOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_settings_route_api_v1_admin_settings_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CompanySettingsOut"];
+                };
+            };
+        };
+    };
+    patch_settings_route_api_v1_admin_settings_patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CompanySettingsPatch"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CompanySettingsOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };
