@@ -12,7 +12,9 @@ S = BookingStatus
 TRANSITIONS: dict[BookingStatus, frozenset[BookingStatus]] = {
     S.PENDING_PAYMENT: frozenset({S.PAID, S.CANCELLED}),
     S.OFFLINE_HOLD: frozenset({S.CONFIRMED, S.PENDING_PAYMENT, S.CANCELLED}),
-    S.PAID: frozenset({S.CONFIRMED, S.COMPLETED, S.CANCELLED}),
+    # PAID -> PENDING_PAYMENT: no está en el diagrama original de §8.2; se agregó en F6.5 para
+    # que el admin pueda deshacer un `mark-paid` manual marcado por error (nunca uno de Stripe).
+    S.PAID: frozenset({S.CONFIRMED, S.COMPLETED, S.CANCELLED, S.PENDING_PAYMENT}),
     S.CONFIRMED: frozenset({S.COMPLETED, S.CANCELLED}),
     S.COMPLETED: frozenset(),
     S.CANCELLED: frozenset(),

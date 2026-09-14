@@ -2,6 +2,30 @@
 
 Una entrada por sesión o tarea, la más reciente arriba (formato en `AGENTS.md` §10).
 
+## 2026-09-13 — F6.5: acciones sobre la reserva (confirmar, pagos, cancelar, reenviar, borrar)
+
+Con el listado de F6.4 ya se podía ver una reserva; F6.5 es poder hacerle algo. Aquí `require_role` (F6.3) protege por primera vez una ruta de verdad: ver una reserva es cualquier rol, actuar sobre ella es cualquiera menos `viewer`.
+
+**Reusar en vez de duplicar la lógica de pago:** `settle_payment` (antes `_settle`, privada de F4.3/F4.4) ya sabía marcar un pago exitoso y mover la reserva a `PAID` (o a `CONFIRMED` de una vez si era el depósito en efectivo) sin nada específico de Stripe adentro. Para que el admin pudiera registrar un pago recibido por transferencia, efectivo o cuenta, bastó con crear el `Payment` con el `provider` que corresponda (el modelo ya tenía `received_by_admin_id`, pensado exactamente para esto) y llamarla igual. Se le agregó un `admin_user_id` opcional para que la auditoría del cambio de estado quede a nombre de quien lo hizo, no solo como "admin" genérico. `_notify_paid` pasó a llamarse `notify_confirmation` y `_amount` a `amount_due`: dejaron de ser privadas de `payments.py` porque ahora también las usa `admin_actions.py`.
+
+**La transición que no estaba en el diagrama:** `mark-unpaid` (§7.2) no tiene ningún renglón en la tabla de §8.2 — ni siquiera `PENDING_PAYMENT` aparecía como destino desde `PAID`. Como corregir un `mark-paid` marcado por error es una necesidad real (y `mark-unpaid` está en la lista de rutas del propio WORKPLAN), se agregó `PAID → PENDING_PAYMENT` a `TRANSITIONS`, documentada en el código, en §8.2 y en el test de la tabla completa (`test_booking_state.py`) como una excepción a propósito. Se limitó a pagos manuales: si el último pago fue de Stripe, `mark-unpaid` responde `manual_payment_required` — deshacer un cobro de verdad es un reembolso, no un borrador de estado.
+
+**Cancelar con reembolso** reusa `create_refund` de `stripe_gateway.py` (ya existía desde F4.1) y actualiza el `Payment` con la misma lógica que el webhook `charge.refunded` (F4.4) aplica cuando Stripe confirma el reembolso por su cuenta — llegar por los dos caminos dejaría el mismo resultado. Reembolsar sin pago de Stripe (`nothing_to_refund`) o sobre un pago manual (`manual_refund_required`) se rechaza explícitamente: efectivo y transferencias se reembolsan fuera del sistema.
+
+**`resend-confirmation`** no es una transición de estado — solo repite el correo que le tocaba al estado actual (`booking_pending_payment` si sigue esperando el pago, si no `notify_confirmation`). Cancelada no tiene nada que reenviar (`nothing_to_resend`).
+
+**Un bug real que encontraron los tests, no yo:** `admin_booking()` (la dependencia que carga la reserva por id) usaba `session.get(Booking, id, options=[selectinload(...)])` — pero `Session.get()` con una fila que ya está en el identity map de la transacción **ignora** los `options`, porque no vuelve a ejecutar ninguna consulta. Una reserva creada dentro del mismo test (sin pasar antes por un `select()` con `selectinload`) reventaba con `'Booking.legs' is not available due to lazy='raise_on_sql'` al construir el detalle. Se cambió a `select(Booking).options(...).where(Booking.id == id)` vía `session.scalar()` — el mismo patrón que ya usaba `managed_booking()` en la API pública, que por eso nunca lo sufrió.
+
+**Archivos:** `backend/app/services/payments.py`, `backend/app/services/bookings.py`, `backend/app/services/booking_state.py`, `backend/app/services/admin_actions.py` (nuevo), `backend/app/schemas/admin_bookings.py`, `backend/app/api/v1/admin/bookings.py`, `backend/tests/test_booking_state.py`, `backend/tests/test_admin_booking_actions.py` (nuevo), `packages/api-client/src/schema.d.ts`, `WORKPLAN.md`
+
+**Verificación**
+- `uv run pytest` → **238 passed** (15 nuevos): confirmar mueve `OFFLINE_HOLD` a `CONFIRMED` y rechaza `PENDING_PAYMENT` con 409; marcar pagada mueve a `PAID` (o a `CONFIRMED` directo si era depósito en efectivo) y rechaza una reserva que no está esperando pago; deshacer el pago revierte uno manual y rechaza uno de Stripe; cancelar con reembolso llama a Stripe (`respx`) y dejar el pago `REFUNDED`, sin pago que reembolsar o con un pago manual se rechaza; reenviar la confirmación encola el correo otra vez; borrar oculta la reserva del listado y del detalle (404); sin el header CSRF, 403; el rol `viewer` no puede cancelar, 403; el timeline muestra qué admin confirmó la reserva.
+- `uv run ruff format --check . && uv run ruff check .` → sin errores. `uv run mypy app scripts` → sin errores.
+- `uv run alembic check` (sin migración: F6.5 no toca el esquema, solo la tabla de transiciones en código) y `uv run pip-audit` → sin diferencias ni vulnerabilidades.
+- `npm run gen && npm run check` en `packages/api-client` → contrato regenerado, `tsc` sin errores.
+
+**Pendiente:** F6.6 (reserva manual del admin) es lo siguiente; el link de pago de Stripe para una reserva ya creada (parte de F4.6) todavía no existe.
+
 ## 2026-09-13 — F6.4: `GET /admin/bookings`, la primera ruta de negocio del admin
 
 Con sesión, TOTP y CSRF listos, tocaba la primera ruta que de verdad sirve al equipo: el listado de reservas. Es la puerta de entrada al resto de F6 (acciones, despacho, dashboard todos parten de aquí) y cierra el riesgo E1 del WORKPLAN ("reserva creada que no aparece en el admin").

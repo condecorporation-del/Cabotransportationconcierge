@@ -375,10 +375,10 @@ async def change_booking(
             ip=ip,
         )
     )
-    await _notify(session, booking, "booking_changed", "booking_changed_ops", {})
+    await notify_booking_event(session, booking, "booking_changed", "booking_changed_ops", {})
 
 
-async def _notify(
+async def notify_booking_event(
     session: AsyncSession, booking: Booking, customer_template: str, ops_template: str, extra: Any
 ) -> None:
     """F5.6: mismo patrón para cambios y cancelaciones, al cliente y a la empresa."""
@@ -432,6 +432,6 @@ async def cancel_booking(
     )
     for leg in booking.legs:
         leg.status = LegStatus.CANCELLED
-    await _notify(
+    await notify_booking_event(
         session, booking, "booking_cancelled", "booking_cancelled_ops", {"reason": reason}
     )

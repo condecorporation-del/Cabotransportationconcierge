@@ -20,6 +20,7 @@ ALLOWED = {
     (S.PAID, S.CONFIRMED),
     (S.PAID, S.COMPLETED),
     (S.PAID, S.CANCELLED),
+    (S.PAID, S.PENDING_PAYMENT),  # F6.5: corrige un mark-paid manual marcado por error
     (S.CONFIRMED, S.COMPLETED),
     (S.CONFIRMED, S.CANCELLED),
 }

@@ -455,6 +455,135 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/bookings/{booking_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Detail Route */
+        get: operations["detail_route_api_v1_admin_bookings__booking_id__get"];
+        put?: never;
+        post?: never;
+        /** Delete Route */
+        delete: operations["delete_route_api_v1_admin_bookings__booking_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/bookings/{booking_id}/timeline": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Timeline Route */
+        get: operations["timeline_route_api_v1_admin_bookings__booking_id__timeline_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/bookings/{booking_id}/confirm": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Confirm Route
+         * @description `OFFLINE_HOLD` o `PAID` -> `CONFIRMED`; cualquier otro estado, 409.
+         */
+        post: operations["confirm_route_api_v1_admin_bookings__booking_id__confirm_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/bookings/{booking_id}/mark-paid": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Mark Paid Route
+         * @description Pago recibido fuera de Stripe (efectivo, transferencia, cuenta).
+         */
+        post: operations["mark_paid_route_api_v1_admin_bookings__booking_id__mark_paid_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/bookings/{booking_id}/mark-unpaid": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Mark Unpaid Route
+         * @description Deshace un `mark-paid` manual marcado por error; un pago de Stripe se reembolsa.
+         */
+        post: operations["mark_unpaid_route_api_v1_admin_bookings__booking_id__mark_unpaid_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/bookings/{booking_id}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Cancel Route */
+        post: operations["cancel_route_api_v1_admin_bookings__booking_id__cancel_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/bookings/{booking_id}/resend-confirmation": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Resend Confirmation Route */
+        post: operations["resend_confirmation_route_api_v1_admin_bookings__booking_id__resend_confirmation_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -530,6 +659,54 @@ export interface components {
              */
             language: "en" | "es";
         };
+        /** AdminBookingDetail */
+        AdminBookingDetail: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Code */
+            code: string;
+            status: components["schemas"]["BookingStatus"];
+            booking_type: components["schemas"]["BookingType"];
+            source: components["schemas"]["BookingSource"];
+            /** Payment Method */
+            payment_method: string | null;
+            /** Currency */
+            currency: string;
+            /** Subtotal Cents */
+            subtotal_cents: number;
+            /** Discount Cents */
+            discount_cents: number;
+            /** Tax Cents */
+            tax_cents: number;
+            /** Total Cents */
+            total_cents: number;
+            /** Deposit Cents */
+            deposit_cents: number;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Notes Customer */
+            notes_customer: string | null;
+            /** Notes Internal */
+            notes_internal: string | null;
+            /** Customer Name */
+            customer_name: string;
+            /** Customer Email */
+            customer_email: string;
+            /** Customer Phone */
+            customer_phone: string | null;
+            /** Legs */
+            legs: components["schemas"]["BookingLegOut"][];
+            /** Items */
+            items: components["schemas"]["BookingItemOut"][];
+            /** Payments */
+            payments: components["schemas"]["AdminPaymentOut"][];
+        };
         /** AdminBookingOut */
         AdminBookingOut: {
             /**
@@ -573,12 +750,35 @@ export interface components {
             /** Page Size */
             page_size: number;
         };
+        /** AdminCancelIn */
+        AdminCancelIn: {
+            /** Reason */
+            reason?: string | null;
+            /**
+             * Refund
+             * @default false
+             */
+            refund: boolean;
+        };
         /** AdminMeOut */
         AdminMeOut: {
             /** Email */
             email: string;
             /** Role */
             role: string;
+        };
+        /** AdminPaymentOut */
+        AdminPaymentOut: {
+            provider: components["schemas"]["PaymentProvider"];
+            status: components["schemas"]["PaymentStatus"];
+            /** Amount Cents */
+            amount_cents: number;
+            /** Refunded Cents */
+            refunded_cents: number;
+            /** Currency */
+            currency: string;
+            /** Paid At */
+            paid_at: string | null;
         };
         /**
          * Attribution
@@ -598,6 +798,11 @@ export interface components {
             /** Referrer */
             referrer?: string | null;
         };
+        /**
+         * AuditActor
+         * @enum {string}
+         */
+        AuditActor: "admin" | "customer" | "system";
         /**
          * AuthOut
          * @description Misma forma para `/login` (roles sin TOTP) y `/totp/verify`.
@@ -922,6 +1127,14 @@ export interface components {
             /** Password */
             password: string;
         };
+        /** MarkPaidIn */
+        MarkPaidIn: {
+            /**
+             * Provider
+             * @enum {string}
+             */
+            provider: "cash" | "bank_transfer" | "manual" | "account";
+        };
         /** PackageOut */
         PackageOut: {
             /** Slug */
@@ -952,6 +1165,16 @@ export interface components {
             /** Client Secret */
             client_secret: string;
         };
+        /**
+         * PaymentProvider
+         * @enum {string}
+         */
+        PaymentProvider: "stripe" | "cash" | "bank_transfer" | "account" | "manual";
+        /**
+         * PaymentStatus
+         * @enum {string}
+         */
+        PaymentStatus: "pending" | "succeeded" | "failed" | "refunded" | "partially_refunded" | "cancelled";
         /**
          * PricingMode
          * @enum {string}
@@ -1021,6 +1244,29 @@ export interface components {
          * @enum {string}
          */
         ServiceScope: "airport" | "local";
+        /** TimelineEntryOut */
+        TimelineEntryOut: {
+            actor: components["schemas"]["AuditActor"];
+            /** Admin User Id */
+            admin_user_id: string | null;
+            /** Action */
+            action: string;
+            /** Before */
+            before: {
+                [key: string]: unknown;
+            } | null;
+            /** After */
+            after: {
+                [key: string]: unknown;
+            } | null;
+            /** Ip */
+            ip: string | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+        };
         /** TotpVerifyIn */
         TotpVerifyIn: {
             /** Challenge Token */
@@ -1897,6 +2143,258 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["AdminBookingPage"];
                 };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    detail_route_api_v1_admin_bookings__booking_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                booking_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminBookingDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_route_api_v1_admin_bookings__booking_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                booking_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    timeline_route_api_v1_admin_bookings__booking_id__timeline_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                booking_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TimelineEntryOut"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    confirm_route_api_v1_admin_bookings__booking_id__confirm_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                booking_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminBookingDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    mark_paid_route_api_v1_admin_bookings__booking_id__mark_paid_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                booking_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MarkPaidIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminBookingDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    mark_unpaid_route_api_v1_admin_bookings__booking_id__mark_unpaid_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                booking_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminBookingDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    cancel_route_api_v1_admin_bookings__booking_id__cancel_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                booking_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminCancelIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminBookingDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    resend_confirmation_route_api_v1_admin_bookings__booking_id__resend_confirmation_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                booking_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description Validation Error */
             422: {

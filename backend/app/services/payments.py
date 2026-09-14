@@ -3,9 +3,10 @@
 `stripe_gateway.py` es el único que habla con Stripe; aquí solo se decide qué cobrar y se
 guarda el resultado. El webhook es la fuente de verdad si la confirmación rápida del
 navegador no llega a correr (se cerró la pestaña, se cayó la red); ambos caminos marcan
-pagado por el mismo `_settle`, así que llegar por los dos no lo hace dos veces.
+pagado por el mismo `settle_payment`, así que llegar por los dos no lo hace dos veces.
 """
 
+import uuid
 from datetime import UTC, datetime
 from typing import Any
 
@@ -34,19 +35,27 @@ class PaymentError(AppError):
     status_code = 400
 
 
-async def _settle(
-    session: AsyncSession, payment: Payment, booking: Booking, actor: AuditActor, ip: str | None
+async def settle_payment(
+    session: AsyncSession,
+    payment: Payment,
+    booking: Booking,
+    actor: AuditActor,
+    ip: str | None,
+    admin_user_id: uuid.UUID | None = None,
 ) -> None:
+    """Único lugar que marca un pago exitoso: lo usan Stripe (confirmación y webhook) y F6.5."""
     payment.status = PaymentStatus.SUCCEEDED
     payment.paid_at = datetime.now(UTC)
-    transition(session, booking, BookingStatus.PAID, actor=actor, ip=ip)
+    transition(
+        session, booking, BookingStatus.PAID, actor=actor, admin_user_id=admin_user_id, ip=ip
+    )
     if booking.payment_method == "cash":
         # El depósito confirma la reserva; el saldo lo cobra el chofer (§8.2: PAID -> CONFIRMED).
         transition(session, booking, BookingStatus.CONFIRMED, actor=AuditActor.SYSTEM, ip=ip)
-    await _notify_paid(session, booking)
+    await notify_confirmation(session, booking)
 
 
-async def _notify_paid(session: AsyncSession, booking: Booking) -> None:
+async def notify_confirmation(session: AsyncSession, booking: Booking) -> None:
     """F5.4, F5.5: mismo correo de confirmación tanto si el pago fue completo como depósito."""
     customer = await session.get(Customer, booking.customer_id)
     if customer is None:
@@ -81,7 +90,7 @@ async def _notify_paid(session: AsyncSession, booking: Booking) -> None:
         )
 
 
-def _amount(booking: Booking) -> int:
+def amount_due(booking: Booking) -> int:
     """Con efectivo solo se cobra el depósito (vehículos premium); con tarjeta, todo."""
     return booking.deposit_cents if booking.payment_method == "cash" else booking.total_cents
 
@@ -92,7 +101,7 @@ async def create_or_reuse_intent(
     """Devuelve el `client_secret` del Payment Element; dos llamadas dan el mismo."""
     if booking.status is not BookingStatus.PENDING_PAYMENT:
         raise PaymentError("not_payable", "This booking is not waiting for a payment.")
-    amount = _amount(booking)
+    amount = amount_due(booking)
     existing = await session.scalar(
         select(Payment).where(
             Payment.booking_id == booking.id, Payment.status == PaymentStatus.PENDING
@@ -153,7 +162,7 @@ async def confirm_payment(
         raise PaymentError("payment_mismatch", "This payment does not belong to this booking.")
     if intent.get("status") != "succeeded":
         raise PaymentError("payment_not_completed", "The payment has not completed yet.")
-    await _settle(session, payment, booking, AuditActor.CUSTOMER, ip)
+    await settle_payment(session, payment, booking, AuditActor.CUSTOMER, ip)
 
 
 async def handle_stripe_event(session: AsyncSession, event: dict[str, Any]) -> None:
@@ -185,7 +194,7 @@ async def _apply_success(session: AsyncSession, intent: dict[str, Any]) -> None:
     booking = await session.get(Booking, payment.booking_id)
     if booking is None or booking.status is not BookingStatus.PENDING_PAYMENT:
         return
-    await _settle(session, payment, booking, AuditActor.SYSTEM, None)
+    await settle_payment(session, payment, booking, AuditActor.SYSTEM, None)
 
 
 async def _apply_failure(session: AsyncSession, intent: dict[str, Any]) -> None:
