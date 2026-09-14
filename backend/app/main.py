@@ -9,6 +9,7 @@ from app.api.v1 import bookings, catalog, contact, health, quotes, webhooks
 from app.api.v1.admin import accounts as admin_accounts
 from app.api.v1.admin import auth as admin_auth
 from app.api.v1.admin import bookings as admin_bookings
+from app.api.v1.admin import dashboard as admin_dashboard
 from app.api.v1.admin import dispatch as admin_dispatch
 from app.api.v1.admin import fleet as admin_fleet
 from app.api.v1.admin import tasks as admin_tasks
@@ -58,6 +59,7 @@ def create_app() -> FastAPI:
         admin_fleet,
         admin_accounts,
         admin_tasks,
+        admin_dashboard,
     ):
         app.include_router(module.router, prefix="/api/v1")
     return app

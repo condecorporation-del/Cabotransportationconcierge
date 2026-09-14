@@ -874,6 +874,57 @@ export interface paths {
         patch: operations["patch_task_api_v1_admin_tasks__task_id__patch"];
         trace?: never;
     };
+    "/api/v1/admin/dashboard": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Dashboard Route */
+        get: operations["dashboard_route_api_v1_admin_dashboard_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/finance/summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Finance Summary Route */
+        get: operations["finance_summary_route_api_v1_admin_finance_summary_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/marketing/kpis": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Marketing Kpis Route */
+        get: operations["marketing_kpis_route_api_v1_admin_marketing_kpis_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1554,6 +1605,26 @@ export interface components {
              */
             marketing_opt_in: boolean;
         };
+        /** DashboardOut */
+        DashboardOut: {
+            /**
+             * Date
+             * Format: date
+             */
+            date: string;
+            /** Today Services */
+            today_services: number;
+            /** Tomorrow Services */
+            tomorrow_services: number;
+            /** Month Bookings */
+            month_bookings: number;
+            /** Month Revenue Cents */
+            month_revenue_cents: number;
+            /** Unassigned Legs */
+            unassigned_legs: number;
+            /** Unpaid Bookings */
+            unpaid_bookings: number;
+        };
         /** DispatchAssignmentOut */
         DispatchAssignmentOut: {
             /** Unit Index */
@@ -1689,6 +1760,17 @@ export interface components {
             /** One Per Vehicle */
             one_per_vehicle: boolean;
         };
+        /** FinanceSummaryOut */
+        FinanceSummaryOut: {
+            /** Revenue 30D Cents */
+            revenue_30d_cents: number;
+            /** Collected 30D Cents */
+            collected_30d_cents: number;
+            /** Accounts Receivable Cents */
+            accounts_receivable_cents: number;
+            /** Open Accounts */
+            open_accounts: number;
+        };
         /** HTTPValidationError */
         HTTPValidationError: {
             /** Detail */
@@ -1793,6 +1875,19 @@ export interface components {
              * @enum {string}
              */
             provider: "cash" | "bank_transfer" | "manual" | "account";
+        };
+        /** MarketingKpisOut */
+        MarketingKpisOut: {
+            /** Bookings Today */
+            bookings_today: number;
+            /** Bookings This Month */
+            bookings_this_month: number;
+            /** Average Booking Value Cents */
+            average_booking_value_cents: number;
+            /** Peak Day */
+            peak_day: string | null;
+            /** Top Zone */
+            top_zone: string | null;
         };
         /** PackageOut */
         PackageOut: {
@@ -4030,6 +4125,77 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    dashboard_route_api_v1_admin_dashboard_get: {
+        parameters: {
+            query: {
+                date: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DashboardOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    finance_summary_route_api_v1_admin_finance_summary_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FinanceSummaryOut"];
+                };
+            };
+        };
+    };
+    marketing_kpis_route_api_v1_admin_marketing_kpis_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MarketingKpisOut"];
                 };
             };
         };

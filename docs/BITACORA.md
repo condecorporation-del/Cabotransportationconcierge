@@ -2,6 +2,26 @@
 
 Una entrada por sesión o tarea, la más reciente arriba (formato en `AGENTS.md` §10).
 
+## 2026-09-13 — F6.11: dashboard y KPIs de finanzas y marketing
+
+El único F6 con un número en el criterio de verificación: < 300 ms con 10 000 reservas. Todo lo demás de la tarea (qué muestra cada pantalla) sale directo de las filas del E-table del WORKPLAN ("Dashboard: servicios de hoy y mañana, resumen mensual, atención requerida"; "Finanzas: revenue de 30 días, cobradas, cuentas por cobrar, cuentas abiertas"; "Marketing: ... conversión, valor promedio, día pico, zona más reservada" — sin la conversión, que pediría guardar cada cotización que nunca se reservó, algo que no existe hoy y que no vale la pena inventar solo para esta métrica).
+
+**El truco de performance es evitar `func.date(columna) = x`.** Postgres no puede usar un índice normal sobre `created_at` si la consulta le aplica una función a la columna antes de comparar — tendría que calcular esa función fila por fila. Todo lo que compara contra "hoy", "mañana" o "este mes" en `dashboard.py` usa rangos (`>= inicio AND < fin`) en vez de igualdad sobre una fecha truncada, así los índices que ya existían desde F1 (`ix_bookings_company_status_created`, `ix_booking_legs_company_service_date`) siguen sirviendo. La única función-sobre-columna que quedó es el `GROUP BY func.date(created_at)` del "día pico" de marketing, porque ahí sí hace falta agrupar por día — pero es sobre un mes de datos, no la tabla completa, así que no le pega al presupuesto de 300 ms.
+
+**Cómo se probaron los 10 000:** insertarlas de a una por `POST /bookings` habría medido la velocidad de la cotización y el correo, no la del dashboard. La prueba las inserta con `sqlalchemy.insert()` en modo Core (dos `execute()` con una lista de 10 000 dicts cada uno, sin pasar por el ORM ni por ninguna validación) y solo cronometra la llamada HTTP al dashboard — que corrió en 1-2 ms de consulta real (el resto de los ~2 s que tarda la prueba es sembrar las filas, no medido).
+
+**Zona horaria: un bug real que encontró la propia prueba.** `marketing_kpis_route` usaba `date.today()` (la fecha local del proceso) para decidir "hoy", pero `Booking.created_at` es UTC. Si la hora local ya pasó la medianoche UTC pero el reloj local todavía no llega a la suya (o al revés), "hoy" según el servidor y "hoy" según la base dejan de ser el mismo día, y una reserva creada hace un minuto no contaba como "de hoy". Se cambió a `datetime.now(UTC).date()`. `GET /admin/dashboard?date=` no tiene este problema porque la fecha la manda quien pregunta, no el reloj del servidor.
+
+**Archivos:** `backend/app/schemas/dashboard.py` (nuevo), `backend/app/services/dashboard.py` (nuevo), `backend/app/api/v1/admin/dashboard.py` (nuevo), `backend/app/main.py`, `backend/tests/test_admin_dashboard.py` (nuevo), `packages/api-client/src/schema.d.ts`, `WORKPLAN.md`
+
+**Verificación**
+- `uv run pytest` → **282 passed** (4 nuevos): el dashboard cuenta los servicios de hoy, los tramos sin chofer ni vehículo y las reservas sin pagar; finanzas refleja el total de una reserva confirmada en efectivo; marketing cuenta las reservas de hoy y del mes y encuentra la zona más reservada; con 10 000 reservas sembradas de golpe, la consulta del dashboard responde por debajo de los 300 ms del criterio.
+- `uv run ruff format --check . && uv run ruff check .` → sin errores. `uv run mypy app scripts` → sin errores.
+- `uv run alembic check` (sin migración: ninguna tabla nueva) y `uv run pip-audit` → sin diferencias ni vulnerabilidades.
+- `npm run gen && npm run check` en `packages/api-client` → contrato regenerado, `tsc` sin errores.
+
+**Pendiente:** F6.12 (catálogo CRUD) es lo siguiente. En cuanto exista `/admin/rates`, agregar `Rate` a `AUDITED_MODELS` (F6.10) deja auditada la edición de tarifas sin escribir nada nuevo — el propio criterio de F6.10 ("editar una tarifa deja un log") queda cerrado de verdad ahí.
+
 ## 2026-09-13 — F6.10: auditoría automática (evento de sesión, no código repetido)
 
 Hasta F6.9 cada quien armaba su propio `AuditLog` a mano: `transition()` en `booking_state.py`, `_audit()` en `admin_auth.py`. Funciona, pero significa que F6.8 y F6.9 (flota, cuentas, tareas) se quedaron sin ningún rastro de auditoría porque nadie escribió ese código ahí — exactamente el vacío que F6.10 pide cerrar de raíz, con un mecanismo genérico en vez de otra llamada manual más por endpoint.
