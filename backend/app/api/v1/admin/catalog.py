@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import select
 
 from app.api.deps import CurrentCompany, DbSession
-from app.api.v1.admin.deps import CAN_EDIT, CurrentAdmin, require_csrf
+from app.api.v1.admin.deps import CAN_EDIT_CATALOG, CurrentAdmin, require_csrf
 from app.core.rate_limit import rate_limit
 from app.models import (
     Activity,
@@ -58,7 +58,7 @@ async def list_zones(_admin: CurrentAdmin, session: DbSession) -> list[ZoneOut]:
     "/admin/zones", status_code=status.HTTP_201_CREATED, dependencies=[Depends(require_csrf)]
 )
 async def create_zone(
-    body: ZoneIn, _admin: Annotated[AdminUser, Depends(CAN_EDIT)], session: DbSession
+    body: ZoneIn, _admin: Annotated[AdminUser, Depends(CAN_EDIT_CATALOG)], session: DbSession
 ) -> ZoneOut:
     zone = Zone(**body.model_dump())
     session.add(zone)
@@ -70,7 +70,7 @@ async def create_zone(
 async def patch_zone(
     zone_id: uuid.UUID,
     body: ZonePatch,
-    _admin: Annotated[AdminUser, Depends(CAN_EDIT)],
+    _admin: Annotated[AdminUser, Depends(CAN_EDIT_CATALOG)],
     session: DbSession,
 ) -> ZoneOut:
     zone = await session.get(Zone, zone_id)
@@ -92,7 +92,7 @@ async def list_hotels(_admin: CurrentAdmin, session: DbSession) -> list[HotelOut
     "/admin/hotels", status_code=status.HTTP_201_CREATED, dependencies=[Depends(require_csrf)]
 )
 async def create_hotel(
-    body: HotelIn, _admin: Annotated[AdminUser, Depends(CAN_EDIT)], session: DbSession
+    body: HotelIn, _admin: Annotated[AdminUser, Depends(CAN_EDIT_CATALOG)], session: DbSession
 ) -> HotelOut:
     hotel = Hotel(**body.model_dump())
     session.add(hotel)
@@ -104,7 +104,7 @@ async def create_hotel(
 async def patch_hotel(
     hotel_id: uuid.UUID,
     body: HotelPatch,
-    _admin: Annotated[AdminUser, Depends(CAN_EDIT)],
+    _admin: Annotated[AdminUser, Depends(CAN_EDIT_CATALOG)],
     session: DbSession,
 ) -> HotelOut:
     hotel = await session.get(Hotel, hotel_id)
@@ -126,7 +126,7 @@ async def list_rates(_admin: CurrentAdmin, session: DbSession) -> list[RateOut]:
     "/admin/rates", status_code=status.HTTP_201_CREATED, dependencies=[Depends(require_csrf)]
 )
 async def create_rate(
-    body: RateIn, _admin: Annotated[AdminUser, Depends(CAN_EDIT)], session: DbSession
+    body: RateIn, _admin: Annotated[AdminUser, Depends(CAN_EDIT_CATALOG)], session: DbSession
 ) -> RateOut:
     rate = Rate(**body.model_dump())
     session.add(rate)
@@ -138,7 +138,7 @@ async def create_rate(
 async def patch_rate(
     rate_id: uuid.UUID,
     body: RatePatch,
-    _admin: Annotated[AdminUser, Depends(CAN_EDIT)],
+    _admin: Annotated[AdminUser, Depends(CAN_EDIT_CATALOG)],
     session: DbSession,
 ) -> RateOut:
     """Editar el precio de una tarifa (F6.10, F6.12): queda auditada por `AUDITED_MODELS`."""
@@ -161,7 +161,7 @@ async def list_extras(_admin: CurrentAdmin, session: DbSession) -> list[ExtraOut
     "/admin/extras", status_code=status.HTTP_201_CREATED, dependencies=[Depends(require_csrf)]
 )
 async def create_extra(
-    body: ExtraIn, _admin: Annotated[AdminUser, Depends(CAN_EDIT)], session: DbSession
+    body: ExtraIn, _admin: Annotated[AdminUser, Depends(CAN_EDIT_CATALOG)], session: DbSession
 ) -> ExtraOut:
     extra = Extra(**body.model_dump())
     session.add(extra)
@@ -173,7 +173,7 @@ async def create_extra(
 async def patch_extra(
     extra_id: uuid.UUID,
     body: ExtraPatch,
-    _admin: Annotated[AdminUser, Depends(CAN_EDIT)],
+    _admin: Annotated[AdminUser, Depends(CAN_EDIT_CATALOG)],
     session: DbSession,
 ) -> ExtraOut:
     extra = await session.get(Extra, extra_id)
@@ -195,7 +195,7 @@ async def list_activities(_admin: CurrentAdmin, session: DbSession) -> list[Acti
     "/admin/activities", status_code=status.HTTP_201_CREATED, dependencies=[Depends(require_csrf)]
 )
 async def create_activity(
-    body: ActivityIn, _admin: Annotated[AdminUser, Depends(CAN_EDIT)], session: DbSession
+    body: ActivityIn, _admin: Annotated[AdminUser, Depends(CAN_EDIT_CATALOG)], session: DbSession
 ) -> ActivityOut:
     activity = Activity(**body.model_dump())
     session.add(activity)
@@ -207,7 +207,7 @@ async def create_activity(
 async def patch_activity(
     activity_id: uuid.UUID,
     body: ActivityPatch,
-    _admin: Annotated[AdminUser, Depends(CAN_EDIT)],
+    _admin: Annotated[AdminUser, Depends(CAN_EDIT_CATALOG)],
     session: DbSession,
 ) -> ActivityOut:
     activity = await session.get(Activity, activity_id)
@@ -229,7 +229,9 @@ async def list_packages(_admin: CurrentAdmin, session: DbSession) -> list[Activi
     "/admin/packages", status_code=status.HTTP_201_CREATED, dependencies=[Depends(require_csrf)]
 )
 async def create_package(
-    body: ActivityPackageIn, _admin: Annotated[AdminUser, Depends(CAN_EDIT)], session: DbSession
+    body: ActivityPackageIn,
+    _admin: Annotated[AdminUser, Depends(CAN_EDIT_CATALOG)],
+    session: DbSession,
 ) -> ActivityPackageOut:
     package = ActivityPackage(**body.model_dump())
     session.add(package)
@@ -241,7 +243,7 @@ async def create_package(
 async def patch_package(
     package_id: uuid.UUID,
     body: ActivityPackagePatch,
-    _admin: Annotated[AdminUser, Depends(CAN_EDIT)],
+    _admin: Annotated[AdminUser, Depends(CAN_EDIT_CATALOG)],
     session: DbSession,
 ) -> ActivityPackageOut:
     package = await session.get(ActivityPackage, package_id)
@@ -263,7 +265,7 @@ async def list_promotions(_admin: CurrentAdmin, session: DbSession) -> list[Prom
     "/admin/promotions", status_code=status.HTTP_201_CREATED, dependencies=[Depends(require_csrf)]
 )
 async def create_promotion(
-    body: PromotionIn, _admin: Annotated[AdminUser, Depends(CAN_EDIT)], session: DbSession
+    body: PromotionIn, _admin: Annotated[AdminUser, Depends(CAN_EDIT_CATALOG)], session: DbSession
 ) -> PromotionOut:
     promotion = Promotion(**body.model_dump())
     session.add(promotion)
@@ -275,7 +277,7 @@ async def create_promotion(
 async def patch_promotion(
     promotion_id: uuid.UUID,
     body: PromotionPatch,
-    _admin: Annotated[AdminUser, Depends(CAN_EDIT)],
+    _admin: Annotated[AdminUser, Depends(CAN_EDIT_CATALOG)],
     session: DbSession,
 ) -> PromotionOut:
     promotion = await session.get(Promotion, promotion_id)
@@ -301,7 +303,7 @@ async def get_settings_route(
 async def patch_settings_route(
     body: CompanySettingsPatch,
     company: CurrentCompany,
-    _admin: Annotated[AdminUser, Depends(CAN_EDIT)],
+    _admin: Annotated[AdminUser, Depends(CAN_EDIT_CATALOG)],
     session: DbSession,
 ) -> CompanySettingsOut:
     settings = await session.get(CompanySettings, company.id)

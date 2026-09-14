@@ -72,3 +72,9 @@ def require_role(*roles: AdminRole) -> Callable[[AdminUser], Awaitable[AdminUser
 
 # Ver es cualquier rol; mutar, cualquiera menos viewer (F6.5). Compartido entre routers de /admin.
 CAN_EDIT = require_role(AdminRole.OWNER, AdminRole.MANAGER, AdminRole.DISPATCHER, AdminRole.FINANCE)
+
+# Catálogo y tarifas (F6.13): despacho no debería tocar precios, aunque sí flota y tareas.
+CAN_EDIT_CATALOG = require_role(AdminRole.OWNER, AdminRole.MANAGER, AdminRole.FINANCE)
+
+# Usuarios y roles: solo el dueño de la empresa (§7.2).
+OWNER_ONLY = require_role(AdminRole.OWNER)

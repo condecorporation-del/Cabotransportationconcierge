@@ -16,7 +16,7 @@ SETTINGS = "/api/v1/admin/settings"
 
 
 async def test_create_and_patch_a_zone(api: AsyncClient, db: AsyncSession) -> None:
-    headers = await _login(api, db)
+    headers = await _login(api, db, role=AdminRole.FINANCE)
     created = await api.post(
         ZONES,
         json={
@@ -38,7 +38,7 @@ async def test_create_and_patch_a_zone(api: AsyncClient, db: AsyncSession) -> No
 
 
 async def test_create_and_patch_a_hotel(api: AsyncClient, db: AsyncSession) -> None:
-    headers = await _login(api, db)
+    headers = await _login(api, db, role=AdminRole.FINANCE)
     zone_id = await db.scalar(select(Zone.id).where(Zone.slug == "cabo-san-lucas-marina"))
     assert zone_id is not None
 
@@ -58,7 +58,7 @@ async def test_create_and_patch_a_hotel(api: AsyncClient, db: AsyncSession) -> N
 
 async def test_create_and_patch_a_rate_is_audited(api: AsyncClient, db: AsyncSession) -> None:
     """Cierra el criterio de F6.10 ("editar una tarifa deja un log con el diff")."""
-    headers = await _login(api, db)
+    headers = await _login(api, db, role=AdminRole.FINANCE)
     zone = await api.post(
         ZONES,
         json={
@@ -99,7 +99,7 @@ async def test_create_and_patch_a_rate_is_audited(api: AsyncClient, db: AsyncSes
 
 
 async def test_create_and_patch_an_extra(api: AsyncClient, db: AsyncSession) -> None:
-    headers = await _login(api, db)
+    headers = await _login(api, db, role=AdminRole.FINANCE)
     created = await api.post(
         EXTRAS,
         json={
@@ -120,7 +120,7 @@ async def test_create_and_patch_an_extra(api: AsyncClient, db: AsyncSession) -> 
 
 
 async def test_create_and_patch_an_activity(api: AsyncClient, db: AsyncSession) -> None:
-    headers = await _login(api, db)
+    headers = await _login(api, db, role=AdminRole.FINANCE)
     created = await api.post(
         ACTIVITIES,
         json={
@@ -140,7 +140,7 @@ async def test_create_and_patch_an_activity(api: AsyncClient, db: AsyncSession) 
 
 
 async def test_create_and_patch_a_package(api: AsyncClient, db: AsyncSession) -> None:
-    headers = await _login(api, db)
+    headers = await _login(api, db, role=AdminRole.FINANCE)
     created = await api.post(
         PACKAGES,
         json={
@@ -163,7 +163,7 @@ async def test_create_and_patch_a_package(api: AsyncClient, db: AsyncSession) ->
 
 
 async def test_create_and_patch_a_promotion(api: AsyncClient, db: AsyncSession) -> None:
-    headers = await _login(api, db)
+    headers = await _login(api, db, role=AdminRole.FINANCE)
     created = await api.post(
         PROMOTIONS,
         json={
@@ -184,7 +184,7 @@ async def test_create_and_patch_a_promotion(api: AsyncClient, db: AsyncSession) 
 
 
 async def test_get_and_patch_settings(api: AsyncClient, db: AsyncSession) -> None:
-    headers = await _login(api, db)
+    headers = await _login(api, db, role=AdminRole.FINANCE)
     current = await api.get(SETTINGS, headers=headers)
     assert current.status_code == 200, current.text
 
@@ -194,7 +194,8 @@ async def test_get_and_patch_settings(api: AsyncClient, db: AsyncSession) -> Non
 
 
 async def test_create_zone_requires_csrf_header(api: AsyncClient, db: AsyncSession) -> None:
-    await _login(api, db)
+    # Rol con permiso (F6.13): si el 403 llegara solo por CSRF sin este cuidado, no probaría nada.
+    await _login(api, db, role=AdminRole.FINANCE)
     response = await api.post(
         ZONES,
         json={

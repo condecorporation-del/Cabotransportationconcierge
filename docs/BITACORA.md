@@ -2,6 +2,28 @@
 
 Una entrada por sesión o tarea, la más reciente arriba (formato en `AGENTS.md` §10).
 
+## 2026-09-14 — F6.13: usuarios y roles, lista de auditoría — **F6 completo (13/13)**
+
+La última tarea de F6, y la que por fin cierra el vacío que F6.12 dejó anotado: un `dispatcher` podía editar tarifas.
+
+**`CAN_EDIT_CATALOG` reemplaza a `CAN_EDIT` en las siete rutas de catálogo** (`app/api/v1/admin/catalog.py`): `owner`, `manager` y `finance` pueden tocar precios; `dispatcher` y `viewer`, no. El resto de F6 (reservas, despacho, flota, cuentas, tareas) se queda con el `CAN_EDIT` original — un dispatcher sí debe poder asignar choferes y crear tareas, es literalmente su trabajo; lo que no debería poder es cambiar cuánto cobra la empresa. `test_dispatcher_cannot_edit_a_rate` prueba el ejemplo exacto del criterio de verificación; `test_dispatcher_cannot_create_a_zone_either` prueba que el permiso nuevo no se quedó solo en `/rates`.
+
+**`POST`/`GET`/`PATCH /admin/users`, solo `owner`** (`OWNER_ONLY = require_role(AdminRole.OWNER)`, nuevo en `deps.py`). Crear un usuario pide contraseña (mismo `hash_password()` y mínimo de 12 caracteres de F1.10) y rechaza un email repetido sin importar mayúsculas. El `PATCH` es a propósito angosto — `role` e `is_active`, nunca la contraseña ni el TOTP por esta ruta — así el body de entrada mismo (`AdminUserPatch`) impide que alguien intente colarle un `password_hash` por aquí.
+
+**Por qué `AdminUser` no entró a `AUDITED_MODELS` (F6.10).** Se pensó primero en sumarlo para que editar un rol quedara auditado gratis, como todo lo demás desde F6.8. Pero `admin_auth.py` ya toca `AdminUser.failed_logins`, `locked_until`, `totp_secret` y `totp_backup_codes` en cada login — si el evento genérico también lo vigilara, cada intento de login (fallido incluido) generaría su propio `AuditLog` además del que ya arma `admin_auth.py` a mano, y peor: el diff automático habría guardado el valor de `totp_secret` en texto plano dentro de `audit_logs`, un dato que cualquier admin con acceso a `GET /admin/audit-logs` podría leer. `patch_user()` arma su propio `AuditLog` a mano, limitado a `role` e `is_active` — los únicos campos que el propio `AdminUserPatch` permite cambiar, así que no hay manera de que se cuele nada sensible.
+
+**`GET /admin/audit-logs`**, paginado y filtrable por `entity`/`entity_id`, mismo patrón de página que `GET /admin/bookings` (F6.4). Visible para cualquier rol autenticado, no solo `owner` — ver el historial no es lo mismo que poder cambiar algo.
+
+**Archivos:** `backend/app/api/v1/admin/deps.py`, `backend/app/api/v1/admin/catalog.py`, `backend/app/schemas/users.py` (nuevo), `backend/app/api/v1/admin/users.py` (nuevo), `backend/app/main.py`, `backend/tests/test_admin_catalog.py` (los logins de sus pruebas de alta pasaron de `dispatcher` a `finance`, ya que `CAN_EDIT_CATALOG` se lo exige ahora), `backend/tests/test_admin_users.py` (nuevo), `packages/api-client/src/schema.d.ts`, `WORKPLAN.md`
+
+**Verificación**
+- `uv run pytest` → **299 passed** (7 nuevos, y los 292 anteriores — con 8 pruebas de `test_admin_catalog.py` reescritas para loguearse como `finance` en vez de `dispatcher`, el rol por defecto que dejó de alcanzar — siguieron pasando): el owner crea y lista usuarios; un email repetido es 422 `email_taken`; cambiar el rol de alguien deja un `AuditLog` con `before`/`after` exactos; un no-owner no puede crear usuarios; un dispatcher no puede editar una tarifa ni crear una zona; la lista de auditoría pagina y filtra por entidad.
+- `uv run ruff format --check . && uv run ruff check .` → sin errores. `uv run mypy app scripts` → sin errores.
+- `uv run alembic check` (sin migración: ningún modelo nuevo) y `uv run pip-audit` → sin diferencias ni vulnerabilidades.
+- `npm run gen && npm run check` en `packages/api-client` → contrato regenerado, `tsc` sin errores.
+
+**F6 (Auth y API del admin) queda en 13/13.** Trece tareas en una sola sesión: login con Argon2id y bloqueo por intentos, TOTP obligatorio con códigos de respaldo, CSRF de doble token, listado y las seis acciones de reservas, alta manual con cuatro métodos de pago, despacho con detección de choques de horario, flota y cuentas por cobrar completas, tareas compartidas, auditoría automática por evento de sesión, dashboard y KPIs con presupuesto de rendimiento, catálogo CRUD completo y, ahora, usuarios y roles. Lo próximo más chico y ya desbloqueado es F5.9 (aviso al chofer asignado); la siguiente fase grande del WORKPLAN es F7 (migrar el sitio público a Astro).
+
 ## 2026-09-14 — F6.12: catálogo CRUD y settings
 
 El último bloque grande de F6 antes de usuarios y roles (F6.13). Siete recursos (zonas, hoteles, tarifas, extras, actividades, paquetes, promociones) más los ajustes de la empresa, todos con el mismo patrón que ya probó F6.8 (flota): `GET` lista, `POST` alta, `PATCH` edición parcial, sin `DELETE` — `is_active=false` retira una fila del catálogo sin romper una tarifa, un hotel o una reserva vieja que todavía la referencia. `PATCH` en tarifas es a propósito angosto (`price_cents`, `is_active`): la zona, el vehículo, el tipo de viaje y el alcance forman la llave única de la tabla, así que cambiarlos ahí sería en realidad crear una tarifa distinta, no editar la existente.
