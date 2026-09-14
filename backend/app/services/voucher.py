@@ -63,12 +63,12 @@ TEXT = {
 }
 
 
-def _latin1(text: str) -> str:
+def latin1(text: str) -> str:
     """Las fuentes base del PDF cubren latin-1 (acentos y ñ incluidos)."""
     return text.encode("latin-1", "replace").decode("latin-1")
 
 
-def _money(cents: int, currency: str) -> str:
+def money(cents: int, currency: str) -> str:
     sign = "-" if cents < 0 else ""
     return f"{sign}${abs(cents) // 100:,}.{abs(cents) % 100:02d} {currency}"
 
@@ -85,11 +85,11 @@ def render_voucher(
     pdf.set_xy(32, 11)
     pdf.set_font("helvetica", "B", 15)
     pdf.set_text_color(*GOLD)
-    pdf.cell(text=_latin1(company.name.upper()))
+    pdf.cell(text=latin1(company.name.upper()))
     pdf.set_xy(32, 19)
     pdf.set_font("helvetica", "", 10)
     pdf.set_text_color(*MUTED)
-    pdf.cell(text=_latin1(t["title"]))
+    pdf.cell(text=latin1(t["title"]))
 
     matrix = segno.make(booking.code, error="m").matrix
     module = 28 / len(matrix)
@@ -103,15 +103,15 @@ def render_voucher(
         pdf.ln(5)
         pdf.set_font("helvetica", "B", 12)
         pdf.set_text_color(*GOLD)
-        pdf.cell(0, 8, _latin1(text), new_x="LMARGIN", new_y="NEXT")
+        pdf.cell(0, 8, latin1(text), new_x="LMARGIN", new_y="NEXT")
 
     def field(label: str, value: str) -> None:
         pdf.set_font("helvetica", "", 9)
         pdf.set_text_color(*MUTED)
-        pdf.cell(38, 6, _latin1(label))
+        pdf.cell(38, 6, latin1(label))
         pdf.set_font("helvetica", "B", 10)
         pdf.set_text_color(*INK)
-        pdf.multi_cell(0, 6, _latin1(value), new_x="LMARGIN", new_y="NEXT")
+        pdf.multi_cell(0, 6, latin1(value), new_x="LMARGIN", new_y="NEXT")
 
     pdf.set_y(44)
     field(t["code"], booking.code)
@@ -137,11 +137,11 @@ def render_voucher(
     for item in booking.items:
         day = f"{item.service_date:%Y-%m-%d}  " if item.service_date else ""
         field(
-            _money(item.total_cents, booking.currency), f"{day}{item.description} x{item.quantity}"
+            money(item.total_cents, booking.currency), f"{day}{item.description} x{item.quantity}"
         )
-    field(t["total"], _money(booking.total_cents, booking.currency))
+    field(t["total"], money(booking.total_cents, booking.currency))
     if booking.payment_method == "cash":
-        field(t["cash_balance"], _money(booking.total_cents, booking.currency))
+        field(t["cash_balance"], money(booking.total_cents, booking.currency))
 
     if any(leg.leg_type is LegType.ARRIVAL for leg in booking.legs):
         instructions = settings.arrival_instructions
@@ -149,7 +149,7 @@ def render_voucher(
         pdf.set_font("helvetica", "", 10)
         pdf.set_text_color(*INK)
         text = instructions.get(booking.language) or instructions.get("en") or t["meeting_default"]
-        pdf.multi_cell(0, 5, _latin1(str(text)), new_x="LMARGIN", new_y="NEXT")
+        pdf.multi_cell(0, 5, latin1(str(text)), new_x="LMARGIN", new_y="NEXT")
 
     contact = " / ".join(filter(None, [settings.whatsapp or settings.phone, settings.email_ops]))
     if contact:

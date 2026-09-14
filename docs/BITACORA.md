@@ -2,6 +2,26 @@
 
 Una entrada por sesión o tarea, la más reciente arriba (formato en `AGENTS.md` §10).
 
+## 2026-09-14 — F4.8: recibo del pago manual — **F4 en 9/10, solo falta F4.10**
+
+Cerrando lo que quedó pendiente de la revisión de F4 en la tarea anterior: el registro del pago manual (`mark-paid`, F6.5) ya existía, pero no el recibo como documento.
+
+**Otra columna que esperaba su tarea.** `payments.reference` vive en el modelo desde F1.7 (pensada para "cheque #123" o el folio de una transferencia) y nadie la llenaba — el mismo patrón que `notified_at` (F5.9) y `stripe_checkout_session_id` (F4.6) esta semana. `MarkPaidIn` ganó un campo `reference` opcional; `mark_paid()` lo guarda en el `Payment`.
+
+**`voucher.py` le prestó sus piezas a `receipt.py`.** En vez de reescribir el logo, los colores de marca y los helpers de texto/dinero, `latin1()` y `money()` (antes `_latin1`/`_money`, privados) se volvieron públicos — mismo criterio que `_notify`→`notify_booking_event` o `_settle`→`settle_payment` en tareas anteriores: una función deja de ser privada en cuanto un segundo módulo la necesita de verdad. El recibo es deliberadamente más corto que el voucher: sin tramos, sin QR, sin punto de encuentro — solo el código, el huésped, el método, el monto y la referencia si la hay.
+
+**Solo pagos manuales.** Un pago con Stripe ya tiene su propio recibo (el que envía Stripe al correo del cliente); duplicar eso aquí no aportaba nada. `GET /admin/bookings/{id}/payments/{payment_id}/receipt.pdf` valida que el pago sea de esa reserva (404 si no) antes de generar nada.
+
+**Archivos:** `backend/app/services/voucher.py` (helpers públicos), `backend/app/services/receipt.py` (nuevo), `backend/app/services/admin_actions.py`, `backend/app/schemas/admin_bookings.py`, `backend/app/api/v1/admin/bookings.py`, `backend/tests/test_admin_receipt.py` (nuevo), `packages/api-client/src/schema.d.ts`, `WORKPLAN.md`
+
+**Verificación**
+- `uv run pytest` → **310 passed** (3 nuevos): el recibo trae el código, el huésped, el método ("Bank transfer") y la referencia como texto seleccionable; pedir el recibo de un pago que no es de esa reserva es 404; sin sesión de admin, 401.
+- `uv run ruff format --check . && uv run ruff check .` → sin errores. `uv run mypy app scripts` → sin errores.
+- `uv run alembic check` (sin migración: `reference` ya existía) y `uv run pip-audit` → sin diferencias ni vulnerabilidades.
+- `npm run gen && npm run check` en `packages/api-client` → contrato regenerado, `tsc` sin errores.
+
+**F4 (pagos con Stripe) queda en 9/10** — todo salvo F4.10 (la prueba real con Stripe CLI, que necesita las llaves de prueba del cliente). Lo próximo con sentido de seguir es diseñar la tarea programada que le falta a F5 (F5.7, F5.8, F5.11), o empezar F7 (migrar el sitio público a Astro) ahora que el backend del admin está completo.
+
 ## 2026-09-14 — F4.6: link de pago real de Stripe Checkout
 
 El último pendiente visible de pagos: desde F6.6, una reserva manual con `payment: "stripe"` se quedaba en `PENDING_PAYMENT` sin ninguna forma de cobrarla — la nota de esa tarea decía literalmente "a la espera de un link real, que es F4.6 y todavía no existe". Ya existe.

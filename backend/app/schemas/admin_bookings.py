@@ -46,11 +46,13 @@ class AdminBookingPage(BaseModel):
 class AdminPaymentOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
+    id: uuid.UUID
     provider: PaymentProvider
     status: PaymentStatus
     amount_cents: int
     refunded_cents: int
     currency: str
+    reference: str | None
     paid_at: datetime | None
 
 
@@ -92,6 +94,7 @@ class TimelineEntryOut(BaseModel):
 
 class MarkPaidIn(_Strict):
     provider: Literal["cash", "bank_transfer", "manual", "account"]
+    reference: str | None = Field(default=None, max_length=120)
 
 
 class AdminCancelIn(_Strict):

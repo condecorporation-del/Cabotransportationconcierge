@@ -2,7 +2,8 @@ import uuid
 from datetime import date
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, Path, Query, Request, status
+from fastapi import APIRouter, Depends, HTTPException, Path, Query, Request, Response, status
+from fastapi.concurrency import run_in_threadpool
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 
@@ -41,6 +42,7 @@ from app.services.admin_actions import (
 from app.services.admin_bookings import BookingFilters, Order, Sort, list_bookings
 from app.services.bookings import create_manual_booking
 from app.services.payments import create_payment_link
+from app.services.receipt import render_receipt
 
 router = APIRouter(
     prefix="/admin/bookings", tags=["admin-bookings"], dependencies=[Depends(rate_limit(60))]
@@ -191,9 +193,39 @@ async def mark_paid_route(
     request: Request,
 ) -> AdminBookingDetail:
     """Pago recibido fuera de Stripe (efectivo, transferencia, cuenta)."""
-    await mark_paid(session, booking, admin, body.provider, client_ip(request))
+    await mark_paid(session, booking, admin, body.provider, client_ip(request), body.reference)
     await session.commit()
     return await _to_detail(session, booking)
+
+
+@router.get(
+    "/{booking_id}/payments/{payment_id}/receipt.pdf",
+    response_class=Response,
+    responses={200: {"content": {"application/pdf": {}}}},
+)
+async def receipt_route(
+    booking: AdminBooking,
+    payment_id: uuid.UUID,
+    _admin: CurrentAdmin,
+    company: CurrentCompany,
+    session: DbSession,
+) -> Response:
+    """Recibo del pago manual (F4.8); un pago de Stripe no tiene uno propio, tiene el de Stripe."""
+    payment = await session.get(Payment, payment_id)
+    if payment is None or payment.booking_id != booking.id:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Payment not found.")
+    customer = await session.get(Customer, booking.customer_id)
+    if customer is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, NOT_FOUND)
+    pdf = await run_in_threadpool(render_receipt, payment, booking, customer, company)
+    return Response(
+        pdf,
+        media_type="application/pdf",
+        headers={
+            "Content-Disposition": f'inline; filename="{booking.code}-receipt.pdf"',
+            "Cache-Control": "private, no-store",
+        },
+    )
 
 
 @router.post("/{booking_id}/mark-unpaid", dependencies=[Depends(require_csrf)])

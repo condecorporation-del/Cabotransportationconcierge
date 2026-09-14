@@ -534,6 +534,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/bookings/{booking_id}/payments/{payment_id}/receipt.pdf": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Receipt Route
+         * @description Recibo del pago manual (F4.8); un pago de Stripe no tiene uno propio, tiene el de Stripe.
+         */
+        get: operations["receipt_route_api_v1_admin_bookings__booking_id__payments__payment_id__receipt_pdf_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/admin/bookings/{booking_id}/mark-unpaid": {
         parameters: {
             query?: never;
@@ -1664,6 +1684,11 @@ export interface components {
         };
         /** AdminPaymentOut */
         AdminPaymentOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
             provider: components["schemas"]["PaymentProvider"];
             status: components["schemas"]["PaymentStatus"];
             /** Amount Cents */
@@ -1672,6 +1697,8 @@ export interface components {
             refunded_cents: number;
             /** Currency */
             currency: string;
+            /** Reference */
+            reference: string | null;
             /** Paid At */
             paid_at: string | null;
         };
@@ -2545,6 +2572,8 @@ export interface components {
              * @enum {string}
              */
             provider: "cash" | "bank_transfer" | "manual" | "account";
+            /** Reference */
+            reference?: string | null;
         };
         /** MarketingKpisOut */
         MarketingKpisOut: {
@@ -4312,6 +4341,38 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AdminBookingDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    receipt_route_api_v1_admin_bookings__booking_id__payments__payment_id__receipt_pdf_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                payment_id: string;
+                booking_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/pdf": unknown;
                 };
             };
             /** @description Validation Error */

@@ -54,7 +54,8 @@ async def mark_paid(
     admin: AdminUser,
     provider: ManualProvider,
     ip: str | None,
-) -> None:
+    reference: str | None = None,
+) -> Payment:
     """Pago recibido fuera de Stripe (efectivo, transferencia, cuenta); reusa `settle_payment`."""
     if booking.status is not BookingStatus.PENDING_PAYMENT:
         raise PaymentError("not_payable", "This booking is not waiting for a payment.")
@@ -64,11 +65,13 @@ async def mark_paid(
         status=PaymentStatus.PENDING,
         amount_cents=amount_due(booking),
         currency=booking.currency,
+        reference=reference,
         received_by_admin_id=admin.id,
     )
     session.add(payment)
     await session.flush()
     await settle_payment(session, payment, booking, AuditActor.ADMIN, ip, admin_user_id=admin.id)
+    return payment
 
 
 async def mark_unpaid(
