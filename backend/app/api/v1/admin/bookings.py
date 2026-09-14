@@ -26,6 +26,7 @@ from app.schemas.admin_bookings import (
     AdminManualBookingRequest,
     AdminPaymentOut,
     MarkPaidIn,
+    PaymentLinkOut,
     TimelineEntryOut,
 )
 from app.schemas.bookings import BookingItemOut, BookingLegOut
@@ -39,6 +40,7 @@ from app.services.admin_actions import (
 )
 from app.services.admin_bookings import BookingFilters, Order, Sort, list_bookings
 from app.services.bookings import create_manual_booking
+from app.services.payments import create_payment_link
 
 router = APIRouter(
     prefix="/admin/bookings", tags=["admin-bookings"], dependencies=[Depends(rate_limit(60))]
@@ -221,6 +223,20 @@ async def cancel_route(
     )
     await session.commit()
     return await _to_detail(session, booking)
+
+
+@router.post("/{booking_id}/payment-link", dependencies=[Depends(require_csrf)])
+async def payment_link_route(
+    booking: AdminBooking,
+    _admin: Annotated[AdminUser, Depends(CAN_EDIT)],
+    company: CurrentCompany,
+    session: DbSession,
+    stripe: Stripe,
+) -> PaymentLinkOut:
+    """Link real de Stripe Checkout (F4.6), copiable y enviado por correo al cliente."""
+    url = await create_payment_link(session, booking, company, stripe)
+    await session.commit()
+    return PaymentLinkOut(url=url)
 
 
 @router.post(

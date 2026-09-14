@@ -571,6 +571,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/bookings/{booking_id}/payment-link": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Payment Link Route
+         * @description Link real de Stripe Checkout (F4.6), copiable y enviado por correo al cliente.
+         */
+        post: operations["payment_link_route_api_v1_admin_bookings__booking_id__payment_link_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/admin/bookings/{booking_id}/resend-confirmation": {
         parameters: {
             query?: never;
@@ -2569,6 +2589,11 @@ export interface components {
             /** Client Secret */
             client_secret: string;
         };
+        /** PaymentLinkOut */
+        PaymentLinkOut: {
+            /** Url */
+            url: string;
+        };
         /**
          * PaymentProvider
          * @enum {string}
@@ -4353,6 +4378,37 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AdminBookingDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    payment_link_route_api_v1_admin_bookings__booking_id__payment_link_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                booking_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaymentLinkOut"];
                 };
             };
             /** @description Validation Error */

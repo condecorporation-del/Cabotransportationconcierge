@@ -2,6 +2,30 @@
 
 Una entrada por sesión o tarea, la más reciente arriba (formato en `AGENTS.md` §10).
 
+## 2026-09-14 — F4.6: link de pago real de Stripe Checkout
+
+El último pendiente visible de pagos: desde F6.6, una reserva manual con `payment: "stripe"` se quedaba en `PENDING_PAYMENT` sin ninguna forma de cobrarla — la nota de esa tarea decía literalmente "a la espera de un link real, que es F4.6 y todavía no existe". Ya existe.
+
+**`_form()` no sabía de listas.** Un `PaymentIntent` es puro objeto anidado (`metadata[booking_id]`), pero un Checkout Session necesita `line_items`, que es un arreglo: Stripe lo espera como `line_items[0][price_data][unit_amount]`, `line_items[0][quantity]`, etc. `_form()` (`stripe_gateway.py`, de F4.1) solo sabía recorrer diccionarios; se le agregó el caso lista (índice por posición, recursivo si el elemento es a su vez un diccionario) sin tocar el resto — todo lo que ya funcionaba con intents y reembolsos sigue igual.
+
+**El link no tiene "confirmación rápida".** El Payment Element de F4.2 confirma en el navegador del cliente (`POST .../payments/confirm`) y el webhook es solo el respaldo si esa confirmación no llegó a correr. Un Checkout Session es distinto: el cliente paga en la página de Stripe, no en la nuestra, así que no hay ningún navegador nuestro ahí para avisar que se pagó — `checkout.session.completed` (el tipo de evento que el webhook de F4.4 ya reconocía y guardaba "sin hacer nada todavía", a propósito, en espera de esto) es la **única** fuente de verdad. `_apply_checkout_completed()` reusa el mismo `settle_payment()` de siempre.
+
+**Reusa `payments.stripe_checkout_session_id`**, una columna que estaba en el modelo desde F1.7 sin que nada la llenara — como `booking_assignments.notified_at` en F5.9, otra pieza que ya esperaba su tarea. Pedir el link dos veces reutiliza la sesión de Stripe si sigue `status: "open"` (mismo patrón que `create_or_reuse_intent` de F4.2), en vez de generar una nueva cada vez que el admin le da clic al botón por accidente.
+
+**El correo reusa la plantilla que ya existía** (`booking_pending_payment`, de F5.4) en vez de crear una nueva casi idéntica: el único cambio es que el CTA apunta directo a la URL de Stripe en vez de a `/my-trip`. Sigue siendo, literalmente, "un paso más para completar tu reserva".
+
+**Archivos:** `backend/app/services/stripe_gateway.py`, `backend/app/services/payments.py`, `backend/app/schemas/admin_bookings.py`, `backend/app/api/v1/admin/bookings.py`, `backend/tests/test_admin_payment_link.py` (nuevo), `packages/api-client/src/schema.d.ts`, `WORKPLAN.md`
+
+**De paso, dos tareas de F4 que ya estaban resueltas sin marcarse:** revisando qué faltaba de pagos, F4.7 (reembolso desde el admin) resultó ser exactamente lo que `POST /admin/bookings/{id}/cancel?refund=true` (F6.5) ya hace desde esa tarea — se marcó como hecho. F4.8 (pagos manuales) tiene el registro (`mark-paid`, también F6.5) pero no el recibo como documento, así que se quedó sin marcar con la nota de qué falta.
+
+**Verificación**
+- `uv run pytest` → **307 passed** (5 nuevos): generar el link llama a Stripe y encola el correo con la URL de Stripe (no la de la web); pedirlo dos veces reutiliza la misma sesión sin llamar de nuevo a `POST /checkout/sessions`; una reserva que no está pendiente responde 400 `not_payable`; sin el header CSRF, 403; el webhook `checkout.session.completed` marca la reserva `PAID`.
+- `uv run ruff format --check . && uv run ruff check .` → sin errores. `uv run mypy app scripts` → sin errores.
+- `uv run alembic check` (sin migración: `stripe_checkout_session_id` ya existía) y `uv run pip-audit` → sin diferencias ni vulnerabilidades.
+- `npm run gen && npm run check` en `packages/api-client` → contrato regenerado, `tsc` sin errores.
+
+**Pendiente:** abrir el link real en el checkout de Stripe en modo test (el criterio de verificación tal cual lo escribe el WORKPLAN) espera las llaves de prueba del cliente — mismo bloqueo que F4.10. F4.8 (recibo del pago manual) y la tarea programada de F5 (F5.7, F5.8, F5.11) son lo próximo con sentido de seguir.
+
 ## 2026-09-14 — F5.9: aviso al chofer asignado
 
 Con F6 completo, el pendiente desbloqueado más chico: avisarle al chofer cuando el despacho (F6.7) le asigna un tramo. `booking_assignments.notified_at` ya existía desde F1.8 sin que nada lo tocara — quedó puesto ahí desde el principio para exactamente esto.

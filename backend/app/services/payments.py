@@ -7,7 +7,7 @@ pagado por el mismo `settle_payment`, así que llegar por los dos no lo hace dos
 """
 
 import uuid
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
 from sqlalchemy import select
@@ -131,6 +131,72 @@ async def create_or_reuse_intent(
     return str(intent["client_secret"])
 
 
+async def create_payment_link(
+    session: AsyncSession, booking: Booking, company: Company, gateway: StripeGateway
+) -> str:
+    """F4.6: link real de Stripe Checkout (24 h) para una reserva pendiente de pago.
+
+    A diferencia del Payment Element (F4.2), el cliente paga en la página de Stripe, no en la
+    nuestra: la confirmación llega solo por el webhook (`checkout.session.completed`), no hay
+    una "confirmación rápida" del navegador que la adelante.
+    """
+    if booking.status is not BookingStatus.PENDING_PAYMENT:
+        raise PaymentError("not_payable", "This booking is not waiting for a payment.")
+    amount = amount_due(booking)
+    existing = await session.scalar(
+        select(Payment).where(
+            Payment.booking_id == booking.id,
+            Payment.status == PaymentStatus.PENDING,
+            Payment.stripe_checkout_session_id.is_not(None),
+        )
+    )
+    if existing and existing.stripe_checkout_session_id:
+        checkout = await gateway.retrieve_checkout_session(existing.stripe_checkout_session_id)
+        if checkout.get("status") == "open":
+            return str(checkout["url"])
+
+    manage_url = booking_manage_url(booking.company_id, booking.code)
+    checkout = await gateway.create_checkout_session(
+        amount_cents=amount,
+        currency=booking.currency,
+        description=f"Booking {booking.code}",
+        success_url=manage_url,
+        cancel_url=manage_url,
+        expires_at=int((datetime.now(UTC) + timedelta(hours=24)).timestamp()),
+        metadata={"booking_id": str(booking.id), "company_id": str(company.id)},
+        # Único por llamada: reintentos rápidos ya se resuelven arriba reusando la sesión abierta.
+        idempotency_key=f"booking-checkout:{booking.id}:{uuid.uuid4()}",
+    )
+    if existing is not None:
+        existing.stripe_checkout_session_id = checkout["id"]
+        existing.amount_cents = amount
+    else:
+        session.add(
+            Payment(
+                booking_id=booking.id,
+                provider=PaymentProvider.STRIPE,
+                status=PaymentStatus.PENDING,
+                amount_cents=amount,
+                currency=booking.currency,
+                stripe_checkout_session_id=checkout["id"],
+            )
+        )
+    await session.flush()
+
+    customer = await session.get(Customer, booking.customer_id)
+    if customer is not None:
+        await enqueue(
+            session,
+            booking.company_id,
+            "booking_pending_payment",
+            [customer.email],
+            {"code": booking.code, "manage_url": str(checkout["url"])},
+            booking.language,
+            booking.id,
+        )
+    return str(checkout["url"])
+
+
 async def confirm_payment(
     session: AsyncSession,
     booking: Booking,
@@ -175,7 +241,8 @@ async def handle_stripe_event(session: AsyncSession, event: dict[str, Any]) -> N
         await _apply_failure(session, data)
     elif kind == "charge.refunded":
         await _apply_refund(session, data)
-    # checkout.session.completed: sin manejo hasta el link de pago del admin (F4.6).
+    elif kind == "checkout.session.completed":
+        await _apply_checkout_completed(session, data)
 
 
 async def _payment_for(session: AsyncSession, intent_id: str | None) -> Payment | None:
@@ -201,6 +268,25 @@ async def _apply_failure(session: AsyncSession, intent: dict[str, Any]) -> None:
     payment = await _payment_for(session, intent.get("id"))
     if payment and payment.status is PaymentStatus.PENDING:
         payment.status = PaymentStatus.FAILED
+
+
+async def _apply_checkout_completed(session: AsyncSession, checkout: dict[str, Any]) -> None:
+    """F4.6: el link de pago no tiene "confirmación rápida" del navegador; el webhook es la
+    única fuente de verdad de que se pagó."""
+    if checkout.get("payment_status") != "paid":
+        return
+    checkout_id = checkout.get("id")
+    if not checkout_id:
+        return
+    payment = await session.scalar(
+        select(Payment).where(Payment.stripe_checkout_session_id == checkout_id)
+    )
+    if payment is None or payment.status is PaymentStatus.SUCCEEDED:
+        return
+    booking = await session.get(Booking, payment.booking_id)
+    if booking is None or booking.status is not BookingStatus.PENDING_PAYMENT:
+        return
+    await settle_payment(session, payment, booking, AuditActor.SYSTEM, None)
 
 
 async def _apply_refund(session: AsyncSession, charge: dict[str, Any]) -> None:

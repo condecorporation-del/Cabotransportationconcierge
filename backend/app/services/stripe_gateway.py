@@ -29,12 +29,17 @@ class InvalidSignature(AppError):
 
 
 def _form(data: dict[str, Any], prefix: str = "") -> dict[str, str]:
-    """Formato de Stripe: {"metadata": {"a": 1}} → {"metadata[a]": "1"}."""
+    """Formato de Stripe: {"metadata": {"a": 1}} → {"metadata[a]": "1"}; listas van por índice
+    ({"line_items": [{"quantity": 1}]} → {"line_items[0][quantity]": "1"}, para Checkout)."""
     form: dict[str, str] = {}
     for key, value in data.items():
         name = f"{prefix}[{key}]" if prefix else key
         if isinstance(value, dict):
             form |= _form(value, name)
+        elif isinstance(value, list):
+            for index, item in enumerate(value):
+                item_name = f"{name}[{index}]"
+                form |= _form(item, item_name) if isinstance(item, dict) else {item_name: str(item)}
         elif isinstance(value, bool):
             form[name] = str(value).lower()
         elif value is not None:
@@ -99,6 +104,41 @@ class StripeGateway:
     ) -> dict[str, Any]:
         data = {"payment_intent": payment_intent, "amount": amount_cents}
         return await self._request("POST", "/refunds", data, idempotency_key)
+
+    async def create_checkout_session(
+        self,
+        *,
+        amount_cents: int,
+        currency: str,
+        description: str,
+        success_url: str,
+        cancel_url: str,
+        expires_at: int,
+        metadata: dict[str, str],
+        idempotency_key: str,
+    ) -> dict[str, Any]:
+        """F4.6: link real de pago (24 h) para una reserva pendiente."""
+        data = {
+            "mode": "payment",
+            "success_url": success_url,
+            "cancel_url": cancel_url,
+            "expires_at": expires_at,
+            "metadata": metadata,
+            "line_items": [
+                {
+                    "quantity": 1,
+                    "price_data": {
+                        "currency": currency.lower(),
+                        "unit_amount": amount_cents,
+                        "product_data": {"name": description},
+                    },
+                }
+            ],
+        }
+        return await self._request("POST", "/checkout/sessions", data, idempotency_key)
+
+    async def retrieve_checkout_session(self, session_id: str) -> dict[str, Any]:
+        return await self._request("GET", f"/checkout/sessions/{session_id}")
 
 
 def verify_webhook(

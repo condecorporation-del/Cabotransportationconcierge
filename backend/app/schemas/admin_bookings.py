@@ -99,6 +99,10 @@ class AdminCancelIn(_Strict):
     refund: bool = False
 
 
+class PaymentLinkOut(BaseModel):
+    url: str
+
+
 class AdminManualBookingRequest(TransferQuoteRequest):
     """Alta manual del admin (F6.6): mismo motor de precios, pago sin tarjeta al instante."""
 
