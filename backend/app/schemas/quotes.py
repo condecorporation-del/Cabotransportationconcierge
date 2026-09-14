@@ -62,7 +62,9 @@ class TransferQuoteRequest(_Strict):
     passengers: int = Field(ge=1, le=20)
     # Solo para one way: llegada (aeropuerto → hotel) o salida (hotel → aeropuerto).
     direction: Literal["arrival", "departure"] = "arrival"
-    payment: Literal["card", "cash"] = "card"
+    # "stripe", "none" y "account" son del alta manual del admin (F6.6); el público solo usa
+    # "card" y "cash" (`TransferBookingRequest` lo exige aparte).
+    payment: Literal["card", "cash", "stripe", "none", "account"] = "card"
     vehicle_class: str | None = Field(default=None, max_length=30)
     legs: list[LegIn] = Field(min_length=1, max_length=2)
     extras: list[ExtraIn] = Field(default_factory=list, max_length=20)

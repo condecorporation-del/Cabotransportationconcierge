@@ -1,10 +1,10 @@
-"""Listado, detalle y acciones de reservas del admin (F6.4, F6.5)."""
+"""Listado, detalle y acciones de reservas del admin (F6.4, F6.5, F6.6)."""
 
 import uuid
 from datetime import date, datetime
-from typing import Any, Literal
+from typing import Any, Literal, Self
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from app.models import (
     AuditActor,
@@ -14,8 +14,8 @@ from app.models import (
     PaymentProvider,
     PaymentStatus,
 )
-from app.schemas.bookings import BookingItemOut, BookingLegOut
-from app.schemas.quotes import _Strict
+from app.schemas.bookings import BookingItemOut, BookingLegOut, CustomerIn
+from app.schemas.quotes import TransferQuoteRequest, _Strict
 
 
 class AdminBookingOut(BaseModel):
@@ -97,3 +97,19 @@ class MarkPaidIn(_Strict):
 class AdminCancelIn(_Strict):
     reason: str | None = Field(default=None, max_length=300)
     refund: bool = False
+
+
+class AdminManualBookingRequest(TransferQuoteRequest):
+    """Alta manual del admin (F6.6): mismo motor de precios, pago sin tarjeta al instante."""
+
+    account_id: uuid.UUID | None = None
+    customer: CustomerIn
+    notes: str | None = Field(default=None, max_length=1000)
+
+    @model_validator(mode="after")
+    def _admin_payment_rules(self) -> Self:
+        if self.payment not in ("none", "cash", "stripe", "account"):
+            raise ValueError("Choose none, cash, stripe or account for a manual booking.")
+        if self.payment == "account" and self.account_id is None:
+            raise ValueError("account_id is required when payment is 'account'")
+        return self

@@ -48,7 +48,12 @@ class _BookingFields(_Strict):
 
 
 class TransferBookingRequest(TransferQuoteRequest, _BookingFields):
-    pass
+    @model_validator(mode="after")
+    def _public_payment_only(self) -> Self:
+        # "stripe", "none" y "account" solo existen en la reserva manual del admin (F6.6).
+        if self.payment not in ("card", "cash"):
+            raise ValueError("Choose card or cash.")
+        return self
 
 
 class ActivityBookingRequest(ActivityQuoteRequest, _BookingFields):

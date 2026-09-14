@@ -2,6 +2,26 @@
 
 Una entrada por sesión o tarea, la más reciente arriba (formato en `AGENTS.md` §10).
 
+## 2026-09-13 — F6.6: reserva manual del admin (none, cash, stripe, account)
+
+Seguí con F6.6 porque completa el ciclo de vida de una reserva en el admin antes de pasar a despacho (F6.7): hasta ahora solo se podía actuar sobre una reserva que ya existía (F6.5); esta es la que el admin arma desde cero cuando el cliente reserva por teléfono o WhatsApp.
+
+**Un solo motor de precios, de verdad (D8):** en vez de reimplementar la lógica de tramos y cotización, `create_manual_booking()` (nuevo, `services/bookings.py`) llama a los mismos `quote_transfer()` y `_transfer_legs()` que ya usaba `create_booking()` de la web. `_transfer_legs()` estaba tipado para recibir justo `TransferBookingRequest`; se amplió a `TransferQuoteRequest` (todo lo que en realidad usa) porque la nueva reserva del admin no lleva los campos de `_BookingFields` (términos, atribución) que sí exige el flujo público.
+
+**Cómo se decide el estado (§8.2):** el mapa es literal y no pasa por el depósito de efectivo de la web — `none` → `OFFLINE_HOLD` (borrador), `cash` → `CONFIRMED` directo, `stripe` → `PENDING_PAYMENT` (a la espera de un link real, que es F4.6 y todavía no existe), `account` → `CONFIRMED` con un `AccountCharge` contra la cuenta del cliente (el modelo de F1.7 ya tenía todo lo necesario). A propósito no reusa la regla "depósito en efectivo espera pago" de la reserva pública: aquí el admin ya negoció los términos con el cliente por teléfono, así que "cash" siempre confirma.
+
+**`payment` dejó de ser solo `card`/`cash`:** se amplió el campo único de `TransferQuoteRequest` (motor compartido entre cotización pública, reserva pública y alta manual) a `card | cash | stripe | none | account`, y `TransferBookingRequest` (la reserva pública) ganó su propio validador que rechaza cualquier valor que no sea `card` o `cash` — un cliente no puede pedir que se le facture a una cuenta ajena. `pricing.py` trata `stripe` igual que `card` para el IVA (`taxed = request.payment in ("card", "stripe")`): es un cobro por tarjeta, solo que con un link en vez de pagarlo al instante.
+
+**Archivos:** `backend/app/services/pricing.py`, `backend/app/services/bookings.py`, `backend/app/schemas/quotes.py`, `backend/app/schemas/bookings.py`, `backend/app/schemas/admin_bookings.py`, `backend/app/api/v1/admin/bookings.py`, `backend/tests/test_admin_manual_bookings.py` (nuevo), `packages/api-client/src/schema.d.ts`, `WORKPLAN.md`
+
+**Verificación**
+- `uv run pytest` → **246 passed** (8 nuevos): `none` deja `OFFLINE_HOLD`; `cash` confirma directo; `stripe` queda `PENDING_PAYMENT` y paga el mismo IVA que una reserva idéntica en `card`; `account` confirma y deja un `AccountCharge` por el total exacto; sin `account_id` es 422; una cuenta de otro cliente es 422 `account_not_found`; el endpoint público sigue rechazando `stripe`/`none`/`account`; sin el header CSRF, 403.
+- `uv run ruff format --check . && uv run ruff check .` → sin errores. `uv run mypy app scripts` → sin errores.
+- `uv run alembic check` (sin migración: todo el esquema ya existía) y `uv run pip-audit` → sin diferencias ni vulnerabilidades.
+- `npm run gen && npm run check` en `packages/api-client` → contrato regenerado, `tsc` sin errores.
+
+**Pendiente:** el link real de Stripe Checkout (F4.6) todavía no existe, así que una reserva `stripe` queda en `PENDING_PAYMENT` sin nada que enviarle al cliente todavía más que el correo de "pendiente de pago" genérico.
+
 ## 2026-09-13 — F6.5: acciones sobre la reserva (confirmar, pagos, cancelar, reenviar, borrar)
 
 Con el listado de F6.4 ya se podía ver una reserva; F6.5 es poder hacerle algo. Aquí `require_role` (F6.3) protege por primera vez una ruta de verdad: ver una reserva es cualquier rol, actuar sobre ella es cualquiera menos `viewer`.

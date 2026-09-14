@@ -448,7 +448,11 @@ export interface paths {
          */
         get: operations["list_route_api_v1_admin_bookings_get"];
         put?: never;
-        post?: never;
+        /**
+         * Create Route
+         * @description Reserva manual (F6.6): `payment` decide el estado de una vez, sin pasar por Stripe.
+         */
+        post: operations["create_route_api_v1_admin_bookings_post"];
         delete?: never;
         options?: never;
         head?: never;
@@ -759,6 +763,59 @@ export interface components {
              * @default false
              */
             refund: boolean;
+        };
+        /**
+         * AdminManualBookingRequest
+         * @description Alta manual del admin (F6.6): mismo motor de precios, pago sin tarjeta al instante.
+         */
+        AdminManualBookingRequest: {
+            /**
+             * Type
+             * @default transfer
+             * @constant
+             */
+            type: "transfer";
+            /**
+             * Hotel Id
+             * Format: uuid
+             */
+            hotel_id: string;
+            trip_type: components["schemas"]["TripType"];
+            /** @default airport */
+            service_scope: components["schemas"]["ServiceScope"];
+            /** Passengers */
+            passengers: number;
+            /**
+             * Direction
+             * @default arrival
+             * @enum {string}
+             */
+            direction: "arrival" | "departure";
+            /**
+             * Payment
+             * @default card
+             * @enum {string}
+             */
+            payment: "card" | "cash" | "stripe" | "none" | "account";
+            /** Vehicle Class */
+            vehicle_class?: string | null;
+            /** Legs */
+            legs: components["schemas"]["LegIn"][];
+            /** Extras */
+            extras?: components["schemas"]["ExtraIn"][];
+            /** Promo Code */
+            promo_code?: string | null;
+            /**
+             * Language
+             * @default en
+             * @enum {string}
+             */
+            language: "en" | "es";
+            /** Account Id */
+            account_id?: string | null;
+            customer: components["schemas"]["CustomerIn"];
+            /** Notes */
+            notes?: string | null;
         };
         /** AdminMeOut */
         AdminMeOut: {
@@ -1308,7 +1365,7 @@ export interface components {
              * @default card
              * @enum {string}
              */
-            payment: "card" | "cash";
+            payment: "card" | "cash" | "stripe" | "none" | "account";
             /** Vehicle Class */
             vehicle_class?: string | null;
             /** Legs */
@@ -1352,7 +1409,7 @@ export interface components {
              * @default card
              * @enum {string}
              */
-            payment: "card" | "cash";
+            payment: "card" | "cash" | "stripe" | "none" | "account";
             /** Vehicle Class */
             vehicle_class?: string | null;
             /** Legs */
@@ -2142,6 +2199,39 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AdminBookingPage"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_route_api_v1_admin_bookings_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminManualBookingRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminBookingDetail"];
                 };
             };
             /** @description Validation Error */

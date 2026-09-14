@@ -14,6 +14,8 @@ from app.core.config import get_settings
 from app.core.errors import AppError
 from app.core.security import booking_manage_url
 from app.models import (
+    AccountCharge,
+    AdminUser,
     AuditActor,
     AuditLog,
     Booking,
@@ -22,6 +24,7 @@ from app.models import (
     BookingSource,
     BookingStatus,
     BookingType,
+    ClientAccount,
     Company,
     CompanySettings,
     Customer,
@@ -33,6 +36,7 @@ from app.models import (
     TripType,
     VehicleClass,
 )
+from app.schemas.admin_bookings import AdminManualBookingRequest
 from app.schemas.bookings import (
     ActivityBookingRequest,
     BookingChange,
@@ -40,7 +44,7 @@ from app.schemas.bookings import (
     CustomerIn,
     TransferBookingRequest,
 )
-from app.schemas.quotes import Language, Quote
+from app.schemas.quotes import Language, Quote, TransferQuoteRequest
 from app.services.booking_codes import next_booking_code
 from app.services.booking_state import TRANSITIONS, transition
 from app.services.email import enqueue
@@ -92,7 +96,7 @@ async def _customer_id(
 
 async def _transfer_legs(
     session: AsyncSession,
-    request: TransferBookingRequest,
+    request: TransferQuoteRequest,
     quote: Quote,
     company: Company,
     settings: CompanySettings,
@@ -307,6 +311,138 @@ async def _notify_created(
             },
             booking_id=booking.id,
         )
+
+
+MANUAL_STATUS = {
+    "none": BookingStatus.OFFLINE_HOLD,
+    "cash": BookingStatus.CONFIRMED,
+    "stripe": BookingStatus.PENDING_PAYMENT,
+    "account": BookingStatus.CONFIRMED,
+}
+
+
+async def create_manual_booking(
+    session: AsyncSession,
+    request: AdminManualBookingRequest,
+    company: Company,
+    admin: AdminUser,
+    ip: str | None,
+) -> Booking:
+    """Alta del admin (F6.6, §8.2): el método de pago fija el estado de una vez, sin pasar por
+    Stripe (el link real de pago es F4.6; aquí solo queda en `PENDING_PAYMENT` esperándolo).
+    """
+    if request.service_scope is not ServiceScope.AIRPORT:
+        raise AppError("scope_unavailable", "Local transfers are booked by WhatsApp.")
+    settings = await company_settings(session, company.id)
+    today = datetime.now(ZoneInfo(company.timezone)).date()
+    quote = await quote_transfer(session, request, today)
+    legs = await _transfer_legs(session, request, quote, company, settings)
+    customer_id = await _customer_id(session, company.id, request.customer, request.language)
+
+    account = None
+    if request.payment == "account":
+        account = await session.get(ClientAccount, request.account_id)
+        if account is None or account.customer_id != customer_id:
+            raise AppError("account_not_found", "That account does not belong to this customer.")
+
+    items = [
+        BookingItem(
+            item_type=line.kind,
+            description=line.description[:200],
+            quantity=line.quantity,
+            unit_price_cents=line.unit_price_cents,
+            total_cents=line.total_cents,
+        )
+        for line in quote.lines
+    ]
+    booking = Booking(
+        code=await next_booking_code(session, company.id, today.year),
+        status=MANUAL_STATUS[request.payment],
+        source=BookingSource.ADMIN,
+        booking_type=BookingType.TRANSFER,
+        customer_id=customer_id,
+        language=request.language,
+        currency=quote.currency,
+        subtotal_cents=quote.subtotal_cents,
+        discount_cents=quote.discount_cents,
+        tax_cents=quote.tax_cents,
+        total_cents=quote.total_cents,
+        deposit_cents=quote.deposit_cents if request.payment == "cash" else 0,
+        promotion_id=quote._promotion_id,
+        notes_customer=request.notes,
+        # No hay checkbox que aceptar por teléfono; se guarda la vigente por referencia.
+        terms_version=settings.terms_version,
+        payment_method=request.payment,
+        created_by_admin_id=admin.id,
+        legs=legs,
+        items=items,
+    )
+    session.add(booking)
+    await session.flush()
+
+    if account is not None:
+        session.add(
+            AccountCharge(
+                account_id=account.id,
+                booking_id=booking.id,
+                description=f"Booking {booking.code}",
+                amount_cents=booking.total_cents,
+            )
+        )
+    session.add(
+        AuditLog(
+            actor=AuditActor.ADMIN,
+            admin_user_id=admin.id,
+            action="create",
+            entity="booking",
+            entity_id=booking.id,
+            after={
+                "code": booking.code,
+                "status": booking.status.value,
+                "total": booking.total_cents,
+            },
+            ip=ip,
+        )
+    )
+    await _notify_manual_created(session, booking)
+    return booking
+
+
+async def _notify_manual_created(session: AsyncSession, booking: Booking) -> None:
+    """`OFFLINE_HOLD` es un borrador: el cliente no se entera hasta que el admin lo confirme."""
+    if booking.status is BookingStatus.OFFLINE_HOLD:
+        return
+    customer = await session.get(Customer, booking.customer_id)
+    if customer is None:
+        return
+    manage_url = booking_manage_url(booking.company_id, booking.code)
+    if booking.status is BookingStatus.CONFIRMED:
+        template, context = (
+            "booking_confirmed",
+            {
+                "code": booking.code,
+                "manage_url": manage_url,
+                "voucher_url": manage_url,
+                "balance_note": None,
+            },
+        )
+    else:
+        template, context = (
+            "booking_pending_payment",
+            {
+                "code": booking.code,
+                "manage_url": manage_url,
+            },
+        )
+    await enqueue(
+        session,
+        booking.company_id,
+        template,
+        [customer.email],
+        context,
+        booking.language,
+        booking.id,
+    )
 
 
 def _snapshot(booking: Booking) -> dict[str, Any]:

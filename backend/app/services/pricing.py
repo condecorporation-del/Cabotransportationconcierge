@@ -261,7 +261,8 @@ async def quote_transfer(
         )
 
     tax_percent = settings.card_tax_percent if settings else 0
-    taxed = request.payment == "card" and not departure_only
+    # "stripe" (F6.6): link de pago del admin, cobra por tarjeta igual que "card".
+    taxed = request.payment in ("card", "stripe") and not departure_only
     tax = ((subtotal - discount) * tax_percent + 50) // 100 if taxed else 0
     total = subtotal - discount + tax
     company = await session.get(Company, company_id)

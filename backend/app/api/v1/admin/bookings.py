@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends, HTTPException, Path, Query, Request, sta
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 
-from app.api.deps import DbSession, Stripe, client_ip
+from app.api.deps import CurrentCompany, DbSession, Stripe, client_ip
 from app.api.v1.admin.deps import CurrentAdmin, require_csrf, require_role
 from app.core.rate_limit import rate_limit
 from app.models import (
@@ -24,6 +24,7 @@ from app.schemas.admin_bookings import (
     AdminBookingOut,
     AdminBookingPage,
     AdminCancelIn,
+    AdminManualBookingRequest,
     AdminPaymentOut,
     MarkPaidIn,
     TimelineEntryOut,
@@ -38,6 +39,7 @@ from app.services.admin_actions import (
     resend_confirmation,
 )
 from app.services.admin_bookings import BookingFilters, Order, Sort, list_bookings
+from app.services.bookings import create_manual_booking
 
 router = APIRouter(
     prefix="/admin/bookings", tags=["admin-bookings"], dependencies=[Depends(rate_limit(60))]
@@ -86,6 +88,20 @@ async def list_route(
         page=page,
         page_size=page_size,
     )
+
+
+@router.post("", status_code=status.HTTP_201_CREATED, dependencies=[Depends(require_csrf)])
+async def create_route(
+    body: AdminManualBookingRequest,
+    company: CurrentCompany,
+    admin: Annotated[AdminUser, Depends(CAN_EDIT)],
+    session: DbSession,
+    request: Request,
+) -> AdminBookingDetail:
+    """Reserva manual (F6.6): `payment` decide el estado de una vez, sin pasar por Stripe."""
+    booking = await create_manual_booking(session, body, company, admin, client_ip(request))
+    await session.commit()
+    return await _to_detail(session, booking)
 
 
 async def admin_booking(
