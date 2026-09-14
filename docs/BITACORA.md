@@ -2,6 +2,24 @@
 
 Una entrada por sesión o tarea, la más reciente arriba (formato en `AGENTS.md` §10).
 
+## 2026-09-13 — F6.9: tareas compartidas CRUD
+
+La más simple de F6 hasta ahora: `admin_tasks` ya existía desde F1.8 (compartida por empresa desde el día uno, a diferencia de ClassVIP que empezó solo en `localStorage`), así que fue nada más ponerle la API encima.
+
+**Único CRUD de F6 con `DELETE` de verdad.** Choferes, vehículos, clases de vehículo y catálogo se desactivan porque algo más los referencia (reservas, tarifas, tramos); una tarea no tiene nada apuntándole, así que borrarla de verdad no dejaba nada roto — y tiene más sentido para una tarea completada que ya no interesa que un `is_active` colgado para siempre.
+
+**Asignar valida al vuelo.** `assigned_to_admin_id` es una FK a `admin_users`, pero dejar que Postgres la rechace con un `IntegrityError` en el `commit()` es un error feo y tarde; `_check_assignee()` la valida antes (`assignee_not_found`, 422) tanto en el alta como en el `PATCH`, mismo patrón que ya se usó para `account_id` en F6.6 y F6.8.
+
+**Archivos:** `backend/app/schemas/tasks.py` (nuevo), `backend/app/api/v1/admin/tasks.py` (nuevo), `backend/app/main.py`, `backend/tests/test_admin_tasks.py` (nuevo), `packages/api-client/src/schema.d.ts`, `WORKPLAN.md`
+
+**Verificación**
+- `uv run pytest` → **275 passed** (8 nuevos): una tarea se crea `pending` y aparece en la lista; `PATCH status=done` la marca sin tocar el título; el filtro por estado separa pendientes de hechas; asignar a un admin real funciona y guarda su id; asignar a uno que no existe es 422 `assignee_not_found`; borrar la quita de la lista; sin el header CSRF, 403; `viewer` no puede crear una tarea.
+- `uv run ruff format --check . && uv run ruff check .` → sin errores. `uv run mypy app scripts` → sin errores.
+- `uv run alembic check` (sin migración: `admin_tasks` ya existía) y `uv run pip-audit` → sin diferencias ni vulnerabilidades.
+- `npm run gen && npm run check` en `packages/api-client` → contrato regenerado, `tsc` sin errores.
+
+**Pendiente:** F6.10 (auditoría automática) es lo siguiente — hasta ahora cada endpoint que necesita dejar un `AuditLog` lo arma a mano (`transition()`, `_audit()` de `admin_auth.py`, etc.), y F6.10 pide un mecanismo que lo haga solo con el before/after de cualquier cambio.
+
 ## 2026-09-13 — F6.8: flota CRUD y cuentas por cobrar completas
 
 Seguí con F6.8 porque cierra el último bloque grande de "administrar cosas que no son reservas" antes de tareas (F6.9) y auditoría automática (F6.10). Los modelos de flota y cuentas ya existían desde F1.7/F1.8; aquí solo faltaba la API.
