@@ -435,6 +435,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/bookings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Route
+         * @description Sin filtro de estado, salen todos: una reserva recién creada siempre aparece (F6.4).
+         */
+        get: operations["list_route_api_v1_admin_bookings_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -509,6 +529,49 @@ export interface components {
              * @enum {string}
              */
             language: "en" | "es";
+        };
+        /** AdminBookingOut */
+        AdminBookingOut: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Code */
+            code: string;
+            status: components["schemas"]["BookingStatus"];
+            booking_type: components["schemas"]["BookingType"];
+            source: components["schemas"]["BookingSource"];
+            /** Payment Method */
+            payment_method: string | null;
+            /** Currency */
+            currency: string;
+            /** Total Cents */
+            total_cents: number;
+            /** Service Date */
+            service_date: string | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /** Customer Name */
+            customer_name: string;
+            /** Customer Email */
+            customer_email: string;
+            /** Customer Phone */
+            customer_phone: string | null;
+        };
+        /** AdminBookingPage */
+        AdminBookingPage: {
+            /** Items */
+            items: components["schemas"]["AdminBookingOut"][];
+            /** Total */
+            total: number;
+            /** Page */
+            page: number;
+            /** Page Size */
+            page_size: number;
         };
         /** AdminMeOut */
         AdminMeOut: {
@@ -647,6 +710,11 @@ export interface components {
             pax_children: number;
         };
         /**
+         * BookingSource
+         * @enum {string}
+         */
+        BookingSource: "website" | "admin" | "ai_chat" | "whatsapp" | "phone";
+        /**
          * BookingStatus
          * @enum {string}
          */
@@ -659,6 +727,11 @@ export interface components {
             /** Token */
             token: string;
         };
+        /**
+         * BookingType
+         * @enum {string}
+         */
+        BookingType: "transfer" | "activity" | "mixed";
         /** CancelRequest */
         CancelRequest: {
             /** Reason */
@@ -1789,6 +1862,49 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AdminMeOut"];
+                };
+            };
+        };
+    };
+    list_route_api_v1_admin_bookings_get: {
+        parameters: {
+            query?: {
+                status?: components["schemas"]["BookingStatus"][] | null;
+                source?: components["schemas"]["BookingSource"] | null;
+                payment_method?: string | null;
+                zone?: string | null;
+                service_from?: string | null;
+                service_to?: string | null;
+                created_from?: string | null;
+                created_to?: string | null;
+                q?: string | null;
+                page?: number;
+                page_size?: number;
+                sort?: "created_at" | "service_date" | "total_cents";
+                order?: "asc" | "desc";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminBookingPage"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

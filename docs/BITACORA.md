@@ -2,6 +2,30 @@
 
 Una entrada por sesión o tarea, la más reciente arriba (formato en `AGENTS.md` §10).
 
+## 2026-09-13 — F6.4: `GET /admin/bookings`, la primera ruta de negocio del admin
+
+Con sesión, TOTP y CSRF listos, tocaba la primera ruta que de verdad sirve al equipo: el listado de reservas. Es la puerta de entrada al resto de F6 (acciones, despacho, dashboard todos parten de aquí) y cierra el riesgo E1 del WORKPLAN ("reserva creada que no aparece en el admin").
+
+**Por qué todos los estados por defecto:** el criterio del WORKPLAN es literal — sin ningún filtro de estado en la URL, la consulta no agrega ningún `WHERE status = ...` propio. Una reserva en `pending_payment` (tarjeta) o recién `confirmed` (efectivo sin depósito) aparece igual que una `cancelled` de hace un año, porque el admin decide qué esconder, no la API.
+
+**El problema de `service_date`:** no es una columna de `bookings` — los traslados la llevan en cada `booking_leg` y las actividades en su `booking_item` (una reserva puede no tener tramos). Se resolvió con una subconsulta correlacionada: `UNION ALL` de las fechas de tramos e ítems de esa reserva, `MIN()` de las dos. Se usa igual para filtrar (`service_from`/`service_to`) y para ordenar (`sort=service_date`), así que solo existe una definición de "la fecha de servicio de una reserva" en todo el sistema.
+
+**Filtro de zona, no por texto:** `booking_legs.origin`/`destination` son el nombre del hotel congelado en texto (para que un hotel renombrado después no cambie reservas viejas), así que filtrar por zona no compara ese texto — hace `booking_legs.hotel_id → hotels.zone_id → zones.slug`. Es exacto y no se rompe si el nombre del hotel tiene acentos o mayúsculas distintas.
+
+**`app/services/admin_bookings.py`** (nuevo): `BookingFilters` (estado, origen, método de pago, zona, rango de fecha de servicio y de creación, y `q` de búsqueda libre) y `list_bookings()`, que arma la consulta con `Customer` ya unido (nombre, email, teléfono salen de ahí) y aplica cada filtro solo si viene puesto. La búsqueda (`q`) compara código, nombre, email y teléfono con `ILIKE`, más un `booking_id IN (...)` contra los tramos cuyo `flight_number` coincide — un solo campo de texto libre cubre las cinco columnas que pedía el WORKPLAN. Paginación con `page`/`page_size` (tope 100) y orden por `created_at`, `service_date` o `total_cents`.
+
+**`GET /api/v1/admin/bookings`** (nuevo router `app/api/v1/admin/bookings.py`): solo pide sesión (`CurrentAdmin`, cualquier rol — ver es distinto de editar, que llega en F6.5 con `require_role`); es un `GET`, así que no necesita el header CSRF.
+
+**Archivos:** `backend/app/services/admin_bookings.py`, `backend/app/schemas/admin_bookings.py`, `backend/app/api/v1/admin/bookings.py`, `backend/app/main.py`, `backend/tests/test_admin_bookings.py`, `packages/api-client/src/schema.d.ts`, `WORKPLAN.md`
+
+**Verificación**
+- `uv run pytest` → **223 passed** (8 nuevos): una reserva con tarjeta o en efectivo sin depósito aparece sin ningún filtro de estado (el criterio literal de F6.4); el filtro de estado separa `pending_payment` de `confirmed`; la búsqueda encuentra la reserva por código, apellido, email, teléfono y número de vuelo, y no encuentra nada con un texto que no existe; el filtro de zona encuentra la reserva por el hotel (`the-corridor`) y no la encuentra en otra zona; la paginación de 2 en 2 no repite ni se salta reservas entre páginas; el orden por `total_cents` ascendente deja la reserva barata antes que la cara; sin sesión, 401.
+- `uv run ruff format --check . && uv run ruff check .` → sin errores. `uv run mypy app scripts` → sin errores.
+- `uv run alembic check` (sin migración: F6.4 no toca el esquema) y `uv run pip-audit` → sin diferencias ni vulnerabilidades.
+- `npm run gen && npm run check` en `packages/api-client` → contrato regenerado, `tsc` sin errores.
+
+**Pendiente:** F6.5 (acciones sobre la reserva del §7.2) es lo próximo — ahí `require_role` por fin protege algo de verdad, porque no todas las acciones las puede hacer cualquier rol.
+
 ## 2026-09-13 — F6.3: CSRF de doble token y middleware de roles
 
 Seguido de F6.1/F6.2: antes de construir la primera ruta de negocio del admin (F6.4) convenía cerrar la protección contra CSRF, porque agregarla después habría significado tocar cada mutación otra vez.
