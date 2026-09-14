@@ -38,6 +38,8 @@ class Driver(IdMixin, TenantMixin, TimestampMixin, Base):
     name: Mapped[str] = mapped_column(String(120))
     phone: Mapped[str] = mapped_column(String(30))
     whatsapp: Mapped[str | None] = mapped_column(String(30))
+    # Aviso de tramo asignado (F5.9); WhatsApp llega en F16.
+    email: Mapped[str | None] = mapped_column(String(254))
     license_number: Mapped[str | None] = mapped_column(String(40))
     license_expires_on: Mapped[date | None]
     languages: Mapped[list[str]] = mapped_column(ARRAY(String(2)), default=list)

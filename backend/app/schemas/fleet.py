@@ -7,7 +7,7 @@ de retirar uno sin romper reservas, tramos o asignaciones que ya lo referencian.
 import uuid
 from datetime import date
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
 from app.schemas.quotes import _Strict
 
@@ -16,6 +16,8 @@ class DriverIn(_Strict):
     name: str = Field(min_length=1, max_length=120)
     phone: str = Field(min_length=7, max_length=30)
     whatsapp: str | None = Field(default=None, max_length=30)
+    # Aviso de tramo asignado (F5.9); sin correo, no se le notifica nada.
+    email: EmailStr | None = Field(default=None, max_length=254)
     license_number: str | None = Field(default=None, max_length=40)
     license_expires_on: date | None = None
     languages: list[str] = Field(default_factory=list, max_length=10)
@@ -26,6 +28,7 @@ class DriverPatch(_Strict):
     name: str | None = Field(default=None, min_length=1, max_length=120)
     phone: str | None = Field(default=None, min_length=7, max_length=30)
     whatsapp: str | None = Field(default=None, max_length=30)
+    email: EmailStr | None = Field(default=None, max_length=254)
     license_number: str | None = Field(default=None, max_length=40)
     license_expires_on: date | None = None
     languages: list[str] | None = Field(default=None, max_length=10)
@@ -39,6 +42,7 @@ class DriverOut(BaseModel):
     name: str
     phone: str
     whatsapp: str | None
+    email: str | None
     license_number: str | None
     license_expires_on: date | None
     languages: list[str]

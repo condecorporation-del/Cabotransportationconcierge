@@ -1,7 +1,7 @@
 """Tablero de despacho (F6.7)."""
 
 import uuid
-from datetime import time
+from datetime import datetime, time
 from typing import Self
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
@@ -17,6 +17,7 @@ class DispatchAssignmentOut(BaseModel):
     driver_name: str | None
     vehicle_id: uuid.UUID | None
     vehicle_plate: str | None
+    notified_at: datetime | None
 
 
 class DispatchLegOut(BaseModel):

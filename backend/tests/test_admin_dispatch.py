@@ -4,7 +4,7 @@ from httpx import AsyncClient
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models import Booking, BookingLeg, Driver, Vehicle, VehicleClass
+from app.models import Booking, BookingLeg, Driver, EmailOutbox, Vehicle, VehicleClass
 from tests.test_admin_auth import PASSWORD, _admin, _csrf_headers
 from tests.test_admin_auth import URL as AUTH_URL
 from tests.test_booking_access import _bearer
@@ -49,8 +49,8 @@ async def _leg(db: AsyncSession, code: str) -> BookingLeg:
     return leg
 
 
-async def _driver(db: AsyncSession, name: str = "Carlos") -> Driver:
-    driver = Driver(name=name, phone="+52 624 555 0001")
+async def _driver(db: AsyncSession, name: str = "Carlos", email: str | None = None) -> Driver:
+    driver = Driver(name=name, phone="+52 624 555 0001", email=email)
     db.add(driver)
     await db.flush()
     return driver
@@ -260,3 +260,84 @@ async def test_assign_requires_csrf_header(api: AsyncClient, db: AsyncSession) -
 
     response = await api.post(f"{URL}/legs/{leg.id}/assign", json={"driver_id": str(driver.id)})
     assert response.status_code == 403
+
+
+async def test_assigning_a_driver_with_email_queues_the_notification(
+    api: AsyncClient, db: AsyncSession
+) -> None:
+    """F5.9: aviso al chofer asignado por correo."""
+    created = (
+        await api.post(
+            BOOKINGS_URL, json=await _one_way(db, service_time="09:00", email="a@example.com")
+        )
+    ).json()
+    headers = await _login(api, db)
+    leg = await _leg(db, created["code"])
+    driver = await _driver(db, email="carlos@example.com")
+
+    response = await api.post(
+        f"{URL}/legs/{leg.id}/assign", json={"driver_id": str(driver.id)}, headers=headers
+    )
+    assert response.status_code == 200, response.text
+
+    board = (await api.get(URL, params={"date": ARRIVAL.isoformat()}, headers=headers)).json()
+    [row] = [r for r in board if r["booking_code"] == created["code"]]
+    [assignment] = row["assignments"]
+    assert assignment["notified_at"] is not None
+
+    email = await db.scalar(select(EmailOutbox).where(EmailOutbox.template == "driver_assigned"))
+    assert email is not None
+    assert email.to_addresses == ["carlos@example.com"]
+    assert email.context["code"] == created["code"]
+
+
+async def test_assigning_a_driver_without_email_sends_nothing(
+    api: AsyncClient, db: AsyncSession
+) -> None:
+    created = (
+        await api.post(
+            BOOKINGS_URL, json=await _one_way(db, service_time="09:00", email="a@example.com")
+        )
+    ).json()
+    headers = await _login(api, db)
+    leg = await _leg(db, created["code"])
+    driver = await _driver(db)  # sin email
+
+    response = await api.post(
+        f"{URL}/legs/{leg.id}/assign", json={"driver_id": str(driver.id)}, headers=headers
+    )
+    assert response.status_code == 200, response.text
+
+    board = (await api.get(URL, params={"date": ARRIVAL.isoformat()}, headers=headers)).json()
+    [row] = [r for r in board if r["booking_code"] == created["code"]]
+    [assignment] = row["assignments"]
+    assert assignment["notified_at"] is None
+
+    email = await db.scalar(select(EmailOutbox).where(EmailOutbox.template == "driver_assigned"))
+    assert email is None
+
+
+async def test_reassigning_to_a_different_driver_notifies_the_new_one(
+    api: AsyncClient, db: AsyncSession
+) -> None:
+    created = (
+        await api.post(
+            BOOKINGS_URL, json=await _one_way(db, service_time="09:00", email="a@example.com")
+        )
+    ).json()
+    headers = await _login(api, db)
+    leg = await _leg(db, created["code"])
+    first = await _driver(db, "Carlos", email="carlos@example.com")
+    second = await _driver(db, "Beto", email="beto@example.com")
+
+    await api.post(
+        f"{URL}/legs/{leg.id}/assign", json={"driver_id": str(first.id)}, headers=headers
+    )
+    await api.post(
+        f"{URL}/legs/{leg.id}/assign", json={"driver_id": str(second.id)}, headers=headers
+    )
+
+    emails = (
+        await db.scalars(select(EmailOutbox).where(EmailOutbox.template == "driver_assigned"))
+    ).all()
+    assert sorted(e.to_addresses[0] for e in emails) == ["beto@example.com", "carlos@example.com"]

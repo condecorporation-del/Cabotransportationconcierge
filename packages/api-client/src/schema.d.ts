@@ -2225,6 +2225,8 @@ export interface components {
             vehicle_id: string | null;
             /** Vehicle Plate */
             vehicle_plate: string | null;
+            /** Notified At */
+            notified_at: string | null;
         };
         /** DispatchLegOut */
         DispatchLegOut: {
@@ -2262,6 +2264,8 @@ export interface components {
             phone: string;
             /** Whatsapp */
             whatsapp?: string | null;
+            /** Email */
+            email?: string | null;
             /** License Number */
             license_number?: string | null;
             /** License Expires On */
@@ -2287,6 +2291,8 @@ export interface components {
             phone: string;
             /** Whatsapp */
             whatsapp: string | null;
+            /** Email */
+            email: string | null;
             /** License Number */
             license_number: string | null;
             /** License Expires On */
@@ -2304,6 +2310,8 @@ export interface components {
             phone?: string | null;
             /** Whatsapp */
             whatsapp?: string | null;
+            /** Email */
+            email?: string | null;
             /** License Number */
             license_number?: string | null;
             /** License Expires On */

@@ -10,7 +10,7 @@ el mismo chofer no quede en dos tramos que se pisan, y es lo único que pide F6.
 import uuid
 from collections import defaultdict
 from dataclasses import dataclass, field
-from datetime import date, datetime, time, timedelta
+from datetime import UTC, date, datetime, time, timedelta
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -25,6 +25,7 @@ from app.models import (
     Vehicle,
     VehicleClass,
 )
+from app.services.email import enqueue
 
 CONFLICT_WINDOW = timedelta(hours=2)
 
@@ -40,6 +41,7 @@ class DispatchAssignment:
     driver_name: str | None
     vehicle_id: uuid.UUID | None
     vehicle_plate: str | None
+    notified_at: datetime | None
 
 
 @dataclass
@@ -89,6 +91,7 @@ async def dispatch_board(session: AsyncSession, service_date: date) -> list[Disp
                     driver_name=driver_name,
                     vehicle_id=assignment.vehicle_id,
                     vehicle_plate=vehicle_plate,
+                    notified_at=assignment.notified_at,
                 )
             )
 
@@ -126,6 +129,30 @@ async def _has_driver_conflict(
     return any(abs(_pickup_datetime(other) - pickup) <= CONFLICT_WINDOW for other in others)
 
 
+async def _notify_driver(session: AsyncSession, leg: BookingLeg, driver_id: uuid.UUID) -> bool:
+    """F5.9: aviso por correo (WhatsApp en F16); sin correo del chofer no hay nada que enviar."""
+    driver = await session.get(Driver, driver_id)
+    if driver is None or not driver.email:
+        return False
+    booking = await session.get(Booking, leg.booking_id)
+    await enqueue(
+        session,
+        leg.company_id,
+        "driver_assigned",
+        [driver.email],
+        {
+            "code": booking.code if booking else "",
+            "service_date": leg.service_date.isoformat(),
+            "pickup_time": leg.pickup_time.strftime("%H:%M") if leg.pickup_time else None,
+            "origin": leg.origin,
+            "destination": leg.destination,
+            "pax": leg.pax_adults + leg.pax_children,
+        },
+        booking_id=booking.id if booking else None,
+    )
+    return True
+
+
 async def assign(
     session: AsyncSession,
     leg: BookingLeg,
@@ -145,20 +172,27 @@ async def assign(
             BookingAssignment.leg_id == leg.id, BookingAssignment.unit_index == unit_index
         )
     )
+    driver_changed = existing is None or existing.driver_id != driver_id
     if existing is not None:
         existing.driver_id = driver_id
         existing.vehicle_id = vehicle_id
         existing.assigned_by_admin_id = admin_id
+        assignment = existing
     else:
-        session.add(
-            BookingAssignment(
-                leg_id=leg.id,
-                unit_index=unit_index,
-                driver_id=driver_id,
-                vehicle_id=vehicle_id,
-                assigned_by_admin_id=admin_id,
-            )
+        assignment = BookingAssignment(
+            leg_id=leg.id,
+            unit_index=unit_index,
+            driver_id=driver_id,
+            vehicle_id=vehicle_id,
+            assigned_by_admin_id=admin_id,
         )
+        session.add(assignment)
+
+    if driver_id is not None and driver_changed:
+        notified = await _notify_driver(session, leg, driver_id)
+        assignment.notified_at = datetime.now(UTC) if notified else None
+    elif driver_id is None:
+        assignment.notified_at = None
 
 
 async def unassign(session: AsyncSession, leg: BookingLeg, unit_index: int) -> None:

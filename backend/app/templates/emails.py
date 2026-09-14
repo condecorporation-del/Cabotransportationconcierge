@@ -1,6 +1,7 @@
-"""Plantillas de correo (F5.3): bilingües para el cliente, en inglés para el equipo de CTC.
+"""Plantillas de correo (F5.3): bilingües para el cliente, en inglés para el equipo de CTC
+y para los choferes (F5.9).
 
-Sin motor de plantillas (Jinja o MJML): son diez correos cortos, f-strings alcanza y no
+Sin motor de plantillas (Jinja o MJML): son once correos cortos, f-strings alcanza y no
 agrega una dependencia. Cada función recibe el `context` que armó quien encoló (F5.2) y
 devuelve `(asunto, html, texto plano)`.
 """
@@ -152,6 +153,16 @@ def _contact_lead(context: dict[str, Any], _language: str) -> tuple[str, str, st
     return title, _shell("en", title, lines), _text(title, lines)
 
 
+def _driver_assigned(context: dict[str, Any], _language: str) -> tuple[str, str, str]:
+    title = f"You're assigned: {context['code']} on {context['service_date']}"
+    lines = [
+        f"Pickup: {context['pickup_time'] or 'TBD'} at {context['origin']}",
+        f"Drop-off: {context['destination']}",
+        f"Passengers: {context['pax']}",
+    ]
+    return title, _shell("en", title, lines), _text(title, lines)
+
+
 TEMPLATES: dict[str, Render] = {
     "booking_pending_payment": _pending_payment,
     "booking_confirmed": _confirmed,
@@ -163,6 +174,7 @@ TEMPLATES: dict[str, Render] = {
     "booking_changed_ops": _booking_changed_ops,
     "booking_cancelled_ops": _booking_cancelled_ops,
     "contact_lead": _contact_lead,
+    "driver_assigned": _driver_assigned,
 }
 
 

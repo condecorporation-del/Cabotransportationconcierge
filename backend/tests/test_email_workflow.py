@@ -49,6 +49,11 @@ def test_every_template_renders_in_both_languages(language: str) -> None:
         "name": "Ana López",
         "email": "ana@example.com",
         "message": "Do you have car seats?",
+        "service_date": "2026-10-01",
+        "pickup_time": "13:20",
+        "origin": "SJD Los Cabos International Airport",
+        "destination": "One and Only Palmilla",
+        "pax": 3,
     }
     for template in TEMPLATES:
         subject, html, text = render(template, language, context)

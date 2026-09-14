@@ -2,6 +2,28 @@
 
 Una entrada por sesión o tarea, la más reciente arriba (formato en `AGENTS.md` §10).
 
+## 2026-09-14 — F5.9: aviso al chofer asignado
+
+Con F6 completo, el pendiente desbloqueado más chico: avisarle al chofer cuando el despacho (F6.7) le asigna un tramo. `booking_assignments.notified_at` ya existía desde F1.8 sin que nada lo tocara — quedó puesto ahí desde el principio para exactamente esto.
+
+**`Driver` no tenía correo.** El modelo de F1.8 traía `name`, `phone`, `whatsapp`, licencia e idiomas, pero ningún `email` — lógico, porque hasta ahora nada lo necesitaba (WhatsApp, que sí se usa hoy con los choferes en la operación real, llega hasta F16). Se agregó `drivers.email` (opcional: un chofer sin correo registrado simplemente no recibe nada, no es un error).
+
+**Dónde vive el aviso:** `dispatch.assign()` (F6.7) es el único lugar que asigna un chofer a un tramo, así que ahí mismo se encola el correo y se marca `notified_at` — no hay una ruta nueva, ni un paso aparte que el admin tenga que acordarse de hacer. Reasignar a otro chofer avisa al nuevo (el anterior ya no está en el tramo, no tiene sentido seguir avisándole); quitar la asignación (`unassign`) limpia `notified_at`.
+
+**`driver_assigned`** es la plantilla once del correo (`app/templates/emails.py`), en inglés nomás — mismo criterio que el resto de correos internos (`booking_new`, `contact_lead`, etc.): el equipo de CTC opera en inglés, bilingüe es solo para el cliente.
+
+**Un test existente se rompió, y estaba bien que se rompiera:** `test_every_template_renders_in_both_languages` (F5.3) recorre las once plantillas con un solo `context` compartido — al agregar la doceava... la undécima, le faltaban las llaves que pide `driver_assigned` (`service_date`, `pickup_time`, `origin`, `destination`, `pax`). Se completó ese `context` en vez de darle una plantilla especial a la prueba: es exactamente lo que ese test existe para atrapar.
+
+**Archivos:** `backend/app/models/operations.py`, `backend/app/schemas/fleet.py`, `backend/app/templates/emails.py`, `backend/app/services/dispatch.py`, `backend/app/schemas/dispatch.py`, `backend/alembic/versions/20260914_a525576ffab7_email_del_chofer_para_avisos_de_despacho.py` (nueva), `backend/tests/test_admin_dispatch.py`, `backend/tests/test_email_workflow.py`, `packages/api-client/src/schema.d.ts`, `WORKPLAN.md`
+
+**Verificación**
+- `uv run pytest` → **302 passed** (3 nuevos): asignar un chofer con correo encola `driver_assigned` y deja `notified_at`; asignar uno sin correo no encola nada y `notified_at` queda `None`; reasignar a otro chofer le avisa al nuevo (dos correos distintos, uno por chofer).
+- `uv run ruff format --check . && uv run ruff check .` → sin errores. `uv run mypy app scripts` → sin errores.
+- `uv run alembic check` → sin diferencias (la migración nueva ya corrida). `uv run pip-audit` → sin vulnerabilidades.
+- `npm run gen && npm run check` en `packages/api-client` → contrato regenerado, `tsc` sin errores.
+
+**Pendiente:** F5.7 (recordatorio 24 h), F5.8 (solicitud de reseña) y F5.11 (webhooks de Resend) siguen pidiendo una tarea programada que todavía no existe ni está diseñada — es la pieza que falta para terminar F5 del todo.
+
 ## 2026-09-14 — F6.13: usuarios y roles, lista de auditoría — **F6 completo (13/13)**
 
 La última tarea de F6, y la que por fin cierra el vacío que F6.12 dejó anotado: un `dispatcher` podía editar tarifas.
