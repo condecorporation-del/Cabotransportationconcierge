@@ -15,6 +15,7 @@ from app.api.v1.admin import tasks as admin_tasks
 from app.core.config import get_settings
 from app.core.errors import AppError
 from app.db import engine_from_url
+from app.services import audit as _admin_audit  # noqa: F401  (registra el evento de F6.10)
 
 
 @asynccontextmanager

@@ -2,6 +2,28 @@
 
 Una entrada por sesión o tarea, la más reciente arriba (formato en `AGENTS.md` §10).
 
+## 2026-09-13 — F6.10: auditoría automática (evento de sesión, no código repetido)
+
+Hasta F6.9 cada quien armaba su propio `AuditLog` a mano: `transition()` en `booking_state.py`, `_audit()` en `admin_auth.py`. Funciona, pero significa que F6.8 y F6.9 (flota, cuentas, tareas) se quedaron sin ningún rastro de auditoría porque nadie escribió ese código ahí — exactamente el vacío que F6.10 pide cerrar de raíz, con un mecanismo genérico en vez de otra llamada manual más por endpoint.
+
+**`app/services/audit.py`** (nuevo): un `before_flush` de SQLAlchemy — el mismo tipo de evento que `tenancy.py` ya usa para el aislamiento por empresa — recorre `session.dirty` y, para cada fila de `AUDITED_MODELS` que de verdad cambió (`session.is_modified`), compara el `history` de cada columna (`inspect(obj).mapper.column_attrs`) y arma un `AuditLog` con solo las columnas que cambiaron, antes y después. `current_admin` (F6.1) deja `session.info["admin_user_id"]` con quien está haciendo el request; el evento lo lee ahí, sin que cada ruta tenga que pasarlo.
+
+**Por qué solo ediciones, no altas.** El criterio de F6.10 es "editar... deja un log", no "crear". Fue también la salida más simple a un problema real: `IdMixin.id` tiene un default de Python (`uuid.uuid4`) que SQLAlchemy resuelve al armar el INSERT, así que una fila recién agregada a la sesión todavía no tiene `id` cuando `before_flush` corre — auditar altas habría necesitado `after_flush` (que tiene sus propias reglas para agregar filas nuevas a medio commit) por una ganancia que el criterio no pedía. Cubrir solo `session.dirty` evita ese problema por completo: una fila que ya existía siempre tiene `id`.
+
+**Por qué no tocó las reservas.** `Booking` no está en `AUDITED_MODELS` a propósito: `booking_state.py` ya deja un `AuditLog` más rico (actor, motivo de la cancelación) en cada transición, y duplicarlo con un diff genérico de columnas habría dejado dos entradas por el mismo cambio. El mecanismo nuevo es para lo que hoy no tiene ninguna auditoría, no un reemplazo de la que ya funciona.
+
+**`company_id` explícito, no heredado del evento de tenencia.** `_guard_company_writes` (`tenancy.py`) y `_audit_edits` son dos listeners de `before_flush` separados; si uno agrega una fila nueva durante su turno, el otro no la vuelve a ver en la misma pasada del evento (cada listener corre una sola vez por `flush()`). Por eso el `AuditLog` nuevo lleva `company_id=obj.company_id` puesto a mano en vez de confiar en que el guardia de tenencia lo complete después.
+
+**Archivos:** `backend/app/services/audit.py` (nuevo), `backend/app/api/v1/admin/deps.py`, `backend/app/main.py`, `backend/tests/test_admin_audit.py` (nuevo), `WORKPLAN.md`
+
+**Verificación**
+- `uv run pytest` → **278 passed** (3 nuevos, y los 275 anteriores siguieron pasando igual con el evento global activo): editar el teléfono de un chofer deja un `AuditLog` con `before={"phone": "..."}`/`after={"phone": "..."}` y el `admin_user_id` de quien lo hizo; un `PATCH` que manda el mismo valor no deja ningún log; el mismo mecanismo audita una tarea (`admin_tasks`) sin una sola línea de código nueva para ese modelo.
+- `uv run ruff format --check . && uv run ruff check .` → sin errores. `uv run mypy app scripts` → sin errores (hubo que quitarle la anotación explícita `tuple[type, ...]` a `AUDITED_MODELS` para que `isinstance` pudiera angostar el tipo).
+- `uv run alembic check` (sin migración: no se tocó ningún modelo) y `uv run pip-audit` → sin diferencias ni vulnerabilidades.
+- `npm run gen && npm run check` en `packages/api-client` → sin cambios en el contrato (F6.10 no agrega rutas), `tsc` sin errores.
+
+**Pendiente:** F6.11 (dashboard y KPIs) es lo siguiente. Cuando F6.12 agregue edición de tarifas, catálogo, etc., basta con sumarlas a `AUDITED_MODELS` para que también queden auditadas — no hace falta repetir el mecanismo.
+
 ## 2026-09-13 — F6.9: tareas compartidas CRUD
 
 La más simple de F6 hasta ahora: `admin_tasks` ya existía desde F1.8 (compartida por empresa desde el día uno, a diferencia de ClassVIP que empezó solo en `localStorage`), así que fue nada más ponerle la API encima.

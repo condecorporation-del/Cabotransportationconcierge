@@ -38,6 +38,8 @@ async def current_admin(admin_session: CurrentAdminSession, session: DbSession) 
     admin = await session.get(AdminUser, admin_session.admin_user_id)
     if admin is None or not admin.is_active:
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Session expired or invalid.")
+    # La auditoría automática (F6.10) lee esto para saber quién hizo el cambio.
+    session.info["admin_user_id"] = admin.id
     return admin
 
 
