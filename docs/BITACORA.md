@@ -2,6 +2,31 @@
 
 Una entrada por sesión o tarea, la más reciente arriba (formato en `AGENTS.md` §10).
 
+## 2026-09-16 — F7.1: arranca el sitio público en Astro
+
+Con el backend terminado, empieza la primera fase de front-end. Marlon preguntó qué es Astro antes de dar luz verde: un framework que genera **HTML real por página** en vez de mandar una aplicación de JavaScript que dibuja la página al llegar. Es exactamente el problema que tuvo ClassVIP —una SPA de React donde Google y los bots de IA veían una página vacía— y por eso estaba elegido desde la decisión D3.
+
+**`web/` en pie:** Astro 7 en modo estático, TypeScript en `strictest`, Tailwind 4 por el plugin de Vite (no la integración vieja de Astro, que Tailwind 4 ya no usa) y React 19 para las islas. La home de verdad es F7.6; por ahora hay una página de relleno.
+
+**Se verificó en un navegador de verdad, no solo en el build.** El criterio escrito de F7.1 era "`npm run build` sin warnings", que es fácil de cumplir y no prueba gran cosa. Se agregó Playwright —que F7.14 pide de todos modos— con dos pruebas contra el build real: que la página llega como HTML completo sin ejecutar JS (el punto entero de elegir Astro) y que la isla de React de verdad hidrata y responde a un clic. Las dos pasan en Chromium.
+
+**Tres tropiezos de Windows y de versiones, ya resueltos:**
+
+1. `@astrojs/check` todavía no acepta TypeScript 7, que es lo que instala `npm install typescript` hoy. En vez de forzar con `--legacy-peer-deps`, se fijó TypeScript 5.9.3 — la misma versión que ya usa `packages/api-client`, así que ahora los dos paquetes van parejos.
+2. `astro preview` se demoniza solo: el proceso en primer plano sale de inmediato y el servidor queda de fondo. El `webServer` de Playwright lo tomaba por un servidor caído ("exited early") mientras el puerto seguía ocupado por el huérfano. Lo resuelve `scripts/e2e.mjs`, que levanta el demonio, corre las pruebas y lo apaga en un `finally`.
+3. Lanzar el CLI de Playwright con `spawnSync("npx", …, { shell: true })` dispara un `DeprecationWarning` de Node por argumentos sin escapar. Se llama al CLI directo con `node`, sin shell.
+
+**Job propio en CI.** `web` se suma a los tres que ya había: `npm ci`, Chromium, build, `astro check`, las pruebas de navegador contra el build y `npm audit`. Sin esto el paquete nuevo sería el único sin red de seguridad en cada push.
+
+**Archivos:** `web/**` (nuevo: `package.json`, `astro.config.mjs`, `tsconfig.json`, `playwright.config.ts`, `scripts/e2e.mjs`, `src/pages/index.astro`, `src/components/BuildStamp.tsx`, `src/styles/global.css`, `tests/smoke.spec.ts`), `.github/workflows/ci.yml`, `.gitignore`, `WORKPLAN.md`
+
+**Verificación**
+- `npm run build` → sin warnings ni errores. `npm run check` (`astro check`) → 0 errores, 0 warnings, 0 hints.
+- `npm run e2e` → 2 passed en Chromium real, contra el build (no contra el dev server).
+- `npm audit --audit-level=high` → sin vulnerabilidades.
+
+**Siguiente:** F7.2 (tokens de marca: paleta obsidiana y dorado champagne, más Cormorant Garamond, Cinzel y Manrope) **necesita que Marlon apruebe dos muestras lado a lado** antes de fijar nada. Es lo primero que se le va a mostrar.
+
 ## 2026-09-15 — F5.7 y F5.8: trabajos programados — **F5 completo, 11/11**
 
 Los dos últimos pendientes de F5 esperaban lo mismo desde hacía días: "una tarea programada, que todavía no existe ni está diseñada". Resultó que el diseño ya estaba escrito — solo había que verlo.
