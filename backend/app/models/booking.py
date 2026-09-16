@@ -109,6 +109,8 @@ class Booking(IdMixin, TenantMixin, TimestampMixin, Base):
     terms_version: Mapped[str | None] = mapped_column(String(20))
     # F3.13: "card" o "cash"; solo traslados (WhatsApp decide el método en otros orígenes).
     payment_method: Mapped[str | None] = mapped_column(String(10))
+    # F5.8: la deja el worker programado para no volver a pedir reseña del mismo viaje.
+    review_requested_at: Mapped[datetime | None]
 
     # raise_on_sql: cargar tramos o ítems exige selectinload explícito (evita N+1 silenciosos).
     # passive_deletes: al borrar, Postgres aplica ON DELETE CASCADE sin cargar los hijos.
@@ -151,6 +153,9 @@ class BookingLeg(IdMixin, TenantMixin, TimestampMixin, Base):
     )
     # Unidades del mismo vehículo cuando el grupo no cabe en una (F2.11).
     vehicle_count: Mapped[int] = mapped_column(default=1, server_default="1")
+    # F5.7: la deja el worker programado; por tramo, no por reserva, porque una ida y
+    # vuelta son dos servicios en días distintos y cada uno lleva su propio recordatorio.
+    reminder_sent_at: Mapped[datetime | None]
 
 
 class BookingItem(IdMixin, TenantMixin, TimestampMixin, Base):

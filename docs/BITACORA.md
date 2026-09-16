@@ -2,6 +2,37 @@
 
 Una entrada por sesión o tarea, la más reciente arriba (formato en `AGENTS.md` §10).
 
+## 2026-09-15 — F5.7 y F5.8: trabajos programados — **F5 completo, 11/11**
+
+Los dos últimos pendientes de F5 esperaban lo mismo desde hacía días: "una tarea programada, que todavía no existe ni está diseñada". Resultó que el diseño ya estaba escrito — solo había que verlo.
+
+**La tarea programada es otro worker, no infraestructura nueva.** `send_emails.py` (F5.1) lleva desde entonces siendo un módulo con `run_once()` que se corre suelto o con `--loop`. `scheduled.py` es exactamente eso otra vez: nada de cron, Celery ni APScheduler, ninguna dependencia agregada, ningún servicio que operar aparte. Producción pasa de un proceso worker a dos, y eso es todo el costo. La alternativa —un scheduler de verdad— sería resolver un problema de reintentos y concurrencia que el patrón de cola ya tiene resuelto desde F5.1.
+
+**Nada se envía desde aquí.** Los dos trabajos solo *encolan* en `email_outbox`; el worker de F5.1 sigue siendo el único módulo que habla con Resend, igual que lo verifica el test de F5.2 desde entonces.
+
+**La hora local importa de verdad.** `service_date` y `pickup_time` son hora de Los Cabos; `now` es UTC. Comparar los dos sin convertir mandaría el recordatorio con siete horas de corrimiento metidas dentro — que en un correo que dice "mañana te recogemos" es la diferencia entre llegar a tiempo y no. `pickup_at()` arma la hora de recogida con `companies.timezone` (que existía desde F1.1, con `America/Mazatlan` de default) y ahí sí compara. El SQL filtra ancho —tres días de tramos, donde cualquier huso cabe de sobra— y la hora exacta se decide en Python con la zona de cada empresa.
+
+**Una marca por unidad de trabajo, no por reserva.** `booking_legs.reminder_sent_at` va en el tramo porque una ida y vuelta son dos servicios en días distintos y cada uno lleva su propio recordatorio; `bookings.review_requested_at` va en la reserva porque la reseña se pide una vez por viaje. Las dos se marcan al encolar, así que dos corridas seguidas —o dos procesos a la vez— no mandan lo mismo dos veces. Ese era, literalmente, el criterio de F5.7: "un solo envío por tramo".
+
+**Dos guardas que no estaban en el criterio y hacían falta.** La primera: al encender el trabajo por primera vez, *todas* las reservas pasadas tienen `review_requested_at` en NULL — sin un tope, la primera corrida le pediría reseña a cada cliente de la historia de la empresa. Hay una ventana de 30 días. La segunda: sin ese mismo tope en el SQL, cada corrida (cada 15 minutos, para siempre) re-escanearía todas las reservas viejas que nunca llegaron a marcarse. Un `EXISTS` sobre `booking_legs.service_date` acota el escaneo a las últimas semanas y usa el índice que ya existía.
+
+**Sin enlace de reseña no se manda nada, y tampoco se marca.** El enlace vive en `company_settings.social_links.google_review` — un JSON que el admin ya podía editar desde F6.12, así que no hizo falta columna nueva. Si está vacío, la reserva se deja sin marcar a propósito: el correo sale solo en cuanto Marlon configure el enlace, en vez de perderse para siempre.
+
+**`freezegun` no, reloj inyectado.** El criterio de F5.7 lo pedía por nombre, pero `run_once(session, now)` recibe la hora como parámetro y el test la mueve sin parchear `datetime` por debajo del driver async — el mismo recurso que ya usaba `verify_webhook(..., now=...)` desde F4.4. Una dependencia menos y una prueba más directa.
+
+**Archivos:** `backend/app/worker/scheduled.py` (nuevo), `backend/app/models/booking.py`, `backend/alembic/versions/20260915_5d5daf2f9b59_marcas_de_recordatorio_y_resena.py` (nueva), `backend/app/templates/emails.py`, `backend/tests/test_scheduled_emails.py` (nuevo), `backend/tests/test_email_workflow.py`, `WORKPLAN.md`
+
+**Verificación**
+- `uv run pytest` → **325 passed** (9 nuevos): el recordatorio sale dentro de las 24 h previas y no dos días antes, una segunda corrida no lo repite, lleva el chofer y la placa que asignó el despacho, y una reserva cancelada no lo recibe; la reseña sale una sola vez después del viaje, no antes de que termine, no sin enlace configurado y no para un viaje de hace meses.
+- `uv run python -m app.worker.scheduled` contra la base real → corre y sale sin error (los tests llaman a las funciones, no al proceso).
+- `uv run ruff format --check . && uv run ruff check .` → sin errores. `uv run mypy app scripts` → sin errores.
+- La migración `5d5daf2f9b59` fue a base y de vuelta a head; `uv run alembic check` sin diferencias.
+- `uv run pip-audit` → sin vulnerabilidades. `npm run gen && npm run check` → sin cambios de contrato (los trabajos no exponen rutas) y `tsc` sin errores.
+
+**F5 queda completo (11/11).** Con F1, F5 y F6 cerrados y F4 en 9/10 (solo falta la prueba con llaves reales de Stripe), **F7 —migrar el prototipo del sitio público a Astro— es la siguiente fase grande y lo único mayor que queda desbloqueado.**
+
+**Pendiente:** para F15 (deploy), producción necesita **dos** procesos worker: `app.worker.send_emails --loop` y `app.worker.scheduled --loop`. Y `social_links.google_review` tiene que quedar configurado antes de que la solicitud de reseña sirva de algo.
+
 ## 2026-09-15 — F5.11: webhooks de Resend — **F5 en 9/11, lo que queda necesita una tarea programada**
 
 Hasta hoy `email_outbox` sabía que un correo se había **enviado** (el worker recibió un id de Resend), no que hubiera **llegado**. Un correo de confirmación que rebota porque el huésped escribió mal su email quedaba marcado `sent` para siempre, y nadie se enteraba. `POST /webhooks/resend` cierra ese ciclo: `email.delivered` y `email.bounced` mueven el estado a los nuevos `delivered` y `bounced`.

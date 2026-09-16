@@ -1,7 +1,7 @@
 """Plantillas de correo (F5.3): bilingües para el cliente, en inglés para el equipo de CTC
 y para los choferes (F5.9).
 
-Sin motor de plantillas (Jinja o MJML): son once correos cortos, f-strings alcanza y no
+Sin motor de plantillas (Jinja o MJML): son trece correos cortos, f-strings alcanza y no
 agrega una dependencia. Cada función recibe el `context` que armó quien encoló (F5.2) y
 devuelve `(asunto, html, texto plano)`.
 """
@@ -163,6 +163,51 @@ def _driver_assigned(context: dict[str, Any], _language: str) -> tuple[str, str,
     return title, _shell("en", title, lines), _text(title, lines)
 
 
+def _reminder(context: dict[str, Any], language: str) -> tuple[str, str, str]:
+    code, manage_url = context["code"], context["manage_url"]
+    crew = context.get("crew")
+    if language == "es":
+        subject, title = f"Tu traslado es mañana — reserva {code}", "Mañana te recogemos"
+        lines = [
+            f"Reserva <strong>{code}</strong>, {context['service_date']}.",
+            f"Te recogemos a las {context['pickup_time'] or 'la hora acordada'} "
+            f"en {context['origin']}.",
+            f"Destino: {context['destination']}.",
+        ]
+        lines.append(crew or "Te confirmamos chofer y vehículo antes de la recogida.")
+        cta = ("Ver tu reserva", manage_url)
+    else:
+        subject, title = f"Your transfer is tomorrow — booking {code}", "We pick you up tomorrow"
+        lines = [
+            f"Booking <strong>{code}</strong>, {context['service_date']}.",
+            f"Pickup at {context['pickup_time'] or 'the agreed time'} from {context['origin']}.",
+            f"Drop-off: {context['destination']}.",
+        ]
+        lines.append(crew or "We will confirm your driver and vehicle before pickup.")
+        cta = ("View your booking", manage_url)
+    return subject, _shell(language, title, lines, cta), _text(title, lines, cta)
+
+
+def _review_request(context: dict[str, Any], language: str) -> tuple[str, str, str]:
+    review_url = context["review_url"]
+    if language == "es":
+        subject, title = "¿Cómo estuvo tu viaje?", "Gracias por viajar con nosotros"
+        lines = [
+            f"Esperamos que tu traslado de la reserva <strong>{context['code']}</strong> "
+            f"haya salido perfecto.",
+            "Si tienes dos minutos, una reseña nos ayuda muchísimo.",
+        ]
+        cta = ("Dejar una reseña", review_url)
+    else:
+        subject, title = "How was your ride?", "Thank you for riding with us"
+        lines = [
+            f"We hope your transfer on booking <strong>{context['code']}</strong> went perfectly.",
+            "If you have two minutes, a review helps us a lot.",
+        ]
+        cta = ("Leave a review", review_url)
+    return subject, _shell(language, title, lines, cta), _text(title, lines, cta)
+
+
 TEMPLATES: dict[str, Render] = {
     "booking_pending_payment": _pending_payment,
     "booking_confirmed": _confirmed,
@@ -175,6 +220,8 @@ TEMPLATES: dict[str, Render] = {
     "booking_cancelled_ops": _booking_cancelled_ops,
     "contact_lead": _contact_lead,
     "driver_assigned": _driver_assigned,
+    "booking_reminder": _reminder,
+    "review_request": _review_request,
 }
 
 

@@ -54,6 +54,8 @@ def test_every_template_renders_in_both_languages(language: str) -> None:
         "origin": "SJD Los Cabos International Airport",
         "destination": "One and Only Palmilla",
         "pax": 3,
+        "crew": "Carlos Nuñez · Chevrolet Suburban (ABC-123)",
+        "review_url": "https://example.com/review",
     }
     for template in TEMPLATES:
         subject, html, text = render(template, language, context)
