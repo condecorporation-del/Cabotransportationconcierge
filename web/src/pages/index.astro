@@ -8,11 +8,36 @@ import "../styles/global.css";
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Cabo Transportation Concierge</title>
+    <!-- Las dos variantes del primer pantallazo (§3.5.6); el resto llega con font-display: swap. -->
+    <link
+      rel="preload"
+      href="/fonts/cormorant-garamond-600-latin.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link rel="preload" href="/fonts/manrope-400-latin.woff2" as="font" type="font/woff2" crossorigin />
   </head>
-  <body class="min-h-dvh bg-neutral-950 p-8 text-neutral-100">
-    <!-- Placeholder de F7.1: la home real (secciones del prototipo aprobado) es F7.6. -->
-    <h1 class="text-2xl">Cabo Transportation Concierge</h1>
-    <p class="mt-2 text-neutral-400">Astro + Tailwind + React, listo para portar el prototipo.</p>
-    <p class="mt-6"><BuildStamp client:load /></p>
+  <body>
+    <!-- Placeholder de F7.1-F7.2: ejercita los tokens para poder verificarlos. La home real,
+         con las secciones del prototipo aprobado, es F7.6. -->
+    <main class="mx-auto max-w-(--container-site) px-(--spacing-gutter) py-(--spacing-section)">
+      <p
+        class="font-brand text-label tracking-(--tracking-brand) text-gold uppercase"
+        data-token="brand"
+      >
+        Cabo Transportation Concierge
+      </p>
+      <h1
+        class="font-display tracking-(--tracking-display) mt-6 text-h1 leading-[1.08] text-pearl"
+        data-token="display"
+      >
+        Where is your journey taking you?
+      </h1>
+      <p class="mt-5 max-w-(--container-prose) text-lead text-stone" data-token="body">
+        Private transfers from Los Cabos International, with your chauffeur waiting before you land.
+      </p>
+      <p class="mt-10"><BuildStamp client:load /></p>
+    </main>
   </body>
 </html>

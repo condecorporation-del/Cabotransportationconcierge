@@ -2,6 +2,34 @@
 
 Una entrada por sesión o tarea, la más reciente arriba (formato en `AGENTS.md` §10).
 
+## 2026-09-16 — F7.2: tokens de marca, y el logo oficial ya está en el repo
+
+**El logo.** Marlon confirmó que el JPEG que estaba suelto en `site/` (1024×1029, medallón dorado con el monograma CTC grabado, "CABO / TRANSPORTATION / CONCIERGE" y la Escalade) es el oficial. Estaba sin versionar; ya está commiteado. Los recortes con fondo transparente, el favicon y el SVG trazado son F7.16.
+
+**Las dos muestras.** F7.2 pedía explícitamente que Marlon aprobara dos muestras lado a lado antes de fijar nada, así que se le publicó una página con las dos opciones aplicadas a los mismos cinco elementos reales del sitio —logo, navbar, titular, tabla de tarifas y botón— con los precios de verdad del catálogo (SJD → Cabo San Lucas: Suburban $110, Escalade $165, Sprinter $155). No es un cambio de fuentes: son dos respuestas a si la tipografía debe **imitar** el grabado del medallón o **contrastar** con él.
+
+- **A · Inscripción** — Cormorant Garamond + Cinzel + Manrope, la combinación escrita en §3.5.6. Tres familias; Cinzel repite las mayúsculas romanas del logo.
+- **B · Litoral** — Bodoni Moda + Manrope. Dos familias (menos peso, que cuenta para los presupuestos de F7.15) y un navbar más legible en móvil.
+
+**Quedó la A, por ser la ya acordada.** Marlon dijo "sigue trabajando" sin elegir, y ante eso lo correcto era volver a la decisión que ya existía por escrito (§3.5.6, acordada con él el 12 sep), no a la preferencia propia. Cambiar a B son tres líneas de `tokens.css` y una corrida de `scripts/fonts.mjs`.
+
+**Un detalle que salió al ver el logo de cerca, y que vale para esa decisión:** el "CABO" del medallón tiene contraste fuerte entre trazos gruesos y finos, con serifas planas — está más cerca de una didone (Bodoni, la muestra B) que de las romanas de peso parejo de Cinzel. §3.5.6 daba por hecho que Cinzel repetía "las mismas proporciones del CABO del logo"; viendo el archivo de verdad, eso es discutible. Queda anotado para cuando Marlon decida.
+
+**Las fuentes se auto-hospedan.** `scripts/fonts.mjs` baja los WOFF2 de Google y escribe sus `@font-face`: 18 archivos, 324 KB, solo los subconjuntos `latin` y `latin-ext` (inglés y español con acentos y ñ; cirílico y vietnamita sobran). Así el primer pantallazo no depende de un tercero y nada del visitante viaja a Google. Las tres familias son SIL Open Font License 1.1, que permite auto-hospedarlas.
+
+**Un bug del parser que casi se cuela.** Google pone el comentario con el subconjunto **antes** de cada `@font-face`, no adentro. Cortar el CSS por `@font-face` dejaba cada bloque etiquetado con el subconjunto del *siguiente*: los archivos salían con nombre equivocado y uno se perdía (17 en vez de 18, faltaba Cinzel 600 latin-ext — justo el que hace falta para un "Reservá" o un "José" en una etiqueta). Se arregló tomando el par comentario + bloque con una sola expresión, y hay una verificación que compara el nombre de cada archivo contra su `unicode-range`.
+
+**Que el CSS diga `font-family: Cinzel` no prueba nada.** Si el WOFF2 no carga, el navegador cae a Georgia en silencio y la página se ve casi igual en una captura. Por eso las pruebas no solo miran la familia calculada: le preguntan al navegador con `document.fonts.check()` si la fuente está de verdad disponible, y vigilan que ninguna petición de fuente salga hacia `fonts.gstatic.com`.
+
+**Archivos:** `site/Cabotransportation logo.jpg` (ahora versionado), `web/scripts/fonts.mjs` (nuevo), `web/src/styles/tokens.css` (nuevo), `web/src/styles/fonts.css` (generado), `web/public/fonts/**` (18 WOFF2), `web/src/styles/global.css`, `web/src/pages/index.astro`, `web/tests/tokens.spec.ts` (nuevo), `WORKPLAN.md`
+
+**Verificación**
+- `npm run e2e` → **8 passed** en Chromium real (5 nuevos): las tres familias se aplican y cargan de verdad, las fuentes salen del propio sitio y no de Google, la paleta llega a la página, y a 360 px no hay desbordamiento horizontal.
+- `npm run build` sin warnings; `npm run check` → 0 errores, 0 warnings, 0 hints.
+- Capturas a 1440 y 400 px revisadas a ojo: Cinzel en dorado con interletraje, Cormorant en el titular, Manrope en el cuerpo, sobre obsidiana.
+
+**Pendiente de Marlon:** elegir A o B. Mientras tanto queda la A.
+
 ## 2026-09-16 — F7.1: arranca el sitio público en Astro
 
 Con el backend terminado, empieza la primera fase de front-end. Marlon preguntó qué es Astro antes de dar luz verde: un framework que genera **HTML real por página** en vez de mandar una aplicación de JavaScript que dibuja la página al llegar. Es exactamente el problema que tuvo ClassVIP —una SPA de React donde Google y los bots de IA veían una página vacía— y por eso estaba elegido desde la decisión D3.

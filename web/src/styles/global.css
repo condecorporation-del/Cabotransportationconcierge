@@ -1,2 +1,5 @@
-/* F7.1. Los tokens de marca (obsidiana, dorado champagne, tipografías) llegan en F7.2. */
+/* El orden importa: Tailwind primero (define `@theme`), luego los tokens de CTC que lo
+   extienden (F7.2), y al final las declaraciones de fuentes que genera `scripts/fonts.mjs`. */
 @import "tailwindcss";
+@import "./tokens.css";
+@import "./fonts.css";
