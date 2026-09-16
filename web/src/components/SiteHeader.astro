@@ -1,44 +1,387 @@
 ---
-import { SITE, type Locale } from "../lib/site";
+import { Image } from "astro:assets";
+
+import medallion from "../assets/ctc-medallion.png";
+import { NAV, localize, sideLinks } from "../lib/nav";
+import { CONTACT, SITE, UI, type Locale } from "../lib/site";
 
 interface Props {
   locale: Locale;
 }
-const { locale } = Astro.props;
 
-// Cascarón mínimo de F7.3. El header de verdad —barra superior, medallón centrado, barra de
-// vidrio al hacer scroll, mega menú y menú móvil a pantalla completa— es F7.4.
-const links =
-  locale === "es"
-    ? [
-        ["Servicios", "/es/services"],
-        ["Tours", "/es/tours"],
-        ["Tarifas", "/es/prices"],
-      ]
-    : [
-        ["Services", "/services"],
-        ["Tours", "/tours"],
-        ["Prices", "/prices"],
-      ];
+const { locale } = Astro.props;
+const t = NAV[locale];
+const ui = UI[locale];
+const { left, right } = sideLinks(locale);
+const home = localize("/", locale);
+const reserveHref = localize("/book", locale);
+const servicesHref = localize("/cabo-transportation", locale);
+const other = locale === "en" ? "es" : "en";
 ---
 
-<header class="border-b border-gold-dark/25">
-  <div class="mx-auto flex max-w-(--container-site) flex-wrap items-center gap-x-8 gap-y-3 px-(--spacing-gutter) py-5">
-    <a
-      href={locale === "es" ? "/es/" : "/"}
-      class="font-brand text-label tracking-(--tracking-brand) text-gold uppercase"
+{/* Centinela: cuando sale de pantalla, el header se compacta. Evita escuchar `scroll`. */}
+<div data-header-top aria-hidden="true"></div>
+
+<header data-header class="sticky top-0 z-40 border-b border-gold-dark/25">
+  {/* El desenfoque va en una capa aparte y no en <header>: `backdrop-filter` convierte al
+      elemento en bloque contenedor, y entonces el panel `fixed` del menú móvil se queda
+      encerrado dentro del header en vez de cubrir la pantalla. */}
+  <div aria-hidden="true" class="absolute inset-0 -z-10 bg-deep/92 backdrop-blur-[14px]"></div>
+  {/* ---------- Barra superior fina ---------- */}
+  <div data-topbar class="border-b border-gold-dark/15">
+    <div class="mx-auto flex max-w-(--container-site) flex-wrap items-center justify-end gap-x-6 gap-y-1 px-(--spacing-gutter) py-2 text-[0.6875rem] tracking-(--tracking-label) text-stone uppercase">
+      {CONTACT.pending ? (
+        <span data-contact="pending">{ui.contactPending}</span>
+      ) : (
+        <a href={`tel:${CONTACT.phoneE164}`} class="hover:text-gold-light">
+          {CONTACT.phone}
+        </a>
+      )}
+      <a href={localize("/my-trip", locale)} class="hover:text-gold-light">
+        {t.myTrip}
+      </a>
+      <span class="flex items-center gap-2">
+        <span aria-current="true" class="text-gold-light">
+          {locale.toUpperCase()}
+        </span>
+        <span aria-hidden="true" class="text-gold-dark">
+          ·
+        </span>
+        <a href={other === "en" ? "/" : "/es/"} class="hover:text-gold-light" hreflang={other}>
+          {other.toUpperCase()}
+        </a>
+      </span>
+    </div>
+  </div>
+
+  {/* ---------- Barra principal ---------- */}
+  <div
+    data-mainbar
+    class="mx-auto flex max-w-(--container-site) items-center gap-4 px-(--spacing-gutter) py-3 lg:grid lg:grid-cols-[1fr_auto_1fr] lg:gap-8"
+  >
+    {/* Izquierda: Services (mega menú) + los dos links cortos */}
+    <nav
+      class="hidden lg:flex lg:items-center lg:justify-start lg:gap-7"
+      aria-label={locale === "es" ? "Servicios" : "Services"}
     >
-      {SITE.name}
-    </a>
-    <nav class="flex flex-wrap gap-x-6 gap-y-2" aria-label={locale === "es" ? "Principal" : "Main"}>
-      {links.map(([label, href]) => (
+      <div class="group relative" data-mega-wrap>
+        <button
+          type="button"
+          data-mega-button
+          aria-expanded="false"
+          aria-controls="mega-services"
+          class="font-brand text-label tracking-(--tracking-label) cursor-pointer text-mist uppercase hover:text-gold-light"
+        >
+          {t.services}
+        </button>
+      </div>
+      {left.map((link) => (
         <a
-          href={href}
+          href={link.href}
           class="font-brand text-label tracking-(--tracking-label) text-mist uppercase hover:text-gold-light"
         >
-          {label}
+          {link.label}
         </a>
       ))}
     </nav>
+
+    {/* Centro: el medallón */}
+    <a href={home} class="flex items-center gap-3 lg:justify-center" data-logo>
+      <Image
+        src={medallion}
+        alt={SITE.name}
+        widths={[44, 64, 128]}
+        sizes="(min-width: 1024px) 64px, 44px"
+        loading="eager"
+        class="h-14 w-14 shrink-0 transition-[height,width] duration-500 lg:h-16 lg:w-16"
+        data-medallion
+      />
+      <span class="sr-only">{SITE.name}</span>
+    </a>
+
+    {/* Derecha: el resto de links y el CTA */}
+    <div class="ml-auto flex items-center gap-7 lg:ml-0 lg:justify-end">
+      <nav
+        class="hidden lg:flex lg:items-center lg:gap-7"
+        aria-label={locale === "es" ? "Secundaria" : "Secondary"}
+      >
+        {right.map((link) => (
+          <a
+            href={link.href}
+            class="font-brand text-label tracking-(--tracking-label) text-mist uppercase hover:text-gold-light"
+          >
+            {link.label}
+          </a>
+        ))}
+      </nav>
+      <a
+        href={reserveHref}
+        class="font-brand text-label tracking-(--tracking-label) hidden border border-gold px-5 py-2.5 text-gold-light uppercase hover:bg-gold hover:text-ink lg:inline-block"
+      >
+        {t.reserve}
+      </a>
+
+      {/* Móvil: el menú es un <details>, así abre y cierra sin una línea de JavaScript */}
+      <details data-mobile class="lg:hidden">
+        <summary class="font-brand text-label tracking-(--tracking-label) flex cursor-pointer list-none items-center gap-2 border border-gold-dark px-4 py-2.5 text-gold-light uppercase">
+          <span data-mobile-label>{t.menu}</span>
+        </summary>
+
+        <div
+          class="fixed inset-0 top-0 z-50 flex flex-col overflow-y-auto bg-deep px-(--spacing-gutter) pt-6 pb-28"
+          data-mobile-panel
+        >
+          <div class="flex items-start justify-between gap-4">
+            <Image
+              src={medallion}
+              alt=""
+              widths={[96]}
+              class="h-24 w-24"
+              loading="eager"
+              aria-hidden="true"
+            />
+            <button
+              type="button"
+              data-mobile-close
+              class="font-brand text-label tracking-(--tracking-label) border border-gold-dark px-4 py-2.5 text-gold-light uppercase"
+            >
+              {t.close}
+            </button>
+          </div>
+
+          <nav class="mt-6 flex flex-col" aria-label={t.menu}>
+            {t.columns.map((column) => (
+              <details class="border-b border-gold-dark/20">
+                <summary
+                  class="font-brand text-label tracking-(--tracking-label) flex cursor-pointer list-none items-center justify-between py-4 text-gold uppercase"
+                  data-accordion
+                >
+                  {column.title}
+                </summary>
+                <div class="flex flex-col gap-3 pb-4">
+                  {column.links.map((link) => (
+                    <a href={localize(link.href, locale)} class="text-mist hover:text-gold-light">
+                      {link.label}
+                    </a>
+                  ))}
+                </div>
+              </details>
+            ))}
+            {[...left, ...right].map((link) => (
+              <a
+                href={link.href}
+                class="font-brand text-label tracking-(--tracking-label) border-b border-gold-dark/20 py-4 text-mist uppercase"
+              >
+                {link.label}
+              </a>
+            ))}
+            {t.guides.map((link) => (
+              <a href={localize(link.href, locale)} class="py-3 text-small text-stone">
+                {link.label}
+              </a>
+            ))}
+          </nav>
+
+          <div class="fixed right-0 bottom-0 left-0 flex gap-3 border-t border-gold-dark/25 bg-deep px-(--spacing-gutter) py-4">
+            <a
+              href={reserveHref}
+              class="font-brand text-label tracking-(--tracking-label) flex-1 bg-gold px-5 py-3.5 text-center text-ink uppercase"
+            >
+              {t.reserve}
+            </a>
+            {!CONTACT.pending && (
+              <a
+                href={`https://wa.me/${CONTACT.whatsappE164}`}
+                rel="noopener"
+                class="font-brand text-label tracking-(--tracking-label) flex-1 border border-gold-dark px-5 py-3.5 text-center text-gold-light uppercase"
+              >
+                {ui.whatsapp}
+              </a>
+            )}
+          </div>
+        </div>
+      </details>
+    </div>
   </div>
+
+  {/* ---------- Mega menú ----------
+      Vive siempre en el HTML (los links existen sin JavaScript) y abre con hover o con foco
+      por CSS; el script solo agrega clic, Escape y `aria-expanded`. */}
+  <div
+    id="mega-services"
+    data-mega
+    class="absolute inset-x-0 hidden border-t border-gold-dark/25 bg-ink lg:block"
+  >
+    <div class="mx-auto grid max-w-(--container-site) gap-x-10 gap-y-8 px-(--spacing-gutter) py-10 lg:grid-cols-[repeat(3,minmax(0,1fr))_minmax(0,1.1fr)]">
+      {t.columns.map((column) => (
+        <div>
+          <p class="font-brand text-label tracking-(--tracking-label) text-gold uppercase">
+            {column.title}
+          </p>
+          <ul class="mt-4 flex flex-col gap-2.5">
+            {column.links.map((link) => (
+              <li>
+                <a
+                  href={localize(link.href, locale)}
+                  class="text-mist transition-colors duration-200 hover:text-gold-light"
+                >
+                  {link.label}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))}
+
+      <div class="border border-gold-dark/30 bg-deep p-6">
+        <p class="font-display text-h3 leading-tight text-pearl">{t.featured.title}</p>
+        <p class="mt-3 text-small text-stone">{t.featured.body}</p>
+        <a
+          href={localize(t.featured.href, locale)}
+          class="font-brand text-label tracking-(--tracking-label) mt-5 inline-block border border-gold px-5 py-2.5 whitespace-nowrap text-gold-light uppercase hover:bg-gold hover:text-ink"
+        >
+          {t.featured.cta}
+        </a>
+      </div>
+    </div>
+
+    <div class="border-t border-gold-dark/20">
+      <ul class="mx-auto flex max-w-(--container-site) flex-wrap gap-x-10 gap-y-3 px-(--spacing-gutter) py-5">
+        {t.guides.map((link) => (
+          <li>
+            <a
+              href={localize(link.href, locale)}
+              class="text-small text-stone hover:text-gold-light"
+            >
+              {link.label}
+              {link.note && <span class="ml-2 text-stone/70">· {link.note}</span>}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </div>
+
+  {/* Sin JavaScript, Services es un link normal a la página de servicios. */}
+  <noscript>
+    <a href={servicesHref} class="sr-only">
+      {t.services}
+    </a>
+  </noscript>
 </header>
+
+<style>
+  /* El mega menú abre con hover o cuando algo dentro recibe foco: así funciona con teclado
+     aunque el script no haya corrido. El `hidden` de Tailwind se anula aquí a propósito. */
+  @media (min-width: 1024px) {
+    [data-mega] {
+      display: block;
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(-8px);
+      transition:
+        opacity 0.35s var(--ease-ctc),
+        transform 0.35s var(--ease-ctc),
+        visibility 0.35s;
+    }
+
+    [data-mega-wrap]:hover ~ * [data-mega],
+    header:has([data-mega-wrap]:hover) [data-mega],
+    header:has([data-mega]:hover) [data-mega],
+    header:has([data-mega-button][aria-expanded="true"]) [data-mega],
+    header:has([data-mega] :focus-visible) [data-mega],
+    header:has([data-mega-wrap]:focus-within) [data-mega] {
+      opacity: 1;
+      visibility: visible;
+      transform: none;
+    }
+  }
+
+  /* Compacta: la barra fina se pliega y el medallón encoge. */
+  [data-topbar] {
+    overflow: hidden;
+    max-height: 3rem;
+    transition: max-height 0.4s var(--ease-ctc);
+  }
+
+  [data-header][data-scrolled] [data-topbar] {
+    max-height: 0;
+  }
+
+  [data-header][data-scrolled] [data-medallion] {
+    height: 2.75rem;
+    width: 2.75rem;
+  }
+
+  /* El panel móvil solo existe cuando el <details> está abierto. */
+  [data-mobile] > summary::-webkit-details-marker,
+  [data-accordion]::-webkit-details-marker {
+    display: none;
+  }
+
+  /* Un acordeón tiene que verse como acordeón: sin esto es igual a un link. */
+  [data-accordion]::after {
+    content: "+";
+    font-family: var(--font-body);
+    font-size: 1.25rem;
+    line-height: 1;
+    transition: transform 0.3s var(--ease-ctc);
+  }
+
+  [open] > [data-accordion]::after {
+    transform: rotate(45deg);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    [data-mega],
+    [data-topbar],
+    [data-medallion] {
+      transition: none;
+    }
+  }
+</style>
+
+<script>
+  // Mejora progresiva: sin esto el menú sigue abriendo con hover y con foco, y el móvil con
+  // <details>. Esto agrega clic, Escape y el estado que anuncian los lectores de pantalla.
+  const header = document.querySelector<HTMLElement>("[data-header]");
+  const button = document.querySelector<HTMLButtonElement>("[data-mega-button]");
+  const mobile = document.querySelector<HTMLDetailsElement>("[data-mobile]");
+
+  button?.addEventListener("click", () => {
+    button.setAttribute(
+      "aria-expanded",
+      button.getAttribute("aria-expanded") === "true" ? "false" : "true",
+    );
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key !== "Escape") return;
+    if (button?.getAttribute("aria-expanded") === "true") {
+      button.setAttribute("aria-expanded", "false");
+      button.focus();
+    }
+    if (mobile?.open) {
+      mobile.open = false;
+      mobile.querySelector("summary")?.focus();
+    }
+  });
+
+  document.querySelector("[data-mobile-close]")?.addEventListener("click", () => {
+    if (mobile) mobile.open = false;
+  });
+
+  // Con el menú móvil abierto, la página de atrás no debe poder desplazarse.
+  mobile?.addEventListener("toggle", () => {
+    document.body.style.overflow = mobile.open ? "hidden" : "";
+  });
+
+  // Compactar al hacer scroll, sin escuchar `scroll`: se observa un centinela en el tope.
+  const sentinel = document.querySelector("[data-header-top]");
+  if (header && sentinel) {
+    new IntersectionObserver(
+      ([entry]) => header.toggleAttribute("data-scrolled", !entry?.isIntersecting),
+      { rootMargin: "0px" },
+    ).observe(sentinel);
+  }
+</script>

@@ -2,6 +2,29 @@
 
 Una entrada por sesión o tarea, la más reciente arriba (formato en `AGENTS.md` §10).
 
+## 2026-09-16 — F7.4: el header, y el medallón recortado solo
+
+El primer pedazo del sitio que se ve de verdad: barra superior fina con el selector EN/ES, medallón centrado con los links repartidos a los lados, CTA de reserva al extremo, mega menú de ancho completo y menú móvil a pantalla completa.
+
+**El medallón se recorta solo, no a mano.** El archivo de Marlon es un JPEG cuadrado: el medallón en el centro y, en las esquinas, hojas de palma sobre negro. Esas esquinas sobre el obsidiana del sitio se verían como un recuadro. `scripts/medallion.mjs` **encuentra el aro** —el recuadro que contiene todos los píxeles dorados es el aro, por ser lo más externo dorado de la imagen— recorta a ese cuadrado y le aplica una máscara circular. No hay coordenadas escritas a mano: si mañana llega un archivo nuevo del logo, el script vuelve a encontrarlas. Del PNG limpio salen los tamaños por `astro:assets`.
+
+**El menú funciona sin JavaScript, y eso no es un detalle.** El criterio de F7.4 lo pedía explícito. El mega menú abre con `:hover` y con `:focus-within`, en CSS puro; el script solo agrega clic, Escape y el `aria-expanded` que anuncian los lectores de pantalla. El menú móvil es un `<details>`: abre, cierra y hace acordeones sin una línea de JS. Hay una prueba que carga el sitio **con JavaScript deshabilitado** y comprueba que los siete destinos del mega menú están en el HTML y que el panel sigue abriendo con el mouse.
+
+**Una lección que costó una captura.** El panel del menú móvil es `position: fixed; inset: 0`, y salía encerrado dentro del header en vez de cubrir la pantalla. El culpable: `backdrop-filter` en el `<header>`. Un elemento con `backdrop-filter` (igual que con `filter` o `transform`) se vuelve **bloque contenedor** de sus descendientes `fixed`, así que `inset: 0` pasó a significar "los bordes del header". El desenfoque se movió a una capa absoluta propia dentro del header y el panel volvió a ser de pantalla completa. La prueba ahora mide el recuadro del panel contra el del viewport, para que si alguien vuelve a poner un filtro en un ancestro, falle en vez de verse raro.
+
+**Dos detalles que solo se ven mirando:** el CTA de la tarjeta destacada se partía en tres líneas dentro de su caja, y con el menú móvil abierto el botón flotante de Customer Help tapaba el "Reserve" de abajo. Los dos salieron de revisar capturas, no de una prueba — por eso se miran.
+
+**Y un fallo de prueba que resultó ser información útil:** la primera versión buscaba los enlaces del mega menú con `getByRole("link")` y encontraba cero. No era un bug del header: con el menú cerrado los enlaces están en `visibility: hidden`, que los saca del árbol de accesibilidad — que es justo lo correcto, un lector de pantalla no debe leer un menú cerrado. Un rastreador sí los ve, porque están en el documento. La prueba ahora mira el HTML crudo, que es lo que el criterio pedía de verdad.
+
+**Archivos:** `web/scripts/medallion.mjs` (nuevo), `web/src/assets/ctc-medallion.png` (generado), `web/src/lib/nav.ts` (nuevo), `web/src/components/SiteHeader.astro`, `web/src/components/FloatingActions.astro`, `web/tests/header.spec.ts` (nuevo), `web/tests/layout.spec.ts`, `WORKPLAN.md`
+
+**Verificación**
+- `npm run e2e` → **20 passed** (7 nuevos): mega menú con mouse y con teclado, Escape, header compacto al bajar con el CTA visible, menú móvil a pantalla completa medido contra el viewport, Escape, scroll bloqueado, flotantes que no tapan el CTA, y todos los destinos en el HTML con el JS apagado.
+- `npm run seo` → SEO 100/100. `npm run build` sin warnings; `npm run check` 0/0/0; `format:check` limpio; `npm audit` sin vulnerabilidades.
+- Capturas a 1440 y 390 px revisadas a ojo, incluido el mega menú abierto y el menú móvil con un acordeón desplegado.
+
+**Siguiente:** F7.5, el footer con los datos de `company_settings` cargados en build. Ahí se topa otra vez con D-P4: mientras Marlon no entregue teléfono, WhatsApp y oficinas, el footer sigue mostrando el placeholder marcado.
+
 ## 2026-09-16 — F7.3: layout base y SEO en 100
 
 `BaseLayout.astro` es el cascarón por el que van a pasar todas las páginas del sitio: `<head>` completo, enlace de salto al contenido, header, `main`, footer y los botones flotantes.

@@ -32,3 +32,11 @@ const whatsappReady = !CONTACT.pending;
     {t.customerHelp}
   </button>
 </div>
+
+<style is:global>
+  /* Con el menú móvil abierto, los flotantes taparían el "Reservar" de abajo (§3.5.6: los
+     flotantes no deben tapar CTAs). Es global porque mira el <details> del header. */
+  body:has([data-mobile][open]) [data-floating-actions] {
+    display: none;
+  }
+</style>

@@ -49,7 +49,8 @@ test("mientras el contacto sea provisional no se publica ningún número", async
 
   // D-P4: los datos reales salen de company_settings y todavía no existen. Publicar el
   // placeholder como si fuera un teléfono real mandaría a la gente a un número inventado.
-  await expect(page.locator("[data-contact='pending']")).toBeVisible();
+  // Aparece dos veces a propósito: en la barra superior del header y en el footer.
+  await expect(page.locator("[data-contact='pending']").first()).toBeVisible();
   await expect(page.locator('a[href^="tel:"]')).toHaveCount(0);
   await expect(page.locator('a[href*="wa.me"]')).toHaveCount(0);
 
