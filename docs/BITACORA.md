@@ -2,6 +2,27 @@
 
 Una entrada por sesión o tarea, la más reciente arriba (formato en `AGENTS.md` §10).
 
+## 2026-09-16 — Corrección antes de F7.6: el prototipo es claro, no oscuro
+
+Al abrir F7.6 —portar la home sección por sección— lo primero fue mirar el prototipo aprobado completo, no solo el hero. Y ahí apareció un error de base: **los tokens de F7.2 asumieron un sitio oscuro de arriba abajo, y el prototipo es claro debajo del hero.**
+
+De dónde salió la confusión: el hero y el header sí son obsidiana, y la página de relleno con la que se probaron los tokens también. Pero de la sección 3 en adelante, el prototipo alterna blanco y un gris casi blanco, con los títulos en tinta oscura y el dorado reservado para botones y filetes. Obsidiana y dorado son el **acento** —header, footer, hero, paneles destacados como la tarjeta del velero—, no el fondo del sitio.
+
+**Se corrigió ahora y no después.** Faltaban 27 secciones por portar; construirlas sobre una paleta equivocada habría significado rehacerlas todas. Los valores no se inventaron: se midieron del CSS del prototipo (`bg-white` → `#ffffff`, `bg-gray-50` → `#f9fafb`, `border-gray-200` → `#e5e7eb`, `text-gray-600` → `#4b5563`, y su `brand-ink` resultó ser exactamente el `--color-ink` que ya teníamos).
+
+**La escala tipográfica también se alineó a la del prototipo** (`text-display` 40 → 64 px, `text-h2` 26 → 36 px). Antes eran valores propios, parecidos pero no iguales; portando sección por sección esa diferencia se habría notado en cada título.
+
+**Y un efecto secundario bueno:** Cormorant Garamond sobre fondo claro se lee bastante mejor que sobre obsidiana — el contraste alto de la serif juega a favor en tinta oscura sobre papel, que es justo para lo que se diseñó. La duda que quedó abierta en F7.2 (su fragilidad en pantallas chicas) pesa menos ahora.
+
+**Archivos:** `web/src/styles/tokens.css`, `web/src/pages/index.astro`, `web/tests/tokens.spec.ts`, `WORKPLAN.md`
+
+**Verificación**
+- `npm run e2e` → **25 passed**; la prueba de paleta ahora comprueba las tres capas: cuerpo claro, texto dorado legible sobre claro y footer obsidiana.
+- `npm run build` sin warnings; `npm run check` 0/0/0; `format:check` limpio; Lighthouse SEO 100/100.
+- Captura a 1440 px revisada contra el prototipo: header oscuro, cuerpo claro, footer oscuro.
+
+**Siguiente:** con la base correcta, portar las 27 secciones de la home. Va en varias entregas, no en una.
+
 ## 2026-09-16 — F7.5: el footer lee de la base, de verdad
 
 El criterio era concreto y comprobable: "cambiar el teléfono en la base y reconstruir lo actualiza". Se comprobó tal cual — se puso `+52 (624) 777 1234` y una oficina en `company_settings`, se reconstruyó apuntando al backend, y el HTML salió con `tel:+526247771234`, `wa.me/526247771234` y la dirección. Después se dejó la base como estaba: sin datos de contacto, que es la verdad hasta que Marlon los entregue.

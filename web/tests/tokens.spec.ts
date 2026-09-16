@@ -41,8 +41,11 @@ test("las fuentes se sirven desde el propio sitio, no desde Google", async ({ pa
 
 test("la paleta de marca llega a la página", async ({ page }) => {
   await page.goto("/");
-  await expect(page.locator('[data-token="brand"]')).toHaveCSS("color", "rgb(198, 161, 91)");
-  await expect(page.locator("body")).toHaveCSS("background-color", "rgb(7, 9, 13)");
+  // El cuerpo del sitio es claro (así es el prototipo aprobado); el obsidiana queda para el
+  // header, el footer, el hero y los paneles destacados.
+  await expect(page.locator("body")).toHaveCSS("background-color", "rgb(249, 250, 251)");
+  await expect(page.locator('[data-token="brand"]')).toHaveCSS("color", "rgb(158, 124, 62)");
+  await expect(page.locator("footer")).toHaveCSS("background-color", "rgb(12, 15, 20)");
 });
 
 test("a 360 px la página no se desborda de lado", async ({ page }) => {

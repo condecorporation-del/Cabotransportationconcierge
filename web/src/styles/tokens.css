@@ -12,15 +12,33 @@
  */
 
 @theme {
-  /* ---------- Color ---------- */
-  --color-deep: #07090d; /* fondo del sitio */
-  --color-ink: #0c0f14; /* paneles y tarjetas sobre el fondo */
+  /* ---------- Color ----------
+   * El prototipo aprobado es claro debajo del hero, con obsidiana y dorado como acento y
+   * paneles — no un sitio oscuro de arriba abajo. Los valores claros son los medidos del
+   * prototipo (`bg-white`, `bg-gray-50`, `border-gray-200`, `text-gray-600`). */
+
+  /* Superficies claras: el cuerpo del sitio */
+  --color-paper: #ffffff; /* secciones sobre blanco */
+  --color-haze: #f9fafb; /* secciones alternas */
+  --color-rule: #e5e7eb; /* filetes entre secciones */
+
+  /* Superficies oscuras: header, footer, hero y paneles destacados */
+  --color-deep: #07090d;
+  --color-ink: #0c0f14;
+
+  /* Dorado */
   --color-gold: #c6a15b; /* acento y botones */
   --color-gold-dark: #9e7c3e; /* bordes y filetes */
-  --color-gold-light: #e8d3a2; /* texto dorado sobre oscuro */
-  --color-pearl: #faf8f4; /* texto principal */
-  --color-mist: #e9e4da; /* texto secundario sobre oscuro */
-  --color-stone: #9a9387; /* texto terciario y letra chica */
+  --color-gold-light: #e8d3a2; /* dorado sobre oscuro */
+
+  /* Texto sobre claro */
+  --color-slate: #4b5563; /* cuerpo */
+  --color-slate-soft: #6b7280; /* letra chica */
+
+  /* Texto sobre oscuro */
+  --color-pearl: #faf8f4;
+  --color-mist: #e9e4da;
+  --color-stone: #9a9387;
 
   /* ---------- Familias ---------- */
   --font-display: "Cormorant Garamond", Georgia, "Times New Roman", serif;
@@ -28,12 +46,13 @@
   --font-body: "Manrope", system-ui, -apple-system, "Segoe UI", sans-serif;
 
   /* ---------- Escala tipográfica ----------
-   * Fluida con `clamp` de 400 a 1440 px (D16): un solo valor por tamaño, sin saltos por
-   * breakpoint. Los tres grandes son de Cormorant; de `body` para abajo, de Manrope. */
+   * Los tres grandes son los medidos del prototipo aprobado (`text-display` y `text-h2` de
+   * su CSS), para que portarlo sección por sección no cambie los tamaños. Fluida con `clamp`,
+   * un solo valor por tamaño y sin saltos por breakpoint (D16). */
   --text-hero: clamp(2.75rem, 1.6rem + 5.8vw, 5.5rem);
-  --text-h1: clamp(2.25rem, 1.5rem + 3.8vw, 4rem);
-  --text-h2: clamp(1.75rem, 1.3rem + 2.2vw, 2.75rem);
-  --text-h3: clamp(1.375rem, 1.15rem + 1.1vw, 1.875rem);
+  --text-h1: clamp(2.5rem, 1.6rem + 2.8vw, 4rem); /* prototipo: 40 → 64 px */
+  --text-h2: clamp(1.625rem, 1.3rem + 1.6vw, 2.25rem); /* prototipo: 26 → 36 px */
+  --text-h3: clamp(1.25rem, 1.1rem + 0.8vw, 1.625rem);
   --text-lead: clamp(1.0625rem, 1rem + 0.35vw, 1.25rem);
   --text-body: 1rem;
   --text-small: 0.875rem;
@@ -63,12 +82,12 @@
 }
 
 :root {
-  color-scheme: dark;
+  color-scheme: light;
 }
 
 body {
-  background: var(--color-deep);
-  color: var(--color-pearl);
+  background: var(--color-haze);
+  color: var(--color-ink);
   font-family: var(--font-body);
   font-size: var(--text-body);
   line-height: 1.6;
