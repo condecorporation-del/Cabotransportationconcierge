@@ -2,6 +2,31 @@
 
 Una entrada por sesión o tarea, la más reciente arriba (formato en `AGENTS.md` §10).
 
+## 2026-09-16 — F7.6, primera tanda: las 27 secciones de la home
+
+La home del prototipo son 27 secciones y unas dos mil líneas de HTML generado. Transcribirlas a mano habría sido semanas de trabajo y erratas garantizadas.
+
+**El contenido se extrae, no se copia.** `scripts/extract-home.mjs` lee `site/index.html` y saca de cada sección su título, párrafos, listas, fotos, CTA y las preguntas del FAQ a `src/content/home.json`. Los componentes de Astro consumen ese JSON. La ventaja de fondo: cuando en F9.1 haya que reescribir los textos en la voz de CTC, se toca el contenido y no el diseño.
+
+**Tres bugs del extractor, cada uno instructivo:**
+
+1. **Quitar etiquetas dejando un espacio** convierte `<strong>SJD</strong>.` en "SJD ." — con el espacio colgando antes del punto. Se quitan sin dejar nada.
+2. **Preservar el énfasis con un centinela numérico** (` 0 `, ` 1 `…) parecía ingenioso hasta que uno cae en la cuenta de que "up to 10 guests" tiene un número entre espacios. Habría reemplazado el 10 por una etiqueta. El centinela ahora es `@@n@@`.
+3. **El cotizador del hero vive dentro de un `<p>` que el prototipo nunca cierra**, así que el extractor de párrafos se tragaba sus rótulos y los publicaba como prosa: "Drop-off Location Where are we going?Arrival Date Passengers – +…". Se descarta por sus rótulos, y hay una prueba que falla si vuelve a colarse.
+
+**Lo que sí está y lo que no.** Están las 27 secciones con su contenido real: títulos en Cormorant con la barra dorada del prototipo, párrafos con su énfasis, listas, las 33 fotos (copiadas junto al contenido, porque una sección sin su foto no sirve para un diff visual), las 20 preguntas del FAQ como `<details>` —abren sin JavaScript— y los CTA con sus enlaces traducidos a las rutas reales del sitio. **No está** la composición propia de cada sección: hoy todas pasan por un mismo diseño genérico, y el prototipo tiene tarjetas de zona, tarjetas de vehículo, carrusel de reseñas y rejilla de servicios. Esa es la siguiente tanda.
+
+**Se borró `BuildStamp.tsx`**, la isla de React que existía solo para probar la hidratación en F7.1. Ahora que la home es real, dejar un botón de prueba en producción para que una prueba pase sería el mundo al revés. La primera isla de verdad es el cotizador de F8.
+
+**Archivos:** `web/scripts/extract-home.mjs` (nuevo), `web/src/content/home.json` + `home.ts` (nuevos), `web/src/components/sections/HomeSection.astro` (nuevo), `web/public/images/home/**` (33 fotos), `web/src/pages/index.astro`, `web/src/components/BuildStamp.tsx` (borrado), `web/tests/home.spec.ts` (nuevo), `web/tests/smoke.spec.ts`, `web/tests/tokens.spec.ts`, `WORKPLAN.md`
+
+**Verificación**
+- `npm run e2e` → **30 passed** (5 nuevos): las 27 secciones están, cada título lleva su barra dorada, el FAQ abre sin JavaScript, no se cuela el formulario como texto, y toda foto tiene `alt`, `width` y `height`.
+- `npm run build` sin warnings; `npm run check` 0/0/0; `format:check` limpio; Lighthouse SEO 100/100; `npm audit` sin vulnerabilidades.
+- Capturas a 1440 px revisadas a ojo contra el prototipo.
+
+**Siguiente:** devolverle a cada sección su composición del prototipo, empezando por las que más se notan (zonas, vehículos, reseñas).
+
 ## 2026-09-16 — Corrección antes de F7.6: el prototipo es claro, no oscuro
 
 Al abrir F7.6 —portar la home sección por sección— lo primero fue mirar el prototipo aprobado completo, no solo el hero. Y ahí apareció un error de base: **los tokens de F7.2 asumieron un sitio oscuro de arriba abajo, y el prototipo es claro debajo del hero.**

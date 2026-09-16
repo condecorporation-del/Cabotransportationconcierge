@@ -13,7 +13,8 @@
     "fonts": "node scripts/fonts.mjs",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "medallion": "node scripts/medallion.mjs"
+    "medallion": "node scripts/medallion.mjs",
+    "extract:home": "node scripts/extract-home.mjs"
   },
   "dependencies": {
     "@astrojs/react": "6.0.5",

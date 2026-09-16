@@ -6,17 +6,21 @@ import { expect, test } from "@playwright/test";
  *  de verdad está disponible. */
 
 const FACES = [
-  { token: "brand", family: "Cinzel", probe: '600 16px "Cinzel"' },
-  { token: "display", family: "Cormorant Garamond", probe: '600 16px "Cormorant Garamond"' },
-  { token: "body", family: "Manrope", probe: '400 16px "Manrope"' },
+  { selector: "header nav a", family: "Cinzel", probe: '600 16px "Cinzel"' },
+  {
+    selector: "main section h2",
+    family: "Cormorant Garamond",
+    probe: '600 16px "Cormorant Garamond"',
+  },
+  { selector: "main section p", family: "Manrope", probe: '400 16px "Manrope"' },
 ];
 
-for (const { token, family, probe } of FACES) {
+for (const { selector, family, probe } of FACES) {
   test(`${family} se aplica y carga de verdad`, async ({ page }) => {
     await page.goto("/");
     await page.evaluate(() => document.fonts.ready);
 
-    const element = page.locator(`[data-token="${token}"]`);
+    const element = page.locator(selector).first();
     await expect(element).toHaveCSS("font-family", new RegExp(`^["']?${family}`));
 
     const loaded = await page.evaluate(async (descriptor) => {
@@ -44,7 +48,7 @@ test("la paleta de marca llega a la página", async ({ page }) => {
   // El cuerpo del sitio es claro (así es el prototipo aprobado); el obsidiana queda para el
   // header, el footer, el hero y los paneles destacados.
   await expect(page.locator("body")).toHaveCSS("background-color", "rgb(249, 250, 251)");
-  await expect(page.locator('[data-token="brand"]')).toHaveCSS("color", "rgb(158, 124, 62)");
+  await expect(page.locator("main section h2").first()).toHaveCSS("color", "rgb(12, 15, 20)");
   await expect(page.locator("footer")).toHaveCSS("background-color", "rgb(12, 15, 20)");
 });
 

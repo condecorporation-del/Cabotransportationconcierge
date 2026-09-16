@@ -1,32 +1,18 @@
 ---
-import BuildStamp from "../components/BuildStamp";
+import HomeSection from "../components/sections/HomeSection.astro";
+import { HOME_SECTIONS } from "../content/home";
 import BaseLayout from "../layouts/BaseLayout.astro";
+
+// F7.6: la home, sección por sección, con el contenido del prototipo aprobado. El hero con
+// video es F7.7 y el cotizador del primer bloque se conecta en F8; por eso la primera sección
+// llega aquí como texto y su formulario todavía no existe.
 ---
 
 <BaseLayout
   title="Cabo Transportation Concierge"
   description="Private airport transfers and chauffeur service in Los Cabos: fixed rates by zone, flight tracking and a driver waiting when you land."
 >
-  <!-- Placeholder de F7.1-F7.3: ejercita los tokens y el layout. Las secciones del prototipo
-       aprobado llegan en F7.6. -->
-  <div class="mx-auto max-w-(--container-site) px-(--spacing-gutter) py-(--spacing-section)">
-    <p
-      class="font-brand text-label tracking-(--tracking-brand) text-gold-dark uppercase"
-      data-token="brand"
-    >
-      Cabo Transportation Concierge
-    </p>
-    <h1
-      class="font-display tracking-(--tracking-display) mt-6 text-h1 leading-[1.02] text-ink"
-      data-token="display"
-    >
-      Where is your journey taking you?
-    </h1>
-    <p class="mt-5 max-w-(--container-prose) text-lead text-slate" data-token="body">
-      Private transfers from Los Cabos International, with your chauffeur waiting before you land.
-    </p>
-    <p class="mt-10">
-      <BuildStamp client:load />
-    </p>
-  </div>
+  {HOME_SECTIONS.map((section, index) => (
+    <HomeSection section={section} index={index} />
+  ))}
 </BaseLayout>
