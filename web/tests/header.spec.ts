@@ -13,7 +13,8 @@ test.describe("mega menú en escritorio", () => {
 
     await page.getByRole("button", { name: "Services" }).hover();
     await expect(panel).toBeVisible();
-    await expect(page.getByRole("link", { name: "Bisbee's Black & Blue" })).toBeVisible();
+    // Acotado al panel: el footer repite estos mismos destinos.
+    await expect(panel.getByRole("link", { name: "Bisbee's Black & Blue" })).toBeVisible();
   });
 
   test("abre con el teclado y cierra con Escape", async ({ page }) => {
@@ -111,7 +112,9 @@ test("todos los destinos del menú existen en el HTML sin JavaScript", async ({
 
   await page.getByRole("button", { name: "Services" }).hover();
   await expect(page.locator("[data-mega]")).toBeVisible();
-  await expect(page.getByRole("link", { name: "All Cabo Transfers" })).toBeVisible();
+  await expect(
+    page.locator("[data-mega]").getByRole("link", { name: "All Cabo Transfers" }),
+  ).toBeVisible();
 
   await context.close();
 });

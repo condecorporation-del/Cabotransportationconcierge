@@ -1,6 +1,7 @@
 """Catálogo público. Los textos van en ambos idiomas para que la respuesta sea cacheable."""
 
 import uuid
+from typing import Any
 
 from pydantic import BaseModel, ConfigDict
 
@@ -11,6 +12,23 @@ I18n = dict[str, str]
 
 class _FromOrm(BaseModel):
     model_config = ConfigDict(from_attributes=True)
+
+
+class CompanyOut(_FromOrm):
+    """Lo que el sitio necesita del `company_settings` de la empresa (F7.5).
+
+    Deliberadamente parcial: `email_ops` y `email_from` son direcciones internas y no salen
+    de aquí. Si mañana se agrega una columna sensible a `company_settings`, no se publica sola
+    — hay que nombrarla aquí. El nombre de la empresa no viene de la API: el sitio ya lo sabe.
+    """
+
+    phone: str | None
+    whatsapp: str | None
+    offices: dict[str, Any]
+    social_links: dict[str, Any]
+    cancellation_hours: int
+    change_hours: int
+    policies: dict[str, Any]
 
 
 class ZoneOut(_FromOrm):

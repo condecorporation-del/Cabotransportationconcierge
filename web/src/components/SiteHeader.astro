@@ -2,8 +2,9 @@
 import { Image } from "astro:assets";
 
 import medallion from "../assets/ctc-medallion.png";
+import { getCompany } from "../lib/company";
 import { NAV, localize, sideLinks } from "../lib/nav";
-import { CONTACT, SITE, UI, type Locale } from "../lib/site";
+import { SITE, UI, type Locale } from "../lib/site";
 
 interface Props {
   locale: Locale;
@@ -17,6 +18,7 @@ const home = localize("/", locale);
 const reserveHref = localize("/book", locale);
 const servicesHref = localize("/cabo-transportation", locale);
 const other = locale === "en" ? "es" : "en";
+const company = await getCompany();
 ---
 
 {/* Centinela: cuando sale de pantalla, el header se compacta. Evita escuchar `scroll`. */}
@@ -30,11 +32,11 @@ const other = locale === "en" ? "es" : "en";
   {/* ---------- Barra superior fina ---------- */}
   <div data-topbar class="border-b border-gold-dark/15">
     <div class="mx-auto flex max-w-(--container-site) flex-wrap items-center justify-end gap-x-6 gap-y-1 px-(--spacing-gutter) py-2 text-[0.6875rem] tracking-(--tracking-label) text-stone uppercase">
-      {CONTACT.pending ? (
+      {company.pending ? (
         <span data-contact="pending">{ui.contactPending}</span>
       ) : (
-        <a href={`tel:${CONTACT.phoneE164}`} class="hover:text-gold-light">
-          {CONTACT.phone}
+        <a href={`tel:${company.phoneE164}`} class="hover:text-gold-light">
+          {company.phone}
         </a>
       )}
       <a href={localize("/my-trip", locale)} class="hover:text-gold-light">
@@ -189,9 +191,9 @@ const other = locale === "en" ? "es" : "en";
             >
               {t.reserve}
             </a>
-            {!CONTACT.pending && (
+            {company.whatsappE164 && (
               <a
-                href={`https://wa.me/${CONTACT.whatsappE164}`}
+                href={`https://wa.me/${company.whatsappE164}`}
                 rel="noopener"
                 class="font-brand text-label tracking-(--tracking-label) flex-1 border border-gold-dark px-5 py-3.5 text-center text-gold-light uppercase"
               >

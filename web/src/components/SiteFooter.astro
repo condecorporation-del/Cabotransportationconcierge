@@ -1,28 +1,98 @@
 ---
-import { CONTACT, SITE, UI, type Locale } from "../lib/site";
+import { Image } from "astro:assets";
+
+import medallion from "../assets/ctc-medallion.png";
+import { getCompany } from "../lib/company";
+import { NAV, localize } from "../lib/nav";
+import { SITE, UI, type Locale } from "../lib/site";
 
 interface Props {
   locale: Locale;
 }
-const { locale } = Astro.props;
-const t = UI[locale];
 
-// Cascarón mínimo de F7.3. El footer con los datos reales de `company_settings` es F7.5;
-// mientras no existan (D-P4), el contacto se muestra marcado como provisional, no inventado.
+const { locale } = Astro.props;
+const t = NAV[locale];
+const ui = UI[locale];
+const company = await getCompany();
+
+// "Top Cabo Destinations" (§3.5.2) llega con las zonas en F7.6; aquí van los destinos del menú.
+const columns = [
+  { title: t.columns[0]!.title, links: t.columns[0]!.links },
+  { title: t.columns[1]!.title, links: t.columns[1]!.links },
+  { title: ui.footerGuides, links: t.guides },
+];
+
+const offices = Object.entries(company.offices) as [string, Record<string, string>][];
 ---
 
-<footer class="mt-(--spacing-section) border-t border-gold-dark/25">
-  <div class="mx-auto flex max-w-(--container-site) flex-col gap-3 px-(--spacing-gutter) py-(--spacing-block) text-small text-stone">
-    <p class="font-brand tracking-(--tracking-brand) text-gold uppercase">{SITE.name}</p>
-    {CONTACT.pending ? (
-      <p data-contact="pending">{t.contactPending}</p>
-    ) : (
-      <p>
-        <a href={`tel:${CONTACT.phoneE164}`}>{CONTACT.phone}</a> · {CONTACT.hours}
+<footer class="mt-(--spacing-section) border-t border-gold-dark/25 bg-ink">
+  <div class="mx-auto grid max-w-(--container-site) gap-x-10 gap-y-(--spacing-block) px-(--spacing-gutter) py-(--spacing-section) sm:grid-cols-2 lg:grid-cols-[1.2fr_repeat(3,minmax(0,1fr))]">
+    {/* Marca y contacto */}
+    <div class="flex flex-col gap-4">
+      <Image src={medallion} alt={SITE.name} widths={[128]} class="h-32 w-32" loading="lazy" />
+      <p class="font-brand text-label tracking-(--tracking-brand) text-gold uppercase">
+        {SITE.name}
       </p>
-    )}
-    <p>
-      © {new Date().getFullYear()} {SITE.name}. {t.footerRights}
-    </p>
+      {company.pending ? (
+        <p class="text-small text-stone" data-contact="pending">
+          {ui.contactPending}
+        </p>
+      ) : (
+        <p class="flex flex-col gap-1 text-small text-mist">
+          <a href={`tel:${company.phoneE164}`} class="hover:text-gold-light">
+            {company.phone}
+          </a>
+          <span class="text-stone">{ui.hours}</span>
+        </p>
+      )}
+    </div>
+
+    {/* Destinos del menú */}
+    {columns.map((column) => (
+      <nav class="flex flex-col gap-3" aria-label={column.title}>
+        <p class="font-brand text-label tracking-(--tracking-label) text-gold uppercase">
+          {column.title}
+        </p>
+        {column.links.map((link) => (
+          <a href={localize(link.href, locale)} class="text-small text-mist hover:text-gold-light">
+            {link.label}
+          </a>
+        ))}
+      </nav>
+    ))}
+  </div>
+
+  {/* Oficinas: salen de `company_settings.offices`; sin oficinas cargadas, no se inventa una. */}
+  {offices.length > 0 && (
+    <div class="border-t border-gold-dark/20">
+      <div class="mx-auto grid max-w-(--container-site) gap-8 px-(--spacing-gutter) py-(--spacing-block) sm:grid-cols-2 lg:grid-cols-3">
+        {offices.map(([slug, office]) => (
+          <div class="flex flex-col gap-1 text-small text-stone" data-office={slug}>
+            <p class="font-brand text-label tracking-(--tracking-label) text-gold uppercase">
+              {office["name"] ?? slug}
+            </p>
+            {office["address"] && <p>{office["address"]}</p>}
+            {office["hours"] && <p>{office["hours"]}</p>}
+          </div>
+        ))}
+      </div>
+    </div>
+  )}
+
+  {/* Políticas y aviso legal. El `pb-28` deja libre la esquina donde viven los botones
+      flotantes: sin eso, tapan esta línea al llegar al final de la página (§3.5.6). */}
+  <div class="border-t border-gold-dark/20">
+    <div class="mx-auto flex max-w-(--container-site) flex-wrap items-center justify-between gap-x-8 gap-y-3 px-(--spacing-gutter) pt-6 pb-28 text-small text-stone">
+      <p>
+        © {new Date().getFullYear()} {SITE.name}. {ui.footerRights}
+      </p>
+      <p data-policies>
+        {ui.cancellationPolicy.replace("{hours}", String(company.cancellationHours))}
+        <span aria-hidden="true" class="mx-2 text-gold-dark">
+          ·
+        </span>
+        {ui.changePolicy.replace("{hours}", String(company.changeHours))}
+      </p>
+    </div>
   </div>
 </footer>

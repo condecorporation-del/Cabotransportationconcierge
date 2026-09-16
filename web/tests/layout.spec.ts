@@ -58,3 +58,22 @@ test("mientras el contacto sea provisional no se publica ningún número", async
   await expect(help).toBeVisible();
   await expect(help).toBeDisabled();
 });
+
+test("los botones flotantes no tapan el texto del footer", async ({ page }) => {
+  // §3.5.6: los flotantes no deben tapar contenido. Al final de la página es donde se cruzan,
+  // porque el viewport y el final del documento coinciden.
+  await page.goto("/");
+  await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+  await page.waitForTimeout(200);
+
+  const floating = await page.locator("[data-floating-actions]").boundingBox();
+  const policies = await page.locator("[data-policies]").boundingBox();
+  if (!floating || !policies) throw new Error("falta el flotante o la línea de políticas");
+
+  const overlaps =
+    floating.x < policies.x + policies.width &&
+    floating.x + floating.width > policies.x &&
+    floating.y < policies.y + policies.height &&
+    floating.y + floating.height > policies.y;
+  expect(overlaps, "los flotantes se enciman con las políticas del footer").toBe(false);
+});

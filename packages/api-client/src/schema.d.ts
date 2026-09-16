@@ -44,6 +44,27 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/catalog/company": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Company
+         * @description Teléfono, WhatsApp, oficinas y políticas para el header y el footer del sitio (F7.5).
+         *     El sitio es estático: esto se lee una vez, en el build.
+         */
+        get: operations["company_api_v1_catalog_company_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/catalog/zones": {
         parameters: {
             query?: never;
@@ -2106,6 +2127,36 @@ export interface components {
             /** Credit Limit Cents */
             credit_limit_cents?: number | null;
         };
+        /**
+         * CompanyOut
+         * @description Lo que el sitio necesita del `company_settings` de la empresa (F7.5).
+         *
+         *     Deliberadamente parcial: `email_ops` y `email_from` son direcciones internas y no salen
+         *     de aquí. Si mañana se agrega una columna sensible a `company_settings`, no se publica sola
+         *     — hay que nombrarla aquí. El nombre de la empresa no viene de la API: el sitio ya lo sabe.
+         */
+        CompanyOut: {
+            /** Phone */
+            phone: string | null;
+            /** Whatsapp */
+            whatsapp: string | null;
+            /** Offices */
+            offices: {
+                [key: string]: unknown;
+            };
+            /** Social Links */
+            social_links: {
+                [key: string]: unknown;
+            };
+            /** Cancellation Hours */
+            cancellation_hours: number;
+            /** Change Hours */
+            change_hours: number;
+            /** Policies */
+            policies: {
+                [key: string]: unknown;
+            };
+        };
         /** CompanySettingsOut */
         CompanySettingsOut: {
             /** Phone */
@@ -3500,6 +3551,26 @@ export interface operations {
                     "application/json": {
                         [key: string]: string;
                     };
+                };
+            };
+        };
+    };
+    company_api_v1_catalog_company_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CompanyOut"];
                 };
             };
         };

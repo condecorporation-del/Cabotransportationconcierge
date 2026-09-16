@@ -1,5 +1,6 @@
 ---
-import { CONTACT, UI, type Locale } from "../lib/site";
+import { getCompany } from "../lib/company";
+import { UI, type Locale } from "../lib/site";
 
 interface Props {
   locale: Locale;
@@ -8,15 +9,15 @@ const { locale } = Astro.props;
 const t = UI[locale];
 
 // El agente Customer Help es F10; aquí queda su disparador, deshabilitado mientras no exista,
-// para no ofrecer un botón que no hace nada. WhatsApp queda oculto hasta tener el número real
-// (D-P4): mandar a la gente a un número inventado sería peor que no mostrar el botón.
-const whatsappReady = !CONTACT.pending;
+// para no ofrecer un botón que no hace nada. WhatsApp solo aparece si hay número real en
+// `company_settings` (D-P4): mandar a la gente a un número inventado sería peor que no mostrarlo.
+const company = await getCompany();
 ---
 
 <div class="fixed right-4 bottom-4 z-50 flex flex-col gap-3" data-floating-actions>
-  {whatsappReady && (
+  {company.whatsappE164 && (
     <a
-      href={`https://wa.me/${CONTACT.whatsappE164}`}
+      href={`https://wa.me/${company.whatsappE164}`}
       class="font-brand text-label tracking-(--tracking-label) border border-gold-dark bg-ink px-4 py-3 text-gold-light uppercase"
       rel="noopener"
     >

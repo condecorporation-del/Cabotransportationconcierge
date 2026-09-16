@@ -8,6 +8,7 @@ from app.core.rate_limit import rate_limit
 from app.models import Activity, ActivityPackage, Extra, VehicleClass
 from app.schemas.catalog import (
     ActivityOut,
+    CompanyOut,
     ExtraOut,
     HotelMatch,
     HotelPage,
@@ -22,6 +23,13 @@ router = APIRouter(
     tags=["catalog"],
     dependencies=[Depends(rate_limit(120)), Depends(get_company)],
 )
+
+
+@router.get("/company", response_model=CompanyOut)
+async def company(request: Request, session: DbSession) -> Response:
+    """Teléfono, WhatsApp, oficinas y políticas para el header y el footer del sitio (F7.5).
+    El sitio es estático: esto se lee una vez, en el build."""
+    return cached_json(request, CompanyOut, await catalog.company_public(session))
 
 
 @router.get("/zones", response_model=list[ZoneOut])

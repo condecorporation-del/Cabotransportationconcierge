@@ -2,6 +2,30 @@
 
 Una entrada por sesión o tarea, la más reciente arriba (formato en `AGENTS.md` §10).
 
+## 2026-09-16 — F7.5: el footer lee de la base, de verdad
+
+El criterio era concreto y comprobable: "cambiar el teléfono en la base y reconstruir lo actualiza". Se comprobó tal cual — se puso `+52 (624) 777 1234` y una oficina en `company_settings`, se reconstruyó apuntando al backend, y el HTML salió con `tel:+526247771234`, `wa.me/526247771234` y la dirección. Después se dejó la base como estaba: sin datos de contacto, que es la verdad hasta que Marlon los entregue.
+
+**Hizo falta un endpoint público nuevo.** El sitio no tenía de dónde leer: `GET /catalog/company` expone teléfono, WhatsApp, oficinas, redes y las dos ventanas de política. Es **deliberadamente parcial**: `email_ops` (a dónde llegan los avisos internos) y `email_from` (el remitente) no salen de ahí. Y no se arma el diccionario a mano en el servicio, sino que el esquema decide qué campos existen — así, si mañana alguien agrega una columna sensible a `company_settings`, no se publica sola: hay que nombrarla.
+
+**Se lee una vez, en el build.** El sitio es estático; no hay una llamada por visita. Si `CTC_API_URL` no está definida —CI, o un `npm run dev` sin backend levantado— se cae al placeholder marcado de D-P4 en vez de romper el build. Y la regla se afinó: aunque el backend responda, si no hay teléfono en la base los datos siguen contando como provisionales. Nada del sitio publica un `tel:` o un `wa.me` que no lleve a ningún lado.
+
+**El formulario "Drop us a line" no se hizo, a propósito.** §3.5.2 lo pone en el footer, pero conectarlo es `POST /contact` con Turnstile, y eso es F8. Un formulario que traga lo que escribes y no lo manda es peor que no tener formulario.
+
+**Dos cosas que salieron de mirar, no de las pruebas.** Con datos reales, los botones flotantes tapaban la línea de políticas al llegar al final de la página — el footer ganó espacio abajo para que vivan ahí, y ahora hay una prueba que compara los dos recuadros y falla si se enciman. Y dos pruebas del header se rompieron al agregar el footer: buscaban "Bisbee's Black & Blue" en toda la página y ahora aparece dos veces. No era un bug: el localizador estaba mal, y quedó acotado al panel del mega menú.
+
+**Un error de tipos que resultó ser la tarea de otra fase.** `astro check` en modo `strictest` marcó que los textos de UI podían ser `undefined`, porque el diccionario estaba tipado como `Record<string, string>`. En vez de callarlo con un `!`, el inglés pasó a definir las claves y el español a tener que traerlas todas: si falta una, el build falla. Eso es exactamente lo que pide D15 para F7.13, llegado temprano y gratis.
+
+**Archivos:** `backend/app/schemas/catalog.py`, `backend/app/services/catalog.py`, `backend/app/api/v1/catalog.py`, `backend/tests/test_catalog_company.py` (nuevo), `web/src/lib/company.ts` (nuevo), `web/src/lib/site.ts`, `web/src/components/SiteFooter.astro`, `SiteHeader.astro`, `FloatingActions.astro`, `web/tests/company.spec.ts` (nuevo), `web/tests/layout.spec.ts`, `web/tests/header.spec.ts`, `web/package.json` (dependencia a `@ctc/api-client`), `packages/api-client/src/schema.d.ts`, `WORKPLAN.md`
+
+**Verificación**
+- `uv run pytest` → **327 passed** (2 nuevos): el endpoint devuelve lo que el sitio necesita, y no publica `email_ops` ni `email_from`.
+- `npm run e2e` → **25 passed** (4 nuevos): la conversión de teléfono a E.164 con tres formatos, un dato a medias que se queda en `null`, y que los flotantes no tapen el footer.
+- Prueba manual del criterio contra la base real, descrita arriba.
+- `ruff`, `mypy`, `alembic check`, `pip-audit`, `astro check`, `format:check`, `npm audit` y Lighthouse SEO 100/100: todo limpio.
+
+**Siguiente:** F7.6, portar la home del prototipo aprobado sección por sección. Es la primera vez que el sitio va a verse como el prototipo y no como una página de prueba.
+
 ## 2026-09-16 — F7.4: el header, y el medallón recortado solo
 
 El primer pedazo del sitio que se ve de verdad: barra superior fina con el selector EN/ES, medallón centrado con los links repartidos a los lados, CTA de reserva al extremo, mega menú de ancho completo y menú móvil a pantalla completa.

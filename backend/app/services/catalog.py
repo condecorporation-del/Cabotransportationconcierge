@@ -3,8 +3,17 @@ import unicodedata
 from sqlalchemy import and_, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models import Hotel, Rate, ServiceScope, TripType, VehicleClass, Zone
-from app.schemas.catalog import HotelMatch, HotelPage, RateOut, ZoneOut
+from app.core.errors import AppError
+from app.models import (
+    CompanySettings,
+    Hotel,
+    Rate,
+    ServiceScope,
+    TripType,
+    VehicleClass,
+    Zone,
+)
+from app.schemas.catalog import CompanyOut, HotelMatch, HotelPage, RateOut, ZoneOut
 
 MIN_QUERY_LENGTH = 2
 MIN_SIMILARITY = 0.3
@@ -13,6 +22,18 @@ MIN_SIMILARITY = 0.3
 def _normalize(text: str) -> str:
     decomposed = unicodedata.normalize("NFD", text.strip().lower())
     return "".join(char for char in decomposed if not unicodedata.combining(char))[:60]
+
+
+async def company_public(session: AsyncSession) -> CompanyOut:
+    """Los datos de la empresa que el sitio público muestra (F7.5).
+
+    `CompanyOut` decide qué sale; aquí no se arma el diccionario a mano para que agregar una
+    columna sensible a `company_settings` no la publique sin querer.
+    """
+    settings = await session.scalar(select(CompanySettings))
+    if settings is None:
+        raise AppError("company_not_configured", "Company settings are missing.")
+    return CompanyOut.model_validate(settings)
 
 
 async def search_hotels(session: AsyncSession, query: str, limit: int = 10) -> list[HotelMatch]:
