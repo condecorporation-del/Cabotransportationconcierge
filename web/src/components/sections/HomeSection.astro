@@ -23,8 +23,12 @@ const route = (href: string) => ROUTES[href] ?? href;
 const surface = section.dark ? "bg-ink text-pearl" : index % 2 === 0 ? "bg-paper" : "bg-haze";
 const body = section.dark ? "text-mist" : "text-slate";
 const headingColor = section.dark ? "text-pearl" : "text-ink";
-const gallery = section.images.length > 1;
-const feature = gallery ? undefined : section.images[0];
+// Una sección puede traer su propia composición (las tarjetas de zona, por ejemplo); en ese
+// caso reemplaza a las fotos genéricas y el resto del marco —título, filete, texto— se
+// comparte igual.
+const custom = Astro.slots.has("default");
+const gallery = !custom && section.images.length > 1;
+const feature = custom || gallery ? undefined : section.images[0];
 ---
 
 <section
@@ -82,6 +86,8 @@ const feature = gallery ? undefined : section.images[0];
         )}
       </div>
     )}
+
+    {custom && <slot />}
 
     {gallery && (
       <div class="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

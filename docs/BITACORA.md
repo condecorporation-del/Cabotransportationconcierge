@@ -2,6 +2,27 @@
 
 Una entrada por sesión o tarea, la más reciente arriba (formato en `AGENTS.md` §10).
 
+## 2026-09-16 — F7.6, segunda tanda: las tarjetas de zona, con datos propios
+
+La primera sección que recupera su composición del prototipo. Y la que deja clara la regla del porte: **la foto se porta, el dato no.**
+
+El prototipo muestra cinco tarjetas de zona con foto a sangre, número de zona, nombre, filete dorado, precio grande y tiempo de viaje. Esa forma se copió tal cual. Lo que va adentro, no: los nombres son los propios de CTC (§3.5.6 — "San José del Cabo & Estuary", "The Corridor & Puerto Los Cabos"…, no los de la referencia), las tarifas salen del catálogo real y los tiempos de viaje también. Las cinco fotos del prototipo resultaron corresponder exactamente, y en orden, a las cinco primeras zonas de CTC.
+
+**De dónde salen los datos.** `scripts/extract-zones.mjs` los saca de `backend/scripts/data/catalog.json`, que es la fuente canónica, y los deja en `src/content/zones.json`. Cuando el build corre con `CTC_API_URL`, los precios se refrescan contra `GET /catalog/zones` — porque el admin puede haber cambiado una tarifa desde F6.12 y el catálogo semilla no se entera. Sin backend (CI), se usan los del catálogo. Mismo patrón que el footer de F7.5.
+
+**Un detalle que resultó ser confirmación:** el precio de la primera tarjeta del prototipo, $160 ida y vuelta a San José del Cabo, coincide exacto con el que calcula el catálogo de CTC. Las tarifas ya estaban bien desde F2.
+
+**`HomeSection` aprendió a ceder el lugar.** Ahora una sección puede traer su propia composición por slot; el marco compartido —título, filete dorado, párrafos, CTA— se sigue reusando y solo se reemplaza el bloque de fotos. Así las secciones que faltan (vehículos, reseñas, servicios) entran sin tocar el resto.
+
+**Archivos:** `web/scripts/extract-zones.mjs` (nuevo), `web/src/content/zones.json` (generado), `web/src/lib/zones.ts` (nuevo), `web/src/components/sections/ZoneCards.astro` (nuevo), `web/src/components/sections/HomeSection.astro`, `web/src/pages/index.astro`, `web/tests/home.spec.ts`, `WORKPLAN.md`
+
+**Verificación**
+- `npm run e2e` → **32 passed** (2 nuevos): son cinco tarjetas, con los nombres propios de CTC —la prueba falla si vuelven los de la referencia— y cada una con su tarifa y su tiempo de viaje reales.
+- `npm run check` 0/0/0; `format:check` limpio; Lighthouse SEO 100/100; `npm audit` sin vulnerabilidades.
+- Captura de la sección revisada contra el prototipo.
+
+**Siguiente:** tarjetas de vehículo, reseñas y la rejilla de servicios.
+
 ## 2026-09-16 — F7.6, primera tanda: las 27 secciones de la home
 
 La home del prototipo son 27 secciones y unas dos mil líneas de HTML generado. Transcribirlas a mano habría sido semanas de trabajo y erratas garantizadas.

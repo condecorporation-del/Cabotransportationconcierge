@@ -14,7 +14,8 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "medallion": "node scripts/medallion.mjs",
-    "extract:home": "node scripts/extract-home.mjs"
+    "extract:home": "node scripts/extract-home.mjs",
+    "extract:zones": "node scripts/extract-zones.mjs"
   },
   "dependencies": {
     "@astrojs/react": "6.0.5",

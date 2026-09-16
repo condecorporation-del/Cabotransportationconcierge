@@ -1,18 +1,29 @@
 ---
 import HomeSection from "../components/sections/HomeSection.astro";
+import ZoneCards from "../components/sections/ZoneCards.astro";
 import { HOME_SECTIONS } from "../content/home";
 import BaseLayout from "../layouts/BaseLayout.astro";
+import { SITE } from "../lib/site";
 
 // F7.6: la home, sección por sección, con el contenido del prototipo aprobado. El hero con
-// video es F7.7 y el cotizador del primer bloque se conecta en F8; por eso la primera sección
-// llega aquí como texto y su formulario todavía no existe.
+// video es F7.7 y el cotizador del primer bloque se conecta en F8.
+//
+// Las secciones que en el prototipo tienen composición propia la reciben aquí; el resto pasa
+// por el marco compartido de `HomeSection`.
+const ZONES_SECTION = 3; // "Cabo transfers: destinations and rates"
 ---
 
 <BaseLayout
   title="Cabo Transportation Concierge"
   description="Private airport transfers and chauffeur service in Los Cabos: fixed rates by zone, flight tracking and a driver waiting when you land."
 >
-  {HOME_SECTIONS.map((section, index) => (
-    <HomeSection section={section} index={index} />
-  ))}
+  {HOME_SECTIONS.map((section, index) =>
+    index === ZONES_SECTION ? (
+      <HomeSection section={section} index={index}>
+        <ZoneCards locale={SITE.defaultLocale} />
+      </HomeSection>
+    ) : (
+      <HomeSection section={section} index={index} />
+    ),
+  )}
 </BaseLayout>

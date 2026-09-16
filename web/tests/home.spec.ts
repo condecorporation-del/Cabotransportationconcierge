@@ -57,3 +57,30 @@ test("todas las fotos tienen alt y medidas", async ({ page }) => {
   }
   expect(described).toBeGreaterThanOrEqual(total - 1);
 });
+
+test.describe("tarjetas de zona", () => {
+  test("son cinco, con los nombres propios de CTC y no los de la referencia", async ({ page }) => {
+    await page.goto("/");
+    const cards = page.locator("section:nth-of-type(4) li");
+    await expect(cards).toHaveCount(5);
+
+    // §3.5.6: mismos límites geográficos, nombres propios. Si alguna vez vuelven los de la
+    // referencia ("Tourist Corridor", "Cabo Pacific Area"), esto falla.
+    await expect(cards.nth(0)).toContainText("San José del Cabo & Estuary");
+    await expect(cards.nth(1)).toContainText("The Corridor & Puerto Los Cabos");
+    await expect(cards.nth(2)).toContainText("Cabo San Lucas & Marina");
+  });
+
+  test("cada tarjeta trae su tarifa y su tiempo de viaje reales", async ({ page }) => {
+    await page.goto("/");
+    const cards = page.locator("section:nth-of-type(4) li");
+
+    for (let i = 0; i < 5; i += 1) {
+      const card = cards.nth(i);
+      // Un precio de verdad, no un guion: si el catálogo se queda sin tarifas, se nota aquí.
+      await expect(card).toContainText(/\$\d{2,3}/);
+      await expect(card).toContainText(/\d+–\d+ min from SJD/);
+      await expect(card.getByRole("link", { name: "See rates" })).toBeVisible();
+    }
+  });
+});

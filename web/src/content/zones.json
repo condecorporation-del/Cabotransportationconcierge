@@ -1,0 +1,59 @@
+{
+  "zones": [
+    {
+      "slug": "san-jose-del-cabo-estuary",
+      "name": {
+        "en": "San José del Cabo & Estuary",
+        "es": "San José del Cabo y el Estero"
+      },
+      "driveMinutesMin": 16,
+      "driveMinutesMax": 22,
+      "fromPriceCents": 16000,
+      "photo": "/images/home/zone-1-960.webp"
+    },
+    {
+      "slug": "the-corridor",
+      "name": {
+        "en": "The Corridor & Puerto Los Cabos",
+        "es": "El Corredor y Puerto Los Cabos"
+      },
+      "driveMinutesMin": 24,
+      "driveMinutesMax": 34,
+      "fromPriceCents": 18500,
+      "photo": "/images/home/zone-2-960.webp"
+    },
+    {
+      "slug": "cabo-san-lucas-marina",
+      "name": {
+        "en": "Cabo San Lucas & Marina",
+        "es": "Cabo San Lucas y la Marina"
+      },
+      "driveMinutesMin": 44,
+      "driveMinutesMax": 52,
+      "fromPriceCents": 19500,
+      "photo": "/images/home/zone-3-960.webp"
+    },
+    {
+      "slug": "pacific-coast",
+      "name": {
+        "en": "Pacific Coast & Pedregal",
+        "es": "Costa del Pacífico y Pedregal"
+      },
+      "driveMinutesMin": 48,
+      "driveMinutesMax": 65,
+      "fromPriceCents": 20500,
+      "photo": "/images/home/zone-4-960.webp"
+    },
+    {
+      "slug": "pacific-north",
+      "name": {
+        "en": "Pacific North · Diamante",
+        "es": "Pacífico Norte · Diamante"
+      },
+      "driveMinutesMin": 55,
+      "driveMinutesMax": 70,
+      "fromPriceCents": 23000,
+      "photo": "/images/home/zone-5-960.webp"
+    }
+  ]
+}

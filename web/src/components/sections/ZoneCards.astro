@@ -1,0 +1,76 @@
+---
+import { localize } from "../../lib/nav";
+import type { Locale } from "../../lib/site";
+import { getHomeZones, money } from "../../lib/zones";
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const zones = await getHomeZones();
+
+const LABELS = {
+  en: {
+    zone: "Zone",
+    from: "Starting from",
+    trip: "Round-trip",
+    drive: "from SJD",
+    cta: "See rates",
+  },
+  es: { zone: "Zona", from: "Desde", trip: "Ida y vuelta", drive: "desde SJD", cta: "Ver tarifas" },
+} as const;
+const t = LABELS[locale];
+---
+
+{/* Composición del prototipo: foto a sangre, número de zona, nombre, filete dorado, precio
+    grande y tiempo de viaje. Los nombres y las tarifas son los de CTC (§3.5.6), no los de la
+    referencia: la foto se porta, el dato no. */}
+<ul class="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+  {zones.map((zone, index) => (
+    <li class="group relative isolate flex min-h-[26rem] flex-col justify-between overflow-hidden bg-ink text-center">
+      <img
+        src={zone.photo}
+        alt={zone.name[locale] ?? zone.name["en"] ?? zone.slug}
+        width="960"
+        height="640"
+        loading="lazy"
+        decoding="async"
+        class="absolute inset-0 -z-20 h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+      />
+      <div class="absolute inset-0 -z-10 bg-gradient-to-b from-deep/55 via-deep/70 to-deep/90" />
+
+      <div class="p-6 pt-10">
+        <span class="font-brand text-label tracking-(--tracking-label) border border-pearl/40 px-3 py-1.5 text-pearl/90 uppercase">
+          {t.zone} {index + 1}
+        </span>
+        <h3 class="font-display mt-4 text-h3 leading-tight text-pearl">
+          {zone.name[locale] ?? zone.name["en"]}
+        </h3>
+      </div>
+
+      <div class="flex flex-col items-center p-6 pb-8">
+        <span class="mb-4 block h-px w-8 bg-gold transition-all duration-500 group-hover:w-16" />
+        <p class="text-small text-pearl">{t.from}</p>
+        <p class="flex items-baseline gap-1">
+          <span class="font-display text-h1 leading-none text-pearl tabular-nums">
+            {zone.fromPriceCents === null ? "—" : money(zone.fromPriceCents)}
+          </span>
+          <span class="text-small font-semibold text-gold">USD</span>
+        </p>
+        <p class="font-brand text-label tracking-(--tracking-label) mt-1 text-pearl/60 uppercase">
+          {t.trip}
+        </p>
+        <p class="mt-2 text-small text-pearl">
+          {zone.driveMinutesMin}–{zone.driveMinutesMax} min {t.drive}
+        </p>
+        <a
+          href={localize("/cabo-shuttle-prices", locale)}
+          class="font-brand text-label tracking-(--tracking-label) mt-6 w-full border border-gold px-5 py-3 text-gold-light uppercase hover:bg-gold hover:text-ink"
+        >
+          {t.cta}
+        </a>
+      </div>
+    </li>
+  ))}
+</ul>
