@@ -1,11 +1,14 @@
 /**
- * Las zonas de la home (F7.6).
+ * Zonas y flota para la home (F7.6).
  *
- * `src/content/zones.json` lo genera `scripts/extract-zones.mjs` del catálogo canónico y es el
- * respaldo. Si el build corre con `CTC_API_URL`, los precios se refrescan contra la API, que es
- * la que sabe la tarifa vigente — el admin puede haberla cambiado desde F6.12.
+ * `src/content/catalog.json` lo genera `scripts/extract-catalog.mjs` del catálogo canónico y es
+ * el respaldo. Si el build corre con `CTC_API_URL`, los precios de **zona** se refrescan contra
+ * la API, que sabe la tarifa vigente — el admin puede haberla cambiado desde F6.12.
+ *
+ * Los de **flota** no se refrescan: `GET /catalog/vehicles` devuelve capacidades, no tarifas.
+ * Exponer un "desde" por vehículo pide un endpoint que hoy no existe.
  */
-import data from "../content/zones.json";
+import data from "../content/catalog.json";
 
 export interface Zone {
   slug: string;
@@ -16,7 +19,17 @@ export interface Zone {
   photo: string;
 }
 
-const BUNDLED: Zone[] = data.zones;
+export interface Vehicle {
+  code: string;
+  name: string;
+  maxPax: number;
+  maxBags: number;
+  fromPriceCents: number | null;
+}
+
+const BUNDLED_ZONES: Zone[] = data.zones;
+
+export const VEHICLES: Vehicle[] = data.vehicles;
 
 async function livePrices(): Promise<Map<string, number | null>> {
   const base = process.env["CTC_API_URL"];
@@ -34,7 +47,7 @@ let cached: Promise<Zone[]> | undefined;
 
 export function getHomeZones(): Promise<Zone[]> {
   cached ??= livePrices().then((prices) =>
-    BUNDLED.map((zone) => ({
+    BUNDLED_ZONES.map((zone) => ({
       ...zone,
       fromPriceCents: prices.get(zone.slug) ?? zone.fromPriceCents,
     })),

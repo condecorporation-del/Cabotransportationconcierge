@@ -99,6 +99,36 @@ function isWidgetChrome(value) {
   return WIDGET_LABELS.filter((label) => value.includes(label)).length >= 2;
 }
 
+/**
+ * El prototipo es un espejo rebrandeado de la referencia, así que arrastra **su** prueba social:
+ * "5.0 Google reviews (901)", "6,700 reseñas", "since 2013", "#1 in Cabo". CTC es nueva y no
+ * tiene ninguna de esas cifras.
+ *
+ * La decisión ya estaba tomada en el plan (D-P3, §"Estrellas y reseñas"): datos reales del
+ * cliente o se quita. Publicar calificaciones y antigüedad ajenas no es un detalle de porte —
+ * es decirle al viajero algo falso justo donde está decidiendo si confiar su llegada. Las
+ * reseñas de verdad se recogen en F16.1.
+ */
+const REFERENCE_CLAIMS = [
+  /\b\d(?:\.\d)?\s*(?:★|stars?\b|-?star\b|rated\b)/i,
+  // Sin `\b` delante: en el prototipo viene pegado al número ("5.0Google reviews(901)"), y
+  // entre un dígito y una letra no hay límite de palabra.
+  /Google\s*reviews?/i,
+  /\d\.\d\s*(?:Google|star)/i,
+  /\b\d{1,3},\d{3}\+?\s*(?:reviews?|guests?|trips?)\b/i,
+  /\bsince\s+20\d\d\b/i,
+  /#1\s+in\s+Cabo/i,
+  /\b(?:TripAdvisor|Yelp)\b/i,
+];
+
+const dropped = [];
+
+function isReferenceClaim(value) {
+  const hit = REFERENCE_CLAIMS.some((pattern) => pattern.test(value));
+  if (hit) dropped.push(value.replace(/<[^>]+>/g, "").slice(0, 110));
+  return hit;
+}
+
 const html = await readFile(SOURCE, "utf8");
 const body = html.slice(html.indexOf("<body"));
 
@@ -107,13 +137,22 @@ for (const chunk of body.split(/(?=<section\b)/).slice(1)) {
   const open = chunk.match(/<section([^>]*)>/)?.[1] ?? "";
   const heading = chunk.match(/<h[12][^>]*>(.*?)<\/h[12]>/s)?.[1];
 
+  // La sección de testimonios es prueba social de la referencia de punta a punta: no se filtra
+  // frase por frase, se quita entera (D-P3). Vuelve en F16.1 con las reseñas reales de CTC.
+  if (/id="testimonials"/.test(open)) {
+    dropped.push("(la sección de testimonios completa)");
+    continue;
+  }
+
   const paragraphs = all(/<p[^>]*>(.*?)<\/p>/gs, chunk)
     .map((m) => rich(m[1]))
-    .filter((p) => p.replace(/<[^>]+>/g, "").length > 40 && !isWidgetChrome(p));
+    .filter(
+      (p) => p.replace(/<[^>]+>/g, "").length > 40 && !isWidgetChrome(p) && !isReferenceClaim(p),
+    );
 
   const bullets = all(/<li[^>]*>(.*?)<\/li>/gs, chunk)
     .map((m) => text(m[1]))
-    .filter((b) => b.length > 3 && b.length < 220 && !isWidgetChrome(b));
+    .filter((b) => b.length > 3 && b.length < 220 && !isWidgetChrome(b) && !isReferenceClaim(b));
 
   // Botones: los <a> con fondo o borde, que en el prototipo son los CTA.
   const ctas = all(/<a\b([^>]*)>(.*?)<\/a>/gs, chunk)
@@ -137,7 +176,7 @@ for (const chunk of body.split(/(?=<section\b)/).slice(1)) {
       question: text(inner.match(/<summary[^>]*>(.*?)<\/summary>/s)?.[1] ?? ""),
       answer: rich(inner.replace(/<summary[^>]*>.*?<\/summary>/s, "")),
     }))
-    .filter((entry) => entry.question && entry.answer);
+    .filter((entry) => entry.question && entry.answer && !isReferenceClaim(entry.answer));
 
   sections.push({
     id: open.match(/id="([^"]+)"/)?.[1] ?? null,
@@ -181,3 +220,9 @@ console.log(
     .join("\n"),
 );
 console.log(`\n${sections.length} secciones -> ${OUT}`);
+
+// Lo descartado se imprime siempre: si mañana alguien afloja el filtro, se ve en el build.
+if (dropped.length > 0) {
+  console.log(`\nDescartado por ser prueba social de la referencia (D-P3): ${dropped.length}`);
+  for (const item of dropped) console.log(`  - ${item}`);
+}

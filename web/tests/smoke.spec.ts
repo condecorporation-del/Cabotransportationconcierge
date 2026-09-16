@@ -13,7 +13,7 @@ test("sin JavaScript la home sigue completa y navegable", async ({ browser }) =>
   const page = await context.newPage();
   await page.goto("/");
 
-  await expect(page.locator("main section")).toHaveCount(27);
+  await expect(page.locator("main section")).toHaveCount(26);
   await expect(page.getByRole("link", { name: "Reserve", exact: true }).first()).toBeVisible();
 
   await context.close();

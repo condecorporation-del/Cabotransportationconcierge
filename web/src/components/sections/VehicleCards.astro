@@ -1,0 +1,65 @@
+---
+import { VEHICLES, money } from "../../lib/catalog";
+import { localize } from "../../lib/nav";
+import type { Locale } from "../../lib/site";
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+
+const LABELS = {
+  en: { guests: "guests", bags: "bags", from: "from", cta: "Get a quote" },
+  es: { guests: "pasajeros", bags: "maletas", from: "desde", cta: "Cotizar" },
+} as const;
+const t = LABELS[locale];
+---
+
+{/* El prototipo dibujaba estas tarjetas con JavaScript y su HTML estático no trae ninguna, así
+    que no hay composición que portar: son fichas con los datos reales de la flota. Lo que el
+    texto del prototipo promete es "sized to passengers and luggage", y eso es lo que muestran.
+    Las fotos por vehículo llegan con las definitivas del cliente (F7.11). */}
+<ul class="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+  {VEHICLES.map((vehicle) => (
+    <li class="flex flex-col justify-between gap-6 border border-rule bg-paper p-7">
+      <div>
+        <h3 class="font-display text-h3 leading-tight text-ink">{vehicle.name}</h3>
+        <span class="mt-4 block h-px w-8 bg-gold" aria-hidden="true" />
+        <dl class="mt-5 flex flex-col gap-1.5 text-small text-slate">
+          <div class="flex items-baseline gap-2">
+            <dt class="sr-only">{t.guests}</dt>
+            <dd>
+              <span class="text-ink tabular-nums">{vehicle.maxPax}</span> {t.guests}
+            </dd>
+          </div>
+          <div class="flex items-baseline gap-2">
+            <dt class="sr-only">{t.bags}</dt>
+            <dd>
+              <span class="text-ink tabular-nums">{vehicle.maxBags}</span> {t.bags}
+            </dd>
+          </div>
+        </dl>
+      </div>
+
+      <div class="flex items-end justify-between gap-4">
+        {vehicle.fromPriceCents !== null && (
+          <p class="flex items-baseline gap-1.5 text-slate">
+            <span class="font-brand text-label tracking-(--tracking-label) uppercase">
+              {t.from}
+            </span>
+            <span class="font-display text-h3 leading-none text-ink tabular-nums">
+              {money(vehicle.fromPriceCents)}
+            </span>
+          </p>
+        )}
+        <a
+          href={localize("/book", locale)}
+          class="font-brand text-label tracking-(--tracking-label) border border-gold-dark px-5 py-2.5 whitespace-nowrap text-gold-dark uppercase hover:bg-gold hover:text-ink"
+        >
+          {t.cta}
+        </a>
+      </div>
+    </li>
+  ))}
+</ul>

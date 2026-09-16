@@ -2,6 +2,31 @@
 
 Una entrada por sesión o tarea, la más reciente arriba (formato en `AGENTS.md` §10).
 
+## 2026-09-16 — F7.6: flota real, y la prueba social ajena que no se publica
+
+**El hallazgo importante de esta tanda no fue de diseño.** El prototipo es un espejo rebrandeado de la referencia, y arrastra **su** prueba social: "5.0 Google reviews (901)", "6,700 reseñas", "since 2013", "#1 in Cabo", más una sección entera de testimonios con citas de sus clientes, con el nombre de CTC encima.
+
+CTC es una empresa nueva. No tiene ninguna de esas cifras. Publicarlas no es un descuido de porte: es decirle al viajero algo falso justo donde está decidiendo si confía su llegada a un desconocido en un aeropuerto extranjero.
+
+La decisión ya estaba tomada en el plan y solo había que aplicarla — D-P3: *"Datos reales del cliente o se quita la sección"*. Así que: **la sección de testimonios no se publica** (vuelve en F16.1, con las reseñas reales y su enlace de origen), y el extractor descarta las cuatro afirmaciones sueltas que quedaban en otras secciones. Lo descartado **se imprime en cada corrida**, para que si alguien afloja el filtro se vea; y hay una prueba de navegador que falla si alguna vuelve a la página.
+
+Una de las cuatro se llevó por delante un párrafo entero que era casi todo legítimo —"nuestros traslados son privados y directos, agua fría y cerveza al llegar, seguro y casetas incluidas"— porque terminaba en una calificación. Se prefirió perder una frase buena a publicar una falsa; los textos se reescriben completos en F9.1 de todos modos.
+
+**Las fichas de flota.** Aquí no había nada que portar: el prototipo dibujaba estas tarjetas con JavaScript y su HTML estático no trae ninguna. Se arman con la flota real —Suburban y Escalade 5 pasajeros, Van y Limusina 10, Sprinter 17— y el "desde" de cada una sale del catálogo. Las fotos por vehículo no existen todavía en ningún lado; llegan con las definitivas del cliente en F7.11.
+
+**Un detalle de Astro que costaba caro:** `Astro.slots.has("default")` da verdadero con *cualquier* hijo, aunque la expresión no pinte nada. Pasar `{condición && <Tarjetas />}` a todas las secciones habría apagado las fotos de las 24 que no tienen composición propia. El hijo se pasa solo cuando existe.
+
+**Archivos:** `web/scripts/extract-home.mjs`, `web/scripts/extract-catalog.mjs` (antes `extract-zones.mjs`, ahora también la flota), `web/src/lib/catalog.ts` (antes `zones.ts`), `web/src/content/catalog.json`, `web/src/content/home.json`, `web/src/components/sections/VehicleCards.astro` (nuevo), `HomeSection.astro`, `web/src/pages/index.astro`, `web/tests/home.spec.ts`, `web/tests/smoke.spec.ts`, `WORKPLAN.md`
+
+**Verificación**
+- `npm run e2e` → **35 passed** (3 nuevos): la flota real con sus capacidades, que no se publique prueba social de la referencia, y que la sección de testimonios no esté.
+- La corrida del extractor lista las 5 cosas descartadas por D-P3.
+- `npm run check` 0/0/0; `format:check` limpio; Lighthouse SEO 100/100; `npm audit` sin vulnerabilidades.
+
+**Pendiente para Marlon:** cuando CTC tenga reseñas reales de Google o TripAdvisor, se cargan y vuelve la sección (F16.1). Mientras tanto el sitio no presume nada que no pueda respaldar.
+
+**Siguiente:** la rejilla de servicios, y con eso cierra F7.6.
+
 ## 2026-09-16 — F7.6, segunda tanda: las tarjetas de zona, con datos propios
 
 La primera sección que recupera su composición del prototipo. Y la que deja clara la regla del porte: **la foto se porta, el dato no.**

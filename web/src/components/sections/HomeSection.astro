@@ -29,6 +29,9 @@ const headingColor = section.dark ? "text-pearl" : "text-ink";
 const custom = Astro.slots.has("default");
 const gallery = !custom && section.images.length > 1;
 const feature = custom || gallery ? undefined : section.images[0];
+// El prototipo centra las entradillas cortas bajo el título y alinea a la izquierda los
+// bloques largos, que centrados serían ilegibles. Aquí la regla es la misma.
+const centered = !feature && section.bullets.length === 0 && section.paragraphs.length <= 3;
 ---
 
 <section
@@ -58,7 +61,7 @@ const feature = custom || gallery ? undefined : section.images[0];
           feature ? "lg:grid-cols-2" : "mx-auto max-w-(--container-prose)",
         ]}
       >
-        <div class:list={[body, "flex flex-col gap-5"]}>
+        <div class:list={[body, centered && "text-center", "flex flex-col gap-5"]}>
           {section.paragraphs.map((paragraph) => (
             <p set:html={paragraph} />
           ))}

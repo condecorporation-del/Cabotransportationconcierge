@@ -55,5 +55,42 @@
       "fromPriceCents": 23000,
       "photo": "/images/home/zone-5-960.webp"
     }
+  ],
+  "vehicles": [
+    {
+      "code": "SUBURBAN",
+      "name": "Chevrolet Suburban",
+      "maxPax": 5,
+      "maxBags": 5,
+      "fromPriceCents": 9000
+    },
+    {
+      "code": "ESCALADE",
+      "name": "Cadillac Escalade",
+      "maxPax": 5,
+      "maxBags": 5,
+      "fromPriceCents": 14500
+    },
+    {
+      "code": "VAN",
+      "name": "Passenger Van",
+      "maxPax": 10,
+      "maxBags": 10,
+      "fromPriceCents": 11000
+    },
+    {
+      "code": "LIMOUSINE",
+      "name": "Stretch Limousine",
+      "maxPax": 10,
+      "maxBags": 4,
+      "fromPriceCents": 23000
+    },
+    {
+      "code": "SPRINTER",
+      "name": "Mercedes-Benz Sprinter",
+      "maxPax": 17,
+      "maxBags": 17,
+      "fromPriceCents": 13000
+    }
   ]
 }

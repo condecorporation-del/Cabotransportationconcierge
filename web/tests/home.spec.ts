@@ -3,9 +3,9 @@ import { expect, test } from "@playwright/test";
 /** F7.6. La home se arma con el contenido extraído del prototipo aprobado. Estas pruebas
  *  vigilan que el porte no pierda secciones ni deje entrar basura del extractor. */
 
-test("están las 27 secciones del prototipo", async ({ page }) => {
+test("están las 26 secciones que se publican del prototipo", async ({ page }) => {
   await page.goto("/");
-  await expect(page.locator("main section")).toHaveCount(27);
+  await expect(page.locator("main section")).toHaveCount(26);
 });
 
 test("cada sección con título lleva su barra dorada", async ({ page }) => {
@@ -83,4 +83,36 @@ test.describe("tarjetas de zona", () => {
       await expect(card.getByRole("link", { name: "See rates" })).toBeVisible();
     }
   });
+});
+
+test("las fichas de flota traen la flota real de CTC", async ({ page }) => {
+  await page.goto("/");
+  const cards = page.locator("section:nth-of-type(6) li");
+  await expect(cards).toHaveCount(5);
+
+  // Capacidades del catálogo: la Suburban lleva 5 y el Sprinter 17. Si alguien copia estos
+  // números del prototipo de la referencia en vez de leerlos del catálogo, aquí se nota.
+  await expect(cards.nth(0)).toContainText("Chevrolet Suburban");
+  await expect(cards.nth(0)).toContainText("5 guests");
+  await expect(cards.nth(4)).toContainText("Mercedes-Benz Sprinter");
+  await expect(cards.nth(4)).toContainText("17 guests");
+  await expect(cards.nth(4)).toContainText("17 bags");
+});
+
+test("no se publica prueba social de la referencia", async ({ page }) => {
+  // D-P3: el prototipo es un espejo rebrandeado y arrastra las cifras de la referencia —"5.0
+  // Google reviews (901)", "since 2013", "#1 in Cabo"—. CTC es nueva y no tiene ninguna.
+  // Publicarlas sería decirle al viajero algo falso donde decide si confiar su llegada.
+  await page.goto("/");
+  const body = (await page.locator("body").textContent()) ?? "";
+
+  for (const claim of [/Google\s*reviews/i, /since\s+20\d\d/i, /#1\s+in\s+Cabo/i, /TripAdvisor/i]) {
+    expect(body, `se coló una afirmación de la referencia: ${claim}`).not.toMatch(claim);
+  }
+});
+
+test("la sección de testimonios no está", async ({ page }) => {
+  // Vuelve en F16.1, con las reseñas reales de CTC y su enlace de origen.
+  await page.goto("/");
+  await expect(page.locator("#testimonials")).toHaveCount(0);
 });

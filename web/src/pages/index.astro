@@ -1,5 +1,6 @@
 ---
 import HomeSection from "../components/sections/HomeSection.astro";
+import VehicleCards from "../components/sections/VehicleCards.astro";
 import ZoneCards from "../components/sections/ZoneCards.astro";
 import { HOME_SECTIONS } from "../content/home";
 import BaseLayout from "../layouts/BaseLayout.astro";
@@ -8,22 +9,33 @@ import { SITE } from "../lib/site";
 // F7.6: la home, sección por sección, con el contenido del prototipo aprobado. El hero con
 // video es F7.7 y el cotizador del primer bloque se conecta en F8.
 //
-// Las secciones que en el prototipo tienen composición propia la reciben aquí; el resto pasa
-// por el marco compartido de `HomeSection`.
+// Las secciones con composición propia la reciben por slot; el resto pasa por el marco
+// compartido de `HomeSection`. El hijo se pasa solo cuando existe: `Astro.slots.has()` da
+// verdadero con cualquier hijo, aunque no pinte nada, y eso apagaría las fotos del resto.
 const ZONES_SECTION = 3; // "Cabo transfers: destinations and rates"
+const FLEET_SECTION = 5; // "Our vehicles for Cabo transportation"
+const locale = SITE.defaultLocale;
 ---
 
 <BaseLayout
   title="Cabo Transportation Concierge"
   description="Private airport transfers and chauffeur service in Los Cabos: fixed rates by zone, flight tracking and a driver waiting when you land."
 >
-  {HOME_SECTIONS.map((section, index) =>
-    index === ZONES_SECTION ? (
-      <HomeSection section={section} index={index}>
-        <ZoneCards locale={SITE.defaultLocale} />
-      </HomeSection>
-    ) : (
-      <HomeSection section={section} index={index} />
-    ),
-  )}
+  {HOME_SECTIONS.map((section, index) => {
+    if (index === ZONES_SECTION) {
+      return (
+        <HomeSection section={section} index={index}>
+          <ZoneCards locale={locale} />
+        </HomeSection>
+      );
+    }
+    if (index === FLEET_SECTION) {
+      return (
+        <HomeSection section={section} index={index}>
+          <VehicleCards locale={locale} />
+        </HomeSection>
+      );
+    }
+    return <HomeSection section={section} index={index} />;
+  })}
 </BaseLayout>
