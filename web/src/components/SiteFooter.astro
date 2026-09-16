@@ -1,0 +1,28 @@
+---
+import { CONTACT, SITE, UI, type Locale } from "../lib/site";
+
+interface Props {
+  locale: Locale;
+}
+const { locale } = Astro.props;
+const t = UI[locale];
+
+// Cascarón mínimo de F7.3. El footer con los datos reales de `company_settings` es F7.5;
+// mientras no existan (D-P4), el contacto se muestra marcado como provisional, no inventado.
+---
+
+<footer class="mt-(--spacing-section) border-t border-gold-dark/25">
+  <div class="mx-auto flex max-w-(--container-site) flex-col gap-3 px-(--spacing-gutter) py-(--spacing-block) text-small text-stone">
+    <p class="font-brand tracking-(--tracking-brand) text-gold uppercase">{SITE.name}</p>
+    {CONTACT.pending ? (
+      <p data-contact="pending">{t.contactPending}</p>
+    ) : (
+      <p>
+        <a href={`tel:${CONTACT.phoneE164}`}>{CONTACT.phone}</a> · {CONTACT.hours}
+      </p>
+    )}
+    <p>
+      © {new Date().getFullYear()} {SITE.name}. {t.footerRights}
+    </p>
+  </div>
+</footer>

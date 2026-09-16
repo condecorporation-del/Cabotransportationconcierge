@@ -2,6 +2,34 @@
 
 Una entrada por sesión o tarea, la más reciente arriba (formato en `AGENTS.md` §10).
 
+## 2026-09-16 — F7.3: layout base y SEO en 100
+
+`BaseLayout.astro` es el cascarón por el que van a pasar todas las páginas del sitio: `<head>` completo, enlace de salto al contenido, header, `main`, footer y los botones flotantes.
+
+**El canonical sale de la URL, no de una prop.** Si cada página tuviera que declarar su propia ruta canónica, tarde o temprano una la declara mal y Google indexa dos veces lo mismo. El layout la toma de `Astro.url.pathname`, le quita el prefijo `/es` y arma con eso el canonical y el par de `hreflang` — así las dos versiones de idioma comparten ruta lógica sin que nadie escriba nada a mano (D15).
+
+**Lighthouse de verdad, no una aproximación.** El criterio decía "Lighthouse SEO 100" y era tentador cambiarlo por un puñado de aserciones sobre etiquetas. `npm run seo` corre Lighthouse contra el sitio ya construido, reutilizando el Chromium que Playwright ya bajó en vez de exigir un Chrome del sistema — así corre igual aquí y en CI. Resultado: **100/100**, y si baja, el job falla e imprime qué auditoría se rompió.
+
+**Nada de números inventados.** El plan (D-P4) dice que los datos de contacto salen de `company_settings`, que Marlon todavía no entrega, y que hasta entonces se muestra un placeholder visible. Se llevó un paso más allá: el botón flotante de WhatsApp **no se publica** mientras el número sea placeholder, porque un botón que manda a un número falso es peor que no tener botón. Lo mismo con Customer Help: existe pero deshabilitado hasta que exista el agente (F10). Hay una prueba que falla si el sitio llega a publicar un `tel:` o un `wa.me`.
+
+**Header y footer son cascarones a propósito.** Los de verdad son F7.4 y F7.5; aquí solo está la estructura para que el layout se sostenga y se pueda medir.
+
+**De paso, Prettier.** Al formatear un par de scripts quedó el paquete a medias. El backend ya exige `ruff format --check` en CI desde F0, así que `web` gana su equivalente: `npm run format:check`, también en CI. Mejor ahora que cuando haya cincuenta archivos.
+
+**Dos detalles de Windows que costaron tiempo:**
+
+1. `chrome-launcher` borra su perfil temporal antes de que Chrome suelte los archivos y revienta con `EPERM`. Peor: lanza de forma **síncrona**, así que un `.catch()` no lo atrapa y el script salía en 1 con el SEO ya en 100. Va en `try/catch`.
+2. Los scripts de e2e y de SEO necesitaban el mismo rodeo para el demonio de `astro preview`. Estaba duplicado; se extrajo a `scripts/preview.mjs` con un `withPreview()` que construye, levanta y apaga pase lo que pase.
+
+**Archivos:** `web/src/layouts/BaseLayout.astro` (nuevo), `web/src/components/Seo.astro`, `SiteHeader.astro`, `SiteFooter.astro`, `FloatingActions.astro` (nuevos), `web/src/lib/site.ts` (nuevo), `web/scripts/preview.mjs`, `web/scripts/seo.mjs` (nuevos), `web/scripts/e2e.mjs`, `web/src/pages/index.astro`, `web/tests/layout.spec.ts` (nuevo), `web/.prettierrc.json`, `web/.prettierignore`, `.github/workflows/ci.yml`, `WORKPLAN.md`
+
+**Verificación**
+- `npm run seo` → **SEO 100/100** contra el sitio construido.
+- `npm run e2e` → **13 passed** (5 nuevos): canonical y `hreflang` absolutos, etiquetas para compartir con la descripción dentro del rango de §12, JSON-LD que parsea, el enlace de salto aparece al tabular y lleva a `#main`, y no se publica ningún teléfono ni WhatsApp mientras el contacto sea provisional.
+- `npm run build` sin warnings; `npm run check` → 0/0/0; `npm run format:check` limpio; `npm audit` sin vulnerabilidades.
+
+**Siguiente:** F7.4, el header de §3.5.6 — barra superior, medallón centrado con links a los lados, barra de vidrio al hacer scroll, mega menú de ancho completo y menú móvil a pantalla completa, todo navegable con teclado y con los links en HTML real.
+
 ## 2026-09-16 — F7.2: tokens de marca, y el logo oficial ya está en el repo
 
 **El logo.** Marlon confirmó que el JPEG que estaba suelto en `site/` (1024×1029, medallón dorado con el monograma CTC grabado, "CABO / TRANSPORTATION / CONCIERGE" y la Escalade) es el oficial. Estaba sin versionar; ya está commiteado. Los recortes con fondo transparente, el favicon y el SVG trazado son F7.16.

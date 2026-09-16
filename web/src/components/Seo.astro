@@ -1,0 +1,60 @@
+---
+import { SITE, absoluteUrl, type Locale } from "../lib/site";
+
+interface Props {
+  title: string;
+  description: string;
+  path: string;
+  locale: Locale;
+  image?: string | undefined;
+}
+
+const { title, description, path, locale, image } = Astro.props;
+
+// El <title> lleva la marca salvo en la home, donde el título ya es la marca (§12, SEO).
+const fullTitle = title === SITE.name ? title : `${title} | ${SITE.name}`;
+const canonical = absoluteUrl(path);
+const ogImage = image ? absoluteUrl(image) : undefined;
+
+// Cada página existe en los dos idiomas con el mismo slug (D15): `/…` en inglés, `/es/…` en
+// español. El helper vive aquí para que ninguna página tenga que armar la ruta a mano.
+const alternates = SITE.locales.map((code) => ({
+  code,
+  href: absoluteUrl(code === SITE.defaultLocale ? path : `/${code}${path}`),
+}));
+---
+
+<title>{fullTitle}</title>
+<meta name="description" content={description} />
+<link rel="canonical" href={canonical} />
+
+{alternates.map(({ code, href }) => (
+  <link rel="alternate" hreflang={code} href={href} />
+))}
+<link rel="alternate" hreflang="x-default" href={absoluteUrl(path)} />
+
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content={SITE.name} />
+<meta property="og:title" content={fullTitle} />
+<meta property="og:description" content={description} />
+<meta property="og:url" content={canonical} />
+<meta property="og:locale" content={locale === "es" ? "es_MX" : "en_US"} />
+{ogImage && <meta property="og:image" content={ogImage} />}
+
+<meta name="twitter:card" content={ogImage ? "summary_large_image" : "summary"} />
+<meta name="twitter:title" content={fullTitle} />
+<meta name="twitter:description" content={description} />
+{ogImage && <meta name="twitter:image" content={ogImage} />}
+
+{/* El `logo` del JSON-LD entra en F7.16, cuando exista el medallón recortado como asset web. */}
+<script
+  type="application/ld+json"
+  is:inline
+  set:html={JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    name: SITE.name,
+    url: SITE.url,
+    areaServed: "Los Cabos, Baja California Sur, Mexico",
+  })}
+></script>

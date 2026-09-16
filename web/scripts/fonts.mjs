@@ -50,7 +50,9 @@ for (const [, subset, block] of blocks) {
 
   const slug = family.toLowerCase().replace(/\s+/g, "-");
   const name = `${slug}-${weight}${style === "italic" ? "-italic" : ""}-${subset}.woff2`;
-  const bytes = Buffer.from(await (await fetch(src, { headers: { "User-Agent": CHROME } })).arrayBuffer());
+  const bytes = Buffer.from(
+    await (await fetch(src, { headers: { "User-Agent": CHROME } })).arrayBuffer(),
+  );
   await writeFile(path.join(OUT_DIR, name), bytes);
 
   faces.push(
@@ -71,4 +73,6 @@ const header =
 await writeFile(FACES_FILE, header + faces.join("\n\n") + "\n");
 
 const files = await readdir(OUT_DIR);
-console.log(`${files.length} archivos WOFF2 en ${OUT_DIR}, ${faces.length} @font-face en ${FACES_FILE}`);
+console.log(
+  `${files.length} archivos WOFF2 en ${OUT_DIR}, ${faces.length} @font-face en ${FACES_FILE}`,
+);

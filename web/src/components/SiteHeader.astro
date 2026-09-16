@@ -1,0 +1,44 @@
+---
+import { SITE, type Locale } from "../lib/site";
+
+interface Props {
+  locale: Locale;
+}
+const { locale } = Astro.props;
+
+// Cascarón mínimo de F7.3. El header de verdad —barra superior, medallón centrado, barra de
+// vidrio al hacer scroll, mega menú y menú móvil a pantalla completa— es F7.4.
+const links =
+  locale === "es"
+    ? [
+        ["Servicios", "/es/services"],
+        ["Tours", "/es/tours"],
+        ["Tarifas", "/es/prices"],
+      ]
+    : [
+        ["Services", "/services"],
+        ["Tours", "/tours"],
+        ["Prices", "/prices"],
+      ];
+---
+
+<header class="border-b border-gold-dark/25">
+  <div class="mx-auto flex max-w-(--container-site) flex-wrap items-center gap-x-8 gap-y-3 px-(--spacing-gutter) py-5">
+    <a
+      href={locale === "es" ? "/es/" : "/"}
+      class="font-brand text-label tracking-(--tracking-brand) text-gold uppercase"
+    >
+      {SITE.name}
+    </a>
+    <nav class="flex flex-wrap gap-x-6 gap-y-2" aria-label={locale === "es" ? "Principal" : "Main"}>
+      {links.map(([label, href]) => (
+        <a
+          href={href}
+          class="font-brand text-label tracking-(--tracking-label) text-mist uppercase hover:text-gold-light"
+        >
+          {label}
+        </a>
+      ))}
+    </nav>
+  </div>
+</header>

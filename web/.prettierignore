@@ -1,0 +1,7 @@
+dist
+.astro
+public/fonts
+src/styles/fonts.css
+package-lock.json
+test-results
+playwright-report

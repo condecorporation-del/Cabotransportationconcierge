@@ -1,0 +1,34 @@
+---
+import { CONTACT, UI, type Locale } from "../lib/site";
+
+interface Props {
+  locale: Locale;
+}
+const { locale } = Astro.props;
+const t = UI[locale];
+
+// El agente Customer Help es F10; aquí queda su disparador, deshabilitado mientras no exista,
+// para no ofrecer un botón que no hace nada. WhatsApp queda oculto hasta tener el número real
+// (D-P4): mandar a la gente a un número inventado sería peor que no mostrar el botón.
+const whatsappReady = !CONTACT.pending;
+---
+
+<div class="fixed right-4 bottom-4 z-50 flex flex-col gap-3" data-floating-actions>
+  {whatsappReady && (
+    <a
+      href={`https://wa.me/${CONTACT.whatsappE164}`}
+      class="font-brand text-label tracking-(--tracking-label) border border-gold-dark bg-ink px-4 py-3 text-gold-light uppercase"
+      rel="noopener"
+    >
+      {t.whatsapp}
+    </a>
+  )}
+  <button
+    type="button"
+    class="font-brand text-label tracking-(--tracking-label) cursor-not-allowed border border-gold-dark bg-ink px-4 py-3 text-stone uppercase"
+    disabled
+    data-customer-help
+  >
+    {t.customerHelp}
+  </button>
+</div>
