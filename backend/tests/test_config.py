@@ -10,6 +10,7 @@ PRODUCTION_SECRETS = {
     "stripe_secret_key": "sk_live_x",
     "stripe_webhook_secret": "whsec_x",
     "resend_api_key": "re_live_x",
+    "resend_webhook_secret": "whsec_resend_x",
     "email_ops_to": "ops@cabotransportationconcierge.com",
 }
 
@@ -22,6 +23,7 @@ PRODUCTION_SECRETS = {
         (REMOTE_DB, STRONG_KEY, "TURNSTILE_SECRET_KEY"),
         (REMOTE_DB, STRONG_KEY, "STRIPE_WEBHOOK_SECRET"),
         (REMOTE_DB, STRONG_KEY, "RESEND_API_KEY"),
+        (REMOTE_DB, STRONG_KEY, "RESEND_WEBHOOK_SECRET"),
         (REMOTE_DB, STRONG_KEY, "EMAIL_OPS_TO"),
     ],
 )

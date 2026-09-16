@@ -18,6 +18,9 @@ class EmailStatus(enum.StrEnum):
     SENDING = "sending"
     SENT = "sent"
     FAILED = "failed"
+    # F5.11: los deja el webhook de Resend, nunca el worker.
+    DELIVERED = "delivered"
+    BOUNCED = "bounced"
 
 
 class ConversationStatus(enum.StrEnum):

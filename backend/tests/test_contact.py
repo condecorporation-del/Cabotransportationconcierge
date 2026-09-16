@@ -21,6 +21,7 @@ PRODUCTION = Settings(
     stripe_secret_key="sk_live_x",
     stripe_webhook_secret="whsec_x",
     resend_api_key="re_live_x",
+    resend_webhook_secret="whsec_resend_x",
     email_ops_to="ops@cabotransportationconcierge.com",
 )
 

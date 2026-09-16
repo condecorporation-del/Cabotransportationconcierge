@@ -25,6 +25,8 @@ class Settings(BaseSettings):
     turnstile_secret_key: str = Field(default="", repr=False)
     # Correos (D7): la API solo encola en email_outbox; app/worker/send_emails.py los envía.
     resend_api_key: str = Field(default="", repr=False)
+    # Webhook de Resend (F5.11): firma Svix, "entregado"/"rebotado" en email_outbox.
+    resend_webhook_secret: str = Field(default="", repr=False)
     email_from: str = "no-reply@cabotransportationconcierge.com"
     email_ops_to: str = ""
     # Enlaces firmados de la reserva (voucher, My Trip) en los correos.
@@ -48,6 +50,7 @@ class Settings(BaseSettings):
             "STRIPE_SECRET_KEY": self.stripe_secret_key,
             "STRIPE_WEBHOOK_SECRET": self.stripe_webhook_secret,
             "RESEND_API_KEY": self.resend_api_key,
+            "RESEND_WEBHOOK_SECRET": self.resend_webhook_secret,
             "EMAIL_OPS_TO": self.email_ops_to,
         }
         errors += [f"{name} es obligatoria" for name, value in required.items() if not value]

@@ -2,6 +2,29 @@
 
 Una entrada por sesión o tarea, la más reciente arriba (formato en `AGENTS.md` §10).
 
+## 2026-09-15 — F5.11: webhooks de Resend — **F5 en 9/11, lo que queda necesita una tarea programada**
+
+Hasta hoy `email_outbox` sabía que un correo se había **enviado** (el worker recibió un id de Resend), no que hubiera **llegado**. Un correo de confirmación que rebota porque el huésped escribió mal su email quedaba marcado `sent` para siempre, y nadie se enteraba. `POST /webhooks/resend` cierra ese ciclo: `email.delivered` y `email.bounced` mueven el estado a los nuevos `delivered` y `bounced`.
+
+**Resend no firma como Stripe.** Los dos mandan un `whsec_...`, y ahí se acaba el parecido. Stripe firma `{timestamp}.{cuerpo}` y manda la firma en hexadecimal; Resend usa Svix, que firma `{svix-id}.{svix-timestamp}.{cuerpo}`, deriva la llave del **base64 que viene después** de `whsec_` (no del string tal cual) y manda la firma **también en base64**, en un header que puede traer varias (`v1,<firma> v1,<otra>`) porque Svix rota llaves. Copiar la función de Stripe y cambiarle el formato del mensaje habría fallado en silencio de tres formas distintas. `verify_webhook()` de `resend_gateway.py` es una función aparte, con la misma tolerancia de 5 minutos contra replays.
+
+**Sin tabla de eventos, a diferencia de Stripe.** `stripe_events` (F4.4) existe porque procesar dos veces `payment_intent.succeeded` intentaría repetir una *transición* de estado. Aquí la operación es "deja el estado en `delivered`": hacerla dos veces deja exactamente el mismo resultado que hacerla una. Una tabla de deduplicación habría sido ceremonia sin nada que proteger.
+
+**De paso: el test de rendimiento del dashboard medía otra cosa.** `test_dashboard_is_fast_with_ten_thousand_bookings` (F6.11) falló en 0.324 s contra su límite de 0.3 s, sin que nada del dashboard hubiera cambiado. Midiendo por separado: la primera petición HTTP de la suite cuesta ~240 ms y las siguientes ~40 ms, con la consulta en sí en milisegundos. Ese cuarto de segundo es arranque en frío —compilar los statements de SQLAlchemy, armar el `response_model`—, un costo fijo que no depende de las 10 000 reservas. O sea: el test no medía el escalado de la consulta, medía el warm-up, y estaba destinado a fallar al azar según la carga de la máquina. Ahora hace una petición de calentamiento y cronometra la segunda; el límite de 300 ms sigue en pie, pero contra los ~40 ms reales tiene margen de sobra para detectar una regresión de verdad (un N+1 sobre 10 000 filas se iría a segundos, no a milisegundos).
+
+**Archivos:** `backend/app/models/communication.py`, `backend/alembic/versions/20260914_349f0697cd52_estados_entregado_y_rebotado_del_correo.py` (nueva), `backend/app/core/config.py`, `backend/.env.example`, `backend/app/services/resend_gateway.py`, `backend/app/services/email.py`, `backend/app/api/v1/webhooks.py`, `backend/tests/test_resend_webhook.py` (nuevo), `backend/tests/test_admin_dashboard.py`, `backend/tests/test_config.py`, `backend/tests/test_contact.py`, `packages/api-client/src/schema.d.ts`, `WORKPLAN.md`
+
+**Verificación**
+- `uv run pytest` → **316 passed** (5 nuevos): firma Svix inválida → 400; `email.delivered` y `email.bounced` mueven el estado del correo; un `email_id` que no existe y un tipo de evento que no manejamos responden 200 sin tocar nada.
+- El test del dashboard corrido 3 veces seguidas → verde las 3, ya sin depender de la carga de la máquina.
+- `uv run ruff format --check . && uv run ruff check .` → sin errores. `uv run mypy app scripts` → sin errores.
+- La migración `349f0697cd52` fue a base y de vuelta a head; `uv run alembic check` sin diferencias.
+- `uv run pip-audit` → sin vulnerabilidades. `npm run gen && npm run check` → contrato regenerado, `tsc` sin errores.
+
+**Otra vez el `CHECK` que autogenerate no ve.** Agregar dos valores al enum `EmailStatus` no produjo ninguna migración automática (misma lección de F4.2 y de los códigos de respaldo de TOTP): hay que rehacer el constraint a mano. Esta vez, en lugar de adivinar el nombre, se consultó `pg_constraint` directo en Postgres → `ck_email_outbox_emailstatus`. Y un detalle nuevo: al soltar el constraint hay que envolver el nombre completo en `op.f(...)`, porque si no Alembic le vuelve a aplicar la plantilla de nombres encima y busca un `ck_email_outbox_ck_email_outbox_emailstatus` que no existe.
+
+**Pendiente:** `RESEND_WEBHOOK_SECRET` es obligatoria en staging y producción (sale del panel de Resend > Webhooks); hasta que exista ese entorno, el webhook solo se ejerce desde los tests. De F5 quedan F5.7 (recordatorio 24 h) y F5.8 (reseña), las dos esperando lo mismo: una tarea programada que todavía no existe ni está diseñada.
+
 ## 2026-09-14 — F4.8: recibo del pago manual — **F4 en 9/10, solo falta F4.10**
 
 Cerrando lo que quedó pendiente de la revisión de F4 en la tarea anterior: el registro del pago manual (`mark-paid`, F6.5) ya existía, pero no el recibo como documento.

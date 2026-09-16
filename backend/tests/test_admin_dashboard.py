@@ -148,11 +148,16 @@ async def test_dashboard_is_fast_with_ten_thousand_bookings(
     """Criterio de F6.11: < 300 ms con 10 000 reservas de prueba."""
     await _bulk_seed_bookings(db, 10_000)
     headers = await _login(api, db)
+    params = {"date": date.today().isoformat()}
+
+    # La primera petición de la suite paga ~200 ms de arranque (compilar los statements de
+    # SQLAlchemy, armar el response_model): un costo fijo que no depende de las 10 000 reservas.
+    # Medirlo hacía fallar el test por azar; lo que interesa es el estado caliente.
+    warmup = await api.get(DASHBOARD_URL, params=params, headers=headers)
+    assert warmup.status_code == 200, warmup.text
 
     start = time.perf_counter()
-    response = await api.get(
-        DASHBOARD_URL, params={"date": date.today().isoformat()}, headers=headers
-    )
+    response = await api.get(DASHBOARD_URL, params=params, headers=headers)
     elapsed = time.perf_counter() - start
 
     assert response.status_code == 200, response.text
