@@ -2,6 +2,29 @@
 
 Una entrada por sesión o tarea, la más reciente arriba (formato en `AGENTS.md` §10).
 
+## 2026-09-21 — F7.6 cierra: la rejilla de servicios
+
+Última pieza de la home: seis fichas foto+título+CTA (Weddings, Bachelorette, Groups, Family, Limousines, City tours) que en el prototipo se dibujan a sangre, sin el contenedor con gutter que usa el resto de secciones.
+
+**Nada que portar en el texto, tampoco aquí.** Como con la flota, el HTML estático no traía título ni CTA reconocibles como tales — cada ficha es un `<a>` con una imagen y dos `<span>` sueltos (`text-3xl` para el título, `tile-cta` para el CTA), una forma que no encaja en párrafos, listas ni botones. Se agregó una extracción propia para esta sección: recorre sus `<a>` y saca título, CTA e imagen de cada uno. El resultado calzó exacto: "Weddings/Discover", "Bachelorette/Plan the trip", "Groups/Plan now", "Family/See options", "Limousines/Reserve", "City tours/Explore".
+
+**Los enlaces sí se corrigieron.** Las seis fichas del prototipo apuntan a `href="#"` — las páginas de cada servicio son F9 y todavía no existen. Pero sus destinos reales ya están definidos en el mega menú (§3.5.2): `/weddings`, `/bachelorette-party-transportation`, etc. No había razón para dejar una ficha sin destino cuando el destino ya está decidido.
+
+**`HomeSection` aprendió un segundo modo, "a sangre".** Todas las secciones anteriores viven dentro de un contenedor centrado con gutter (`max-w-(--container-site) px-(--spacing-gutter)`); esta es la primera que necesita llegar a los bordes reales del viewport. La tentación era renderizar el `<slot />` dos veces (una visible, una oculta) para no tocar la estructura existente, pero eso duplica el DOM completo de la sección — imágenes incluidas — sin necesidad. Quedó como una rama: con `bleed`, el marco compartido (header con título, párrafos, FAQ, CTA de botón) simplemente no se renderiza, y el slot se pinta una sola vez.
+
+**Un susto de veinte minutos que no era bug.** La primera captura de la sección salió con las seis fotos en negro sólido — como si el degradado de legibilidad tapara todo. Aislar una sola ficha mostró la foto perfecta; el problema era que la captura de la sección completa se tomaba antes de que las seis imágenes lazy-load terminaran de decodificar. Nunca fue un defecto del gradiente ni del posicionamiento — cuestión de esperar a `img.decode()` antes de la captura, no del código de producción.
+
+**F7.6 queda cerrada.** Las 26 secciones que se publican del prototipo (27 menos testimonios, D-P3) están con su contenido real y, en las cuatro que lo necesitaban, con su composición propia: zonas, flota, servicios y FAQ.
+
+**Archivos:** `web/scripts/extract-home.mjs`, `web/src/content/home.ts`, `web/src/components/sections/ServiceTiles.astro` (nuevo), `HomeSection.astro`, `web/src/pages/index.astro`, `web/tests/home.spec.ts`, `WORKPLAN.md`
+
+**Verificación**
+- `npm run e2e` → **38 passed** (3 nuevos): las seis fichas con foto/título/CTA, cada una enlazada a su ruta real (no a `#`), y la rejilla llegando al borde del viewport (`x: 0`).
+- `npm run check` 0/0/0; `format:check` limpio; Lighthouse SEO 100/100; `npm audit` sin vulnerabilidades.
+- Captura de la sección completa, con las seis fotos ya decodificadas, comparada contra el prototipo.
+
+**F7 queda en 6/16.** Siguiente: F7.7, el hero — poster como LCP, video diferido en WebM/MP4 ligeros, versión móvil y `prefers-reduced-motion`.
+
 ## 2026-09-16 — F7.6: flota real, y la prueba social ajena que no se publica
 
 **El hallazgo importante de esta tanda no fue de diseño.** El prototipo es un espejo rebrandeado de la referencia, y arrastra **su** prueba social: "5.0 Google reviews (901)", "6,700 reseñas", "since 2013", "#1 in Cabo", más una sección entera de testimonios con citas de sus clientes, con el nombre de CTC encima.

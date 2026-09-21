@@ -4,9 +4,12 @@ import type { HomeSection } from "../../content/home";
 interface Props {
   section: HomeSection;
   index: number;
+  /** La rejilla de servicios del prototipo llega a los bordes del viewport, sin el contenedor
+   *  con gutter que usa el resto de secciones (`w-full`, `gap-0` entre fichas). */
+  bleed?: boolean;
 }
 
-const { section, index } = Astro.props;
+const { section, index, bleed = false } = Astro.props;
 
 // El prototipo es un sitio estático de una sola página: sus enlaces apuntan a anclas o a
 // `index.html`. Aquí se traducen a las rutas reales del sitio.
@@ -26,9 +29,9 @@ const headingColor = section.dark ? "text-pearl" : "text-ink";
 // Una sección puede traer su propia composición (las tarjetas de zona, por ejemplo); en ese
 // caso reemplaza a las fotos genéricas y el resto del marco —título, filete, texto— se
 // comparte igual.
-const custom = Astro.slots.has("default");
-const gallery = !custom && section.images.length > 1;
-const feature = custom || gallery ? undefined : section.images[0];
+const custom = !bleed && Astro.slots.has("default");
+const gallery = !custom && !bleed && section.images.length > 1;
+const feature = custom || bleed || gallery ? undefined : section.images[0];
 // El prototipo centra las entradillas cortas bajo el título y alinea a la izquierda los
 // bloques largos, que centrados serían ilegibles. Aquí la regla es la misma.
 const centered = !feature && section.bullets.length === 0 && section.paragraphs.length <= 3;
@@ -36,112 +39,115 @@ const centered = !feature && section.bullets.length === 0 && section.paragraphs.
 
 <section
   id={section.id ?? undefined}
-  class:list={[surface, "border-b border-rule/60 py-(--spacing-section)"]}
+  class:list={[surface, "border-b border-rule/60", !bleed && "py-(--spacing-section)"]}
 >
-  <div class="mx-auto max-w-(--container-site) px-(--spacing-gutter)">
-    {section.heading && (
-      <header class="flex flex-col items-center text-center">
-        <h2
-          class:list={[
-            headingColor,
-            "font-display tracking-(--tracking-display) max-w-4xl text-h2 leading-[1.02] text-balance",
-          ]}
-        >
-          {section.heading}
-        </h2>
-        {/* La barra dorada bajo cada título es la firma del prototipo. */}
-        <span class="mt-6 block h-1 w-24 bg-gold" aria-hidden="true" />
-      </header>
-    )}
-
-    {(section.paragraphs.length > 0 || section.bullets.length > 0 || feature) && (
-      <div
-        class:list={[
-          "mt-10 grid items-start gap-10",
-          feature ? "lg:grid-cols-2" : "mx-auto max-w-(--container-prose)",
-        ]}
-      >
-        <div class:list={[body, centered && "text-center", "flex flex-col gap-5"]}>
-          {section.paragraphs.map((paragraph) => (
-            <p set:html={paragraph} />
-          ))}
-          {section.bullets.length > 0 && (
-            <ul class="mt-2 flex flex-col gap-2.5">
-              {section.bullets.map((bullet) => (
-                <li class="flex gap-3">
-                  <span class="mt-2.5 h-1 w-3 shrink-0 bg-gold" aria-hidden="true" />
-                  <span>{bullet}</span>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-        {feature && (
-          <img
-            src={feature.src}
-            alt={feature.alt}
-            width="960"
-            height="640"
-            loading="lazy"
-            decoding="async"
-            class="h-auto w-full object-cover"
-          />
-        )}
-      </div>
-    )}
-
-    {custom && <slot />}
-
-    {gallery && (
-      <div class="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {section.images.map((image) => (
-          <img
-            src={image.src}
-            alt={image.alt}
-            width="640"
-            height="427"
-            loading="lazy"
-            decoding="async"
-            class="aspect-[3/2] h-full w-full object-cover"
-          />
-        ))}
-      </div>
-    )}
-
-    {section.faq.length > 0 && (
-      <div class="mx-auto mt-10 flex max-w-3xl flex-col">
-        {section.faq.map((entry) => (
-          <details class="border-b border-rule">
-            <summary
-              class="flex cursor-pointer list-none items-center justify-between gap-6 py-5 font-medium text-ink"
-              data-faq
-            >
-              {entry.question}
-            </summary>
-            <p class="pb-5 text-slate" set:html={entry.answer} />
-          </details>
-        ))}
-      </div>
-    )}
-
-    {section.ctas.length > 0 && (
-      <div class="mt-10 flex flex-wrap justify-center gap-4">
-        {section.ctas.map((cta, position) => (
-          <a
-            href={route(cta.href)}
+  {bleed && <slot />}
+  {!bleed && (
+    <div class="mx-auto max-w-(--container-site) px-(--spacing-gutter)">
+      {section.heading && (
+        <header class="flex flex-col items-center text-center">
+          <h2
             class:list={[
-              "font-brand text-label tracking-(--tracking-label) px-8 py-4 uppercase",
-              position === 0
-                ? "bg-gold text-ink hover:bg-gold-light"
-                : "border border-gold-dark text-gold-dark hover:bg-gold hover:text-ink",
+              headingColor,
+              "font-display tracking-(--tracking-display) max-w-4xl text-h2 leading-[1.02] text-balance",
             ]}
           >
-            {cta.label}
-          </a>
-        ))}
-      </div>
-    )}
-  </div>
+            {section.heading}
+          </h2>
+          {/* La barra dorada bajo cada título es la firma del prototipo. */}
+          <span class="mt-6 block h-1 w-24 bg-gold" aria-hidden="true" />
+        </header>
+      )}
+
+      {(section.paragraphs.length > 0 || section.bullets.length > 0 || feature) && (
+        <div
+          class:list={[
+            "mt-10 grid items-start gap-10",
+            feature ? "lg:grid-cols-2" : "mx-auto max-w-(--container-prose)",
+          ]}
+        >
+          <div class:list={[body, centered && "text-center", "flex flex-col gap-5"]}>
+            {section.paragraphs.map((paragraph) => (
+              <p set:html={paragraph} />
+            ))}
+            {section.bullets.length > 0 && (
+              <ul class="mt-2 flex flex-col gap-2.5">
+                {section.bullets.map((bullet) => (
+                  <li class="flex gap-3">
+                    <span class="mt-2.5 h-1 w-3 shrink-0 bg-gold" aria-hidden="true" />
+                    <span>{bullet}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+          {feature && (
+            <img
+              src={feature.src}
+              alt={feature.alt}
+              width="960"
+              height="640"
+              loading="lazy"
+              decoding="async"
+              class="h-auto w-full object-cover"
+            />
+          )}
+        </div>
+      )}
+
+      {custom && <slot />}
+
+      {gallery && (
+        <div class="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {section.images.map((image) => (
+            <img
+              src={image.src}
+              alt={image.alt}
+              width="640"
+              height="427"
+              loading="lazy"
+              decoding="async"
+              class="aspect-[3/2] h-full w-full object-cover"
+            />
+          ))}
+        </div>
+      )}
+
+      {section.faq.length > 0 && (
+        <div class="mx-auto mt-10 flex max-w-3xl flex-col">
+          {section.faq.map((entry) => (
+            <details class="border-b border-rule">
+              <summary
+                class="flex cursor-pointer list-none items-center justify-between gap-6 py-5 font-medium text-ink"
+                data-faq
+              >
+                {entry.question}
+              </summary>
+              <p class="pb-5 text-slate" set:html={entry.answer} />
+            </details>
+          ))}
+        </div>
+      )}
+
+      {section.ctas.length > 0 && (
+        <div class="mt-10 flex flex-wrap justify-center gap-4">
+          {section.ctas.map((cta, position) => (
+            <a
+              href={route(cta.href)}
+              class:list={[
+                "font-brand text-label tracking-(--tracking-label) px-8 py-4 uppercase",
+                position === 0
+                  ? "bg-gold text-ink hover:bg-gold-light"
+                  : "border border-gold-dark text-gold-dark hover:bg-gold hover:text-ink",
+              ]}
+            >
+              {cta.label}
+            </a>
+          ))}
+        </div>
+      )}
+    </div>
+  )}
 </section>
 
 <style>

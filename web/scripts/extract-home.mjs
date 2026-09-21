@@ -178,6 +178,21 @@ for (const chunk of body.split(/(?=<section\b)/).slice(1)) {
     }))
     .filter((entry) => entry.question && entry.answer && !isReferenceClaim(entry.answer));
 
+  // La rejilla de servicios: seis fichas foto+título+CTA, cada una un <a> que envuelve la
+  // imagen y dos <span> (título grande, "tile-cta"). Su estructura no encaja en párrafos, listas
+  // ni CTA de botón, así que se extrae aparte, solo dentro de esta sección.
+  const tiles =
+    open.includes('id="services-grid"') === false
+      ? []
+      : all(/<a\b[^>]*>(.*?)<\/a>/gs, chunk).map(([, inner]) => ({
+          title: text(inner.match(/text-3xl[^>]*>(.*?)<\/span>/s)?.[1] ?? ""),
+          cta: text(inner.match(/tile-cta[^>]*>(.*?)<\/span>/s)?.[1] ?? ""),
+          image: {
+            src: inner.match(/src="([^"]*)"/)?.[1] ?? "",
+            alt: text(inner.match(/alt="([^"]*)"/)?.[1] ?? ""),
+          },
+        }));
+
   sections.push({
     id: open.match(/id="([^"]+)"/)?.[1] ?? null,
     dark: /bg-\[#0a111a\]|bg-brand-ink|ctc-ig/.test(open),
@@ -186,7 +201,8 @@ for (const chunk of body.split(/(?=<section\b)/).slice(1)) {
     bullets: faq.length > 0 ? [] : bullets,
     faq,
     ctas,
-    images,
+    images: tiles.length > 0 ? [] : images,
+    tiles,
   });
 }
 
@@ -195,15 +211,17 @@ for (const chunk of body.split(/(?=<section\b)/).slice(1)) {
 // `astro:assets` y las fotos definitivas del cliente son F7.11.
 await mkdir(IMAGE_DIR, { recursive: true });
 const copied = new Set();
-for (const section of sections) {
-  for (const image of section.images) {
-    const name = path.basename(image.src);
-    if (!copied.has(name)) {
-      await copyFile(path.join("..", "site", image.src), path.join(IMAGE_DIR, name));
-      copied.add(name);
-    }
-    image.src = `/images/home/${name}`;
+async function localizeImage(image) {
+  const name = path.basename(image.src);
+  if (!copied.has(name)) {
+    await copyFile(path.join("..", "site", image.src), path.join(IMAGE_DIR, name));
+    copied.add(name);
   }
+  image.src = `/images/home/${name}`;
+}
+for (const section of sections) {
+  for (const image of section.images) await localizeImage(image);
+  for (const tile of section.tiles) await localizeImage(tile.image);
 }
 
 await mkdir(path.dirname(OUT), { recursive: true });

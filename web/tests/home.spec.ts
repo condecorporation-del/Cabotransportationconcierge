@@ -116,3 +116,51 @@ test("la sección de testimonios no está", async ({ page }) => {
   await page.goto("/");
   await expect(page.locator("#testimonials")).toHaveCount(0);
 });
+
+test.describe("rejilla de servicios", () => {
+  test("son seis fichas, a sangre y con foto, título y CTA", async ({ page }) => {
+    await page.goto("/");
+    const grid = page.locator("#services-grid");
+    const tiles = grid.locator("li");
+    await expect(tiles).toHaveCount(6);
+
+    for (const [title, cta] of [
+      ["Weddings", "Discover"],
+      ["Bachelorette", "Plan the trip"],
+      ["Groups", "Plan now"],
+      ["Family", "See options"],
+      ["Limousines", "Reserve"],
+      ["City tours", "Explore"],
+    ] as const) {
+      const tile = tiles.filter({ hasText: title });
+      await expect(tile).toHaveCount(1);
+      await expect(tile).toContainText(cta);
+      await expect(tile.locator("img")).toHaveAttribute("alt", /.+/);
+    }
+  });
+
+  test("cada ficha enlaza a la página real del servicio, no a un ancla vacía", async ({ page }) => {
+    // El prototipo deja las seis en href="#"; esas páginas de servicio son F9, pero ya existen
+    // como destino en el mega menú (§3.5.2) y no hay razón para no usarlas ya.
+    await page.goto("/");
+    const tiles = page.locator("#services-grid li a");
+    const hrefs = await tiles.evaluateAll((links) => links.map((a) => a.getAttribute("href")));
+
+    expect(hrefs).toEqual([
+      "/weddings",
+      "/bachelorette-party-transportation",
+      "/group-transfers",
+      "/family-transportation",
+      "/limousines",
+      "/city-tours",
+    ]);
+  });
+
+  test("la rejilla llega a los bordes del viewport, sin el gutter del resto de secciones", async ({
+    page,
+  }) => {
+    await page.goto("/");
+    const box = await page.locator("#services-grid li").first().boundingBox();
+    expect(box?.x).toBe(0);
+  });
+});

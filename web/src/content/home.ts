@@ -17,6 +17,12 @@ export interface HomeCta {
   href: string;
 }
 
+export interface HomeTile {
+  title: string;
+  cta: string;
+  image: HomeImage;
+}
+
 export interface HomeSection {
   id: string | null;
   dark: boolean;
@@ -26,6 +32,7 @@ export interface HomeSection {
   faq: FaqEntry[];
   ctas: HomeCta[];
   images: HomeImage[];
+  tiles: HomeTile[];
 }
 
 export const HOME_SECTIONS: HomeSection[] = data.sections;

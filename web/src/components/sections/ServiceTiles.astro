@@ -1,0 +1,55 @@
+---
+import type { HomeTile } from "../../content/home";
+import { localize } from "../../lib/nav";
+import type { Locale } from "../../lib/site";
+
+interface Props {
+  tiles: HomeTile[];
+  locale: Locale;
+}
+
+const { tiles, locale } = Astro.props;
+
+// El prototipo enlaza las seis fichas a "#" (las páginas de servicio son F9). Los destinos
+// reales ya existen en el mega menú (§3.5.2) — se reusan por título en vez de inventar rutas
+// nuevas o dejar la ficha sin destino.
+const ROUTES: Record<string, string> = {
+  Weddings: "/weddings",
+  Bachelorette: "/bachelorette-party-transportation",
+  Groups: "/group-transfers",
+  Family: "/family-transportation",
+  Limousines: "/limousines",
+  "City tours": "/city-tours",
+};
+---
+
+{/* Composición del prototipo: rejilla de fichas a sangre, sin espacios entre ellas, título
+    grande sobre degradado y un CTA de texto que se subraya al pasar el mouse. Título y CTA
+    llegan del extractor tal cual (se reescriben en F9.1); solo el destino se corrige aquí. */}
+<ul class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+  {tiles.map((tile) => (
+    <li>
+      <a
+        href={localize(ROUTES[tile.title] ?? "/", locale)}
+        class="group relative flex h-[420px] items-end overflow-hidden"
+      >
+        <img
+          src={tile.image.src}
+          alt={tile.image.alt}
+          width="800"
+          height="1000"
+          loading="lazy"
+          decoding="async"
+          class="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+        />
+        <div class="absolute inset-0 bg-gradient-to-t from-deep/85 via-deep/20 to-transparent" />
+        <div class="relative flex flex-col gap-2 p-8 md:p-10">
+          <span class="font-display text-h3 leading-none text-pearl">{tile.title}</span>
+          <span class="font-brand text-label tracking-(--tracking-label) inline-flex items-center gap-2 text-gold-light uppercase after:content-['→'] after:transition-transform after:duration-300 group-hover:after:translate-x-1">
+            {tile.cta}
+          </span>
+        </div>
+      </a>
+    </li>
+  ))}
+</ul>

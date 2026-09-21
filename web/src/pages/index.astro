@@ -1,5 +1,6 @@
 ---
 import HomeSection from "../components/sections/HomeSection.astro";
+import ServiceTiles from "../components/sections/ServiceTiles.astro";
 import VehicleCards from "../components/sections/VehicleCards.astro";
 import ZoneCards from "../components/sections/ZoneCards.astro";
 import { HOME_SECTIONS } from "../content/home";
@@ -14,6 +15,7 @@ import { SITE } from "../lib/site";
 // verdadero con cualquier hijo, aunque no pinte nada, y eso apagaría las fotos del resto.
 const ZONES_SECTION = 3; // "Cabo transfers: destinations and rates"
 const FLEET_SECTION = 5; // "Our vehicles for Cabo transportation"
+const SERVICES_SECTION = 10; // "services-grid"
 const locale = SITE.defaultLocale;
 ---
 
@@ -33,6 +35,13 @@ const locale = SITE.defaultLocale;
       return (
         <HomeSection section={section} index={index}>
           <VehicleCards locale={locale} />
+        </HomeSection>
+      );
+    }
+    if (index === SERVICES_SECTION) {
+      return (
+        <HomeSection section={section} index={index} bleed>
+          <ServiceTiles tiles={section.tiles} locale={locale} />
         </HomeSection>
       );
     }

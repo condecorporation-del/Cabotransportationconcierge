@@ -22,7 +22,8 @@
           "src": "/images/home/hero-suburban.jpg",
           "alt": "Black Chevrolet Suburban at sunset in Cabo San Lucas"
         }
-      ]
+      ],
+      "tiles": []
     },
     {
       "id": "concierge",
@@ -34,7 +35,8 @@
       "bullets": [],
       "faq": [],
       "ctas": [],
-      "images": []
+      "images": [],
+      "tiles": []
     },
     {
       "id": null,
@@ -61,7 +63,8 @@
           "href": "#faq"
         }
       ],
-      "images": []
+      "images": [],
+      "tiles": []
     },
     {
       "id": null,
@@ -97,7 +100,8 @@
           "src": "/images/home/zone-5-960.webp",
           "alt": "Pacific North"
         }
-      ]
+      ],
+      "tiles": []
     },
     {
       "id": null,
@@ -115,7 +119,8 @@
           "href": "#"
         }
       ],
-      "images": []
+      "images": [],
+      "tiles": []
     },
     {
       "id": null,
@@ -127,7 +132,8 @@
       "bullets": [],
       "faq": [],
       "ctas": [],
-      "images": []
+      "images": [],
+      "tiles": []
     },
     {
       "id": "airport-transportation",
@@ -149,7 +155,8 @@
           "src": "/images/home/cabo-reliable-fleet-960.webp",
           "alt": "Reliable Cabo Transportation Fleet"
         }
-      ]
+      ],
+      "tiles": []
     },
     {
       "id": null,
@@ -175,7 +182,8 @@
           "src": "/images/home/private-transportation-cabo-san-lucas-960.webp",
           "alt": "Private vs Shared Cabo Airport Shuttle"
         }
-      ]
+      ],
+      "tiles": []
     },
     {
       "id": null,
@@ -194,7 +202,8 @@
           "src": "/images/home/reviews-all-ways-cabo-transportation26-960.webp",
           "alt": "Cabo Transportation Concierge private transfer guests"
         }
-      ]
+      ],
+      "tiles": []
     },
     {
       "id": null,
@@ -218,7 +227,8 @@
           "src": "/images/home/reviews-all-ways-cabo-transportation44-960.webp",
           "alt": "Cabo Transportation Concierge guests in Los Cabos"
         }
-      ]
+      ],
+      "tiles": []
     },
     {
       "id": "services-grid",
@@ -228,30 +238,55 @@
       "bullets": [],
       "faq": [],
       "ctas": [],
-      "images": [
+      "images": [],
+      "tiles": [
         {
-          "src": "/images/home/cabo-san-lucas-wedding-transportation-960.webp",
-          "alt": "Cabo San Lucas Wedding transportation"
+          "title": "Weddings",
+          "cta": "Discover",
+          "image": {
+            "src": "/images/home/cabo-san-lucas-wedding-transportation-960.webp",
+            "alt": "Cabo San Lucas Wedding transportation"
+          }
         },
         {
-          "src": "/images/home/hero-sprinter-group-960.webp",
-          "alt": "Cabo bachelorette party transportation"
+          "title": "Bachelorette",
+          "cta": "Plan the trip",
+          "image": {
+            "src": "/images/home/hero-sprinter-group-960.webp",
+            "alt": "Cabo bachelorette party transportation"
+          }
         },
         {
-          "src": "/images/home/cabo-group-transportation-events-960.webp",
-          "alt": "Cabo Group Transportation and Events"
+          "title": "Groups",
+          "cta": "Plan now",
+          "image": {
+            "src": "/images/home/cabo-group-transportation-events-960.webp",
+            "alt": "Cabo Group Transportation and Events"
+          }
         },
         {
-          "src": "/images/home/phoenix-03-family-arch-800.webp",
-          "alt": "Family transportation in Cabo San Lucas"
+          "title": "Family",
+          "cta": "See options",
+          "image": {
+            "src": "/images/home/phoenix-03-family-arch-800.webp",
+            "alt": "Family transportation in Cabo San Lucas"
+          }
         },
         {
-          "src": "/images/home/cabo-san-lucas-limousine-service-960.webp",
-          "alt": "Cabo San Lucas Limousine service"
+          "title": "Limousines",
+          "cta": "Reserve",
+          "image": {
+            "src": "/images/home/cabo-san-lucas-limousine-service-960.webp",
+            "alt": "Cabo San Lucas Limousine service"
+          }
         },
         {
-          "src": "/images/home/cabo-san-lucas-city-tours-960.webp",
-          "alt": "Cabo San Lucas City Tours"
+          "title": "City tours",
+          "cta": "Explore",
+          "image": {
+            "src": "/images/home/cabo-san-lucas-city-tours-960.webp",
+            "alt": "Cabo San Lucas City Tours"
+          }
         }
       ]
     },
@@ -299,7 +334,8 @@
           "src": "/images/home/private-driver-cabo.webp",
           "alt": "private driver cabo"
         }
-      ]
+      ],
+      "tiles": []
     },
     {
       "id": null,
@@ -323,7 +359,8 @@
           "src": "/images/home/reviews-all-ways-cabo-transportation15-960.webp",
           "alt": "Los Cabos luxury hotel transfers"
         }
-      ]
+      ],
+      "tiles": []
     },
     {
       "id": null,
@@ -371,7 +408,8 @@
           "src": "/images/home/reviews-all-ways-cabo-transportation39-960.webp",
           "alt": "Cabo Transportation Concierge guests at a Los Cabos villa"
         }
-      ]
+      ],
+      "tiles": []
     },
     {
       "id": null,
@@ -390,7 +428,8 @@
           "src": "/images/home/reviews-all-ways-cabo-transportation42-960.webp",
           "alt": "Cabo Transportation Concierge guests in San Jose del Cabo"
         }
-      ]
+      ],
+      "tiles": []
     },
     {
       "id": null,
@@ -408,7 +447,8 @@
           "src": "/images/home/reviews-all-ways-cabo-transportation11-960.webp",
           "alt": "SJD Airport Shuttle to Cabo San Lucas"
         }
-      ]
+      ],
+      "tiles": []
     },
     {
       "id": null,
@@ -436,7 +476,8 @@
           "src": "/images/home/yacht-arch.jpg",
           "alt": "Cabo airport shuttle services"
         }
-      ]
+      ],
+      "tiles": []
     },
     {
       "id": null,
@@ -458,7 +499,8 @@
           "src": "/images/home/sprinter-interior.jpg",
           "alt": "Cabo Transportation Concierge guests after airport arrival"
         }
-      ]
+      ],
+      "tiles": []
     },
     {
       "id": null,
@@ -477,7 +519,8 @@
           "src": "/images/home/reviews-all-ways-cabo-transportation16-960.webp",
           "alt": "Cabo Transportation Concierge guests traveling in Los Cabos"
         }
-      ]
+      ],
+      "tiles": []
     },
     {
       "id": null,
@@ -489,7 +532,8 @@
       "bullets": [],
       "faq": [],
       "ctas": [],
-      "images": []
+      "images": [],
+      "tiles": []
     },
     {
       "id": null,
@@ -509,7 +553,8 @@
           "src": "/images/home/cabo-luxury-yacht-rentals-640.webp",
           "alt": ""
         }
-      ]
+      ],
+      "tiles": []
     },
     {
       "id": null,
@@ -519,7 +564,8 @@
       "bullets": [],
       "faq": [],
       "ctas": [],
-      "images": []
+      "images": [],
+      "tiles": []
     },
     {
       "id": null,
@@ -550,7 +596,8 @@
       ],
       "faq": [],
       "ctas": [],
-      "images": []
+      "images": [],
+      "tiles": []
     },
     {
       "id": null,
@@ -571,7 +618,8 @@
           "href": "index.html#booking"
         }
       ],
-      "images": []
+      "images": [],
+      "tiles": []
     },
     {
       "id": null,
@@ -587,7 +635,8 @@
       ],
       "faq": [],
       "ctas": [],
-      "images": []
+      "images": [],
+      "tiles": []
     },
     {
       "id": "faq",
@@ -696,7 +745,8 @@
           "src": "/images/home/ctc-medallion-192.webp",
           "alt": "Cabo Transportation Concierge"
         }
-      ]
+      ],
+      "tiles": []
     }
   ]
 }
