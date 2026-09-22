@@ -28,7 +28,11 @@ const t = LABELS[locale];
     referencia: la foto se porta, el dato no. */}
 <ul class="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
   {zones.map((zone, index) => (
-    <li class="group relative isolate flex min-h-[26rem] flex-col justify-between overflow-hidden bg-ink text-center">
+    <li
+      class="group relative isolate flex min-h-[26rem] flex-col justify-between overflow-hidden bg-ink text-center"
+      data-reveal
+      style={`--reveal-delay: ${Math.min(index, 6) * 0.08}s`}
+    >
       <img
         src={zone.photo}
         alt={zone.name[locale] ?? zone.name["en"] ?? zone.slug}

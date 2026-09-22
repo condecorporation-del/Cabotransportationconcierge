@@ -27,8 +27,8 @@ const ROUTES: Record<string, string> = {
     grande sobre degradado y un CTA de texto que se subraya al pasar el mouse. Título y CTA
     llegan del extractor tal cual (se reescriben en F9.1); solo el destino se corrige aquí. */}
 <ul class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-  {tiles.map((tile) => (
-    <li>
+  {tiles.map((tile, index) => (
+    <li data-reveal style={`--reveal-delay: ${Math.min(index, 6) * 0.08}s`}>
       <a
         href={localize(ROUTES[tile.title] ?? "/", locale)}
         class="group relative flex h-[420px] items-end overflow-hidden"

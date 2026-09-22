@@ -1,0 +1,47 @@
+---
+// F7.8: una sola isla para las dos animaciones que dependen de JS (barra de progreso y reveal
+// al hacer scroll). El Ken Burns del hero y el brillo dorado de los botones son puro CSS y no
+// pasan por aquí. Se incluye una vez en `BaseLayout`, no por página.
+---
+
+<div
+  class="fixed inset-x-0 top-0 z-[60] h-[3px] w-full origin-left scale-x-0 bg-gradient-to-r from-gold-dark via-gold-light to-gold"
+  data-progress
+  aria-hidden="true"
+></div>
+
+<script>
+  const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  // Barra de progreso: qué tanto se ha bajado la página. No es una animación que se dispara
+  // sola —sigue el scroll del visitante—, así que corre igual con menos movimiento.
+  const bar = document.querySelector<HTMLElement>("[data-progress]");
+  if (bar) {
+    const onScroll = () => {
+      const max = document.documentElement.scrollHeight - innerHeight;
+      bar.style.transform = `scaleX(${max > 0 ? scrollY / max : 0})`;
+    };
+    addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
+  }
+
+  // Reveal al entrar en pantalla. Sin JS, o con menos movimiento, el CSS ya deja todo visible
+  // (la media query de `tokens.css` y el <noscript> de `BaseLayout`) — esto solo agrega el
+  // movimiento encima para quien sí lo quiere.
+  const targets = document.querySelectorAll<HTMLElement>("[data-reveal]");
+  if (reduceMotion || !("IntersectionObserver" in window)) {
+    targets.forEach((target) => target.classList.add("is-in"));
+  } else {
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (!entry.isIntersecting) continue;
+          entry.target.classList.add("is-in");
+          io.unobserve(entry.target);
+        }
+      },
+      { rootMargin: "0px 0px -8% 0px", threshold: 0.08 },
+    );
+    targets.forEach((target) => io.observe(target));
+  }
+</script>

@@ -114,3 +114,47 @@ body {
     scroll-behavior: auto !important;
   }
 }
+
+/* ---------- Reveal al hacer scroll (F7.8) ----------
+ * `Motion.astro` le agrega `.is-in` a cada [data-reveal] cuando entra en pantalla. Si el
+ * visitante no tiene JavaScript, ese `.is-in` nunca llega — por eso el <noscript> global de
+ * `BaseLayout.astro` cancela esta regla por completo cuando no hay script corriendo. La regla
+ * de arriba (`prefers-reduced-motion`) ya vuelve la transición instantánea; el script además
+ * marca todo como visible de una vez cuando detecta menos movimiento, así que no hay salto. */
+[data-reveal] {
+  opacity: 0;
+  transform: translateY(24px);
+  transition:
+    opacity 1.1s var(--ease-ctc),
+    transform 1.1s var(--ease-ctc);
+  transition-delay: var(--reveal-delay, 0s);
+}
+
+[data-reveal].is-in {
+  opacity: 1;
+  transform: none;
+}
+
+/* ---------- Brillo dorado (F7.8) ----------
+ * Barrido de luz sobre los botones dorados sólidos al pasar el mouse — no es una animación que
+ * se dispare sola, así que no hace falta gatearla por `prefers-reduced-motion` aparte de la
+ * regla general de arriba (que ya vuelve la transición instantánea). */
+.ctc-shine {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.ctc-shine::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  transform: translateX(-120%) skewX(-20deg);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.55), transparent);
+  transition: transform 0.8s var(--ease-ctc);
+}
+
+.ctc-shine:hover::after {
+  transform: translateX(120%) skewX(-20deg);
+}

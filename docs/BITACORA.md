@@ -2,6 +2,28 @@
 
 Una entrada por sesión o tarea, la más reciente arriba (formato en `AGENTS.md` §10).
 
+## 2026-09-21 — F7.8: reveal, brillo dorado y barra de progreso — cierra las animaciones
+
+El Ken Burns del poster ya había salido de regalo en F7.7 (el mismo mecanismo que resuelve el LCP del hero sirve para la única animación de imagen que pedía F7.8). Quedaban dos: el contenido apareciendo al hacer scroll, y la barra de progreso arriba de la página. Las dos viven en una sola isla, `Motion.astro`, incluida **una vez** en `BaseLayout` — no una copia por página.
+
+**El criterio es un número, no una sensación:** "JS < 5 KB". El script completo —barra de progreso más `IntersectionObserver`— pesa **604 bytes** minificados. Sobra margen de sobra (8×), así que no hizo falta apretar nada: la implementación más simple y legible ya entraba cómoda en el presupuesto.
+
+**Reveal sin dejar a nadie sin contenido.** El patrón (opacity:0 hasta que `IntersectionObserver` agrega `.is-in`) tiene un defecto clásico si se copia sin pensar: sin JavaScript, esa clase nunca llega, y el contenido se queda invisible para siempre — justo lo contrario de todo lo que se viene cuidando desde F7.3 ("HTML real, nada depende de que el script corra"). La solución es la de siempre para este problema: un `<noscript>` en el `<head>` que cancela el `opacity: 0` en cuanto detecta que no hay script corriendo. `prefers-reduced-motion` tiene su propia salida: el script sigue corriendo, pero en vez de esperar a que cada bloque entre en pantalla, los marca todos como visibles de inmediato.
+
+**La barra de progreso no se gatea por reduced motion.** No es una animación que se dispara sola — es un indicador que sigue la posición de scroll del propio visitante, como una barra de desplazamiento. Gatearla habría sido aplicar la regla sin pensar en qué la motivaba.
+
+**El brillo dorado es CSS puro, cero JavaScript:** un barrido de luz (`::after` con `skewX` y `transform`) sobre los dos botones dorados sólidos del sitio —el CTA del hero y el primero de cada sección—, disparado por `:hover`. No pasa por `Motion.astro` porque no necesita observar nada: ya reacciona solo a la interacción.
+
+**Qué se marcó y qué no.** `data-reveal` fue a los bloques de cada sección (título, cuerpo, galería, FAQ, CTA) y a cada tarjeta de zona, vehículo y servicio, con un retraso escalonado por índice —el mismo truco del prototipo (`--d` por posición del hermano), aquí `--reveal-delay`—. No se etiquetó cada `<p>` o `<li>` suelto como hacía el JS original del prototipo por barrido de DOM: esa granularidad venía de una plantilla Vue muy distinta a nuestros componentes, y replicarla habría sido frágil sin aportar nada que se note.
+
+**Archivos:** `web/src/components/Motion.astro` (nuevo), `web/src/layouts/BaseLayout.astro` (isla + `<noscript>`), `web/src/styles/tokens.css` (reveal + `.ctc-shine`), `web/src/components/sections/HomeSection.astro`, `Hero.astro`, `ZoneCards.astro`, `VehicleCards.astro`, `ServiceTiles.astro`, `web/tests/motion.spec.ts` (nuevo), `WORKPLAN.md`
+
+**Verificación**
+- `npm run e2e` → **51 passed** (6 nuevos): el script de Motion mide menos de 5 KB, un bloque marcado empieza oculto y se revela al entrar en pantalla, con menos movimiento todo aparece sin esperar scroll, sin JavaScript todo es visible desde el HTML, la barra de progreso cambia con el scroll, y el CTA del hero conserva su brillo y su destino.
+- `npm run build`, `npm run check`, `format:check`, `npm run seo` (100/100), `npm run perf` (LCP 1.9 s, sin cambios) y `npm audit`: todo limpio.
+
+**F7 queda en 8/16.** Siguiente: F7.9, migrar `/arrival-guide` con el video propio del cliente (D-P6) — la primera página del sitio además de la home.
+
 ## 2026-09-21 — F7.7: el hero con video, y un LCP que pasó de 4.7 s a 1.9 s
 
 El primer bloque del sitio en el que el criterio de F7.7 es un número medible, no una comparación visual: "LCP < 2.5 s en Lighthouse móvil". Llegar ahí tomó tres vueltas.

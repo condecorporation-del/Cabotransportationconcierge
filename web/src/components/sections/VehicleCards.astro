@@ -21,8 +21,12 @@ const t = LABELS[locale];
     texto del prototipo promete es "sized to passengers and luggage", y eso es lo que muestran.
     Las fotos por vehículo llegan con las definitivas del cliente (F7.11). */}
 <ul class="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-  {VEHICLES.map((vehicle) => (
-    <li class="flex flex-col justify-between gap-6 border border-rule bg-paper p-7">
+  {VEHICLES.map((vehicle, index) => (
+    <li
+      class="flex flex-col justify-between gap-6 border border-rule bg-paper p-7"
+      data-reveal
+      style={`--reveal-delay: ${Math.min(index, 6) * 0.08}s`}
+    >
       <div>
         <h3 class="font-display text-h3 leading-tight text-ink">{vehicle.name}</h3>
         <span class="mt-4 block h-px w-8 bg-gold" aria-hidden="true" />

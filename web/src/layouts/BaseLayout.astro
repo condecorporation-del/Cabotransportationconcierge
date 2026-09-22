@@ -1,5 +1,6 @@
 ---
 import FloatingActions from "../components/FloatingActions.astro";
+import Motion from "../components/Motion.astro";
 import Seo from "../components/Seo.astro";
 import SiteFooter from "../components/SiteFooter.astro";
 import SiteHeader from "../components/SiteHeader.astro";
@@ -47,8 +48,19 @@ const path = Astro.url.pathname.replace(/^\/es(?=\/|$)/, "") || "/";
     <!-- Para el preload de la imagen LCP de una página en particular (el poster del hero, F7.7);
          vacío en el resto. -->
     <slot name="head" />
+    <!-- Sin JavaScript, [data-reveal] (F7.8) se queda visible: solo `Motion.astro` le agrega la
+         clase `.is-in` que lo revela, y sin script esa clase nunca llega. -->
+    <noscript>
+      <style>
+        [data-reveal] {
+          opacity: 1 !important;
+          transform: none !important;
+        }
+      </style>
+    </noscript>
   </head>
   <body class="flex min-h-dvh flex-col">
+    <Motion />
     <a
       href="#main"
       class="sr-only focus:not-sr-only focus:absolute focus:top-3 focus:left-3 focus:z-50 focus:bg-ink focus:px-4 focus:py-2 focus:text-pearl"
