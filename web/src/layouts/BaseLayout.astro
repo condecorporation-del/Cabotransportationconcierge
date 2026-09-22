@@ -44,6 +44,9 @@ const path = Astro.url.pathname.replace(/^\/es(?=\/|$)/, "") || "/";
       type="font/woff2"
       crossorigin
     />
+    <!-- Para el preload de la imagen LCP de una página en particular (el poster del hero, F7.7);
+         vacío en el resto. -->
+    <slot name="head" />
   </head>
   <body class="flex min-h-dvh flex-col">
     <a

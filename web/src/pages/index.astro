@@ -1,29 +1,61 @@
 ---
+import { getImage } from "astro:assets";
+
+import Hero from "../components/sections/Hero.astro";
 import HomeSection from "../components/sections/HomeSection.astro";
 import ServiceTiles from "../components/sections/ServiceTiles.astro";
 import VehicleCards from "../components/sections/VehicleCards.astro";
 import ZoneCards from "../components/sections/ZoneCards.astro";
+import heroPosterAsset from "../assets/hero-suburban.jpg";
 import { HOME_SECTIONS } from "../content/home";
 import BaseLayout from "../layouts/BaseLayout.astro";
+import { HERO_POSTER_SIZES, HERO_POSTER_WIDTHS } from "../lib/hero-media";
 import { SITE } from "../lib/site";
 
-// F7.6: la home, sección por sección, con el contenido del prototipo aprobado. El hero con
-// video es F7.7 y el cotizador del primer bloque se conecta en F8.
+// F7.6/F7.7: la home, sección por sección, con el contenido del prototipo aprobado. El
+// cotizador del primer bloque se conecta en F8.
 //
 // Las secciones con composición propia la reciben por slot; el resto pasa por el marco
 // compartido de `HomeSection`. El hijo se pasa solo cuando existe: `Astro.slots.has()` da
 // verdadero con cualquier hijo, aunque no pinte nada, y eso apagaría las fotos del resto.
+const HERO_SECTION = 0;
 const ZONES_SECTION = 3; // "Cabo transfers: destinations and rates"
 const FLEET_SECTION = 5; // "Our vehicles for Cabo transportation"
 const SERVICES_SECTION = 10; // "services-grid"
 const locale = SITE.defaultLocale;
+
+// Mismos anchos que el <Image> de Hero.astro (`hero-media.ts`): si el preload pidiera un ancho
+// distinto al que el navegador termina usando, se descargaría el archivo dos veces.
+const heroPoster = await getImage({
+  src: heroPosterAsset,
+  widths: [...HERO_POSTER_WIDTHS],
+  sizes: HERO_POSTER_SIZES,
+  format: "webp",
+  quality: 70,
+});
 ---
 
 <BaseLayout
   title="Cabo Transportation Concierge"
   description="Private airport transfers and chauffeur service in Los Cabos: fixed rates by zone, flight tracking and a driver waiting when you land."
 >
+  <Fragment slot="head">
+    {/* El poster del hero es la imagen LCP de la home (F7.7): se pide antes de que el
+        escáner de preload llegue al <Image>, no después. `imagesrcset`/`imagesizes` para que
+        el navegador precargue el mismo ancho que de verdad va a pintar, no el más grande. */}
+    <link
+      rel="preload"
+      as="image"
+      href={heroPoster.src}
+      imagesrcset={heroPoster.srcSet.attribute}
+      imagesizes={HERO_POSTER_SIZES}
+      fetchpriority="high"
+    />
+  </Fragment>
   {HOME_SECTIONS.map((section, index) => {
+    if (index === HERO_SECTION) {
+      return <Hero section={section} locale={locale} />;
+    }
     if (index === ZONES_SECTION) {
       return (
         <HomeSection section={section} index={index}>

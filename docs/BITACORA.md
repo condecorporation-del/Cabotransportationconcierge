@@ -2,6 +2,34 @@
 
 Una entrada por sesión o tarea, la más reciente arriba (formato en `AGENTS.md` §10).
 
+## 2026-09-21 — F7.7: el hero con video, y un LCP que pasó de 4.7 s a 1.9 s
+
+El primer bloque del sitio en el que el criterio de F7.7 es un número medible, no una comparación visual: "LCP < 2.5 s en Lighthouse móvil". Llegar ahí tomó tres vueltas.
+
+**Primera vuelta: el poster a resolución completa.** La primera versión ponía el JPEG del prototipo (2000×1133, 310 KB) tal cual, como el resto de fotos de la home. Medido: **4.74 s**, casi el doble del presupuesto. El motivo es obvio en retrospectiva — un teléfono de 390 px de ancho no necesita una imagen de 2000 px, y mandársela completa es puro desperdicio. Se movió el poster (solo él, no el resto de fotos de la home, que siguen esperando F7.11) a `src/assets/` para que pasara por `astro:assets`: cinco anchos en WebP, con calidad 70. El de 640 px pesa 26 KB en vez de 310.
+
+**Segunda vuelta: el salto entre anchos.** Con eso, LCP bajó a 2.70 s — mejor, pero todavía arriba. Resultó que Lighthouse emula un teléfono con densidad de píxeles 1.75, así que a un viewport de 412 px le corresponden ~721 px efectivos — y el salto de mis anchos (640 → 960) obligaba al navegador a pedir el escalón de 960 (57 KB), no el de 640. Un escalón intermedio en 768 px (38 KB) resolvió el salto.
+
+**Tercera vuelta, la de verdad: el video competía con el poster sin que se notara mirando la página.** Con el poster optimizado, la medición seguía inestable — entre 1.85 y 3.63 s según la corrida, con el mismo código. La causa: el video se difería hasta el evento `load` de la página, y en un servidor local ese evento dispara casi al instante (~93 ms), así que el video —varios MB— empezaba a descargarse casi al mismo tiempo que el poster. Un usuario real en una conexión lenta nunca vería esto (`load` tardaría lo suyo), pero el medidor sí lo captura tal cual pasa en la máquina donde se corre. Cambiar el disparador de `load` a `requestIdleCallback` (con una descarga mínima aun en navegadores sin esa API) separa el video del trabajo crítico en cualquier conexión, no solo en las lentas — y ahí la medición se volvió estable: **1.9 s en cuatro corridas seguidas**, con margen de sobra.
+
+**Un detalle de medición que vale la pena dejar escrito.** Lighthouse mide LCP de dos formas: `"simulate"` (por default) reconstruye la red a partir de un grafo de dependencias observado en una carga sin acelerar, y `"devtools"` acelera la red de verdad durante la carga real. Con nuestro cambio de `requestIdleCallback`, `"simulate"` se quedó pegado cerca de 2.5-2.6 s —su modelo no entiende la espera de un idle callback, solo ve al video "temprano" en el trazo—, mientras que `"devtools"`, que sí respeta el JavaScript real del navegador, bajó a 1.9 s. Se eligió `"devtools"` a propósito: mide lo que de verdad pasa, no lo que un simulador cree que pasa.
+
+**Qué se hizo, en limpio:**
+- El poster es la imagen LCP: `<Image>` de `astro:assets`, cinco anchos, WebP calidad 70, `fetchpriority="high"`, y un `<link rel="preload">` con el mismo `imagesrcset` para que el navegador no baje el archivo dos veces.
+- El video no lleva `<source>` en el HTML — un script se las agrega tras `requestIdleCallback`, y nunca si `prefers-reduced-motion` está activo.
+- Solo la pareja **ligera** del video (`hero-promo-light.mp4/webm`, ~6 MB cada uno). La pareja de escritorio de mayor resolución no cabe ni en su propio presupuesto de §12.1 (≤ 6.5 MB) sin recodificarse — eso es F7.15, no F7.7.
+- El Ken Burns del poster es puro CSS (`@keyframes` + `motion-safe:`), se apaga solo con menos movimiento.
+- El video funde hacia `--color-deep` al final del cuadro 16:9, para que no se note la costura con el panel de texto de abajo.
+
+**Archivos:** `web/src/components/sections/Hero.astro` (nuevo), `web/src/lib/hero-media.ts` (nuevo), `web/scripts/extract-hero-media.mjs` (nuevo), `web/scripts/perf.mjs` (nuevo), `web/src/assets/hero-suburban.jpg`, `web/public/videos/hero-promo-light.{mp4,webm}`, `web/src/pages/index.astro`, `web/src/layouts/BaseLayout.astro` (slot `head`), `web/tests/hero.spec.ts` (nuevo), `web/tests/tokens.spec.ts`, `.github/workflows/ci.yml`, `WORKPLAN.md`
+
+**Verificación**
+- `npm run perf` → **LCP 1.9 s** (throttling real de DevTools), cuatro corridas seguidas dentro de ±20 ms. Se sumó a CI.
+- `npm run e2e` → **45 passed** (8 nuevos): el poster con `fetchpriority`/`loading`/`srcset`, el preload compartiendo exactamente el mismo `imagesrcset`, el hero completo sin JavaScript, el video sin `<source>` hasta después de la carga inicial, terminando reproducido con las fuentes ligeras, sin `<source>` ni animación con `prefers-reduced-motion`, y 16:9 sin desbordar en móvil. Dos pruebas de `tokens.spec.ts` se ajustaron: apuntaban a "el primer `h2`/`p` de la página", y ahora el primero es el `<h1>` del hero (sin `h2`) — se anclaron a `#airport-transportation`, una sección conocida, en vez de "la primera que aparezca".
+- `npm run build`, `npm run check`, `format:check`, `npm run seo` (100/100) y `npm audit`: todo limpio.
+
+**F7 queda en 7/16.** Siguiente: F7.8, el resto de animaciones del prototipo (reveal al hacer scroll, brillo dorado, barra de progreso) como CSS e `IntersectionObserver` en una isla mínima, JS < 5 KB.
+
 ## 2026-09-21 — F7.6 cierra: la rejilla de servicios
 
 Última pieza de la home: seis fichas foto+título+CTA (Weddings, Bachelorette, Groups, Family, Limousines, City tours) que en el prototipo se dibujan a sangre, sin el contenedor con gutter que usa el resto de secciones.

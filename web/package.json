@@ -15,7 +15,9 @@
     "format:check": "prettier --check .",
     "medallion": "node scripts/medallion.mjs",
     "extract:home": "node scripts/extract-home.mjs",
-    "extract:catalog": "node scripts/extract-catalog.mjs"
+    "extract:catalog": "node scripts/extract-catalog.mjs",
+    "perf": "node scripts/perf.mjs",
+    "extract:hero-media": "node scripts/extract-hero-media.mjs"
   },
   "dependencies": {
     "@astrojs/react": "6.0.5",

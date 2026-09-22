@@ -1,0 +1,144 @@
+---
+import { Image } from "astro:assets";
+
+import heroPoster from "../../assets/hero-suburban.jpg";
+import type { HomeSection } from "../../content/home";
+import { localize } from "../../lib/nav";
+import type { Locale } from "../../lib/site";
+import { HERO_POSTER_SIZES, HERO_POSTER_WIDTHS } from "../../lib/hero-media";
+
+interface Props {
+  section: HomeSection;
+  locale: Locale;
+}
+
+const { section, locale } = Astro.props;
+
+// [kicker, lede, letra chica]: el orden en que el extractor los sacó del prototipo. La promo
+// de fecha ("Sep 1–30") es texto de campaña de CTC, no una cifra de la referencia (D-P3) — se
+// reescribe en F9.1 como el resto de la copia, no se filtra.
+const [kicker, lede, fineprint] = section.paragraphs;
+const cta = section.ctas[0];
+// El alt sale del extractor (home.json); la imagen en sí es la copia optimizable de
+// `src/assets/`, no la de `public/` que usa el resto de la home — ver `hero-media.ts`.
+const posterAlt = section.images[0]!.alt;
+
+// El cotizador real del hero es F8; por ahora el CTA baja a la sección de zonas y precios en
+// vez de abrir un formulario que todavía no existe.
+const reserveHref = localize(cta?.href === "index.html#booking" ? "/book" : "/", locale);
+---
+
+<section class="relative w-full overflow-hidden bg-deep" aria-label="Hero">
+  <div class="relative aspect-video w-full" data-hero-frame>
+    {/* El poster es la imagen LCP: sin JS, sin depender de que el video cargue. Varios anchos
+        (F7.7) — mandar los 2000 px del original a un teléfono es lo que hacía fallar el
+        presupuesto de LCP (ver bitácora). El Ken Burns es puro CSS y se apaga solo con
+        `prefers-reduced-motion`. */}
+    <Image
+      src={heroPoster}
+      alt={posterAlt}
+      widths={[...HERO_POSTER_WIDTHS]}
+      sizes={HERO_POSTER_SIZES}
+      format="webp"
+      quality={70}
+      fetchpriority="high"
+      loading="eager"
+      decoding="async"
+      class="absolute inset-0 h-full w-full object-cover motion-safe:animate-[ctc-kenburns_22s_ease-in-out_infinite_alternate]"
+      data-hero-poster
+    />
+    {/* Vacío a propósito: sin <source>, el navegador no descarga nada. El script de abajo le
+        agrega las fuentes después de la carga inicial (F7.7: "video diferido"), y solo si el
+        visitante no pidió menos movimiento. Sin `poster`: el `<Image>` de arriba ocupa el mismo
+        cuadro exacto y ya cumple ese papel, sin pedir un archivo aparte. */}
+    <video
+      class="absolute inset-0 h-full w-full object-cover opacity-0 transition-opacity duration-700"
+      muted
+      loop
+      playsinline
+      preload="none"
+      aria-hidden="true"
+      tabindex="-1"
+      data-hero-video
+    ></video>
+    {/* Funde el video hacia el color exacto del panel de abajo (--color-deep): sin esto se ve
+        la costura entre el cuadro 16:9 y el texto. */}
+    <div
+      class="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-deep"
+      aria-hidden="true"
+    />
+  </div>
+
+  <div class="relative bg-deep px-(--spacing-gutter) pt-10 pb-20 text-center sm:pt-12 sm:pb-28">
+    <div class="mx-auto flex max-w-3xl flex-col items-center">
+      {kicker && (
+        <p class="font-brand text-label tracking-(--tracking-label) text-gold-light uppercase">
+          {kicker}
+        </p>
+      )}
+      <h1 class="font-display tracking-(--tracking-display) mt-4 text-hero leading-[1.02] text-balance text-pearl">
+        {section.heading}
+      </h1>
+      {lede && <p class="mt-5 max-w-(--container-prose) text-lead text-mist">{lede}</p>}
+      {cta && (
+        <a
+          href={reserveHref}
+          class="font-brand text-label tracking-(--tracking-label) mt-8 bg-gold px-10 py-4 text-ink uppercase hover:bg-gold-light"
+        >
+          {cta.label}
+        </a>
+      )}
+      {fineprint && <p class="mt-5 text-small text-stone">{fineprint}</p>}
+    </div>
+  </div>
+</section>
+
+<style is:global>
+  /* `is:global`: Astro le cambia el nombre a un `@keyframes` con scope normal, y entonces la
+     utilidad `animate-[ctc-kenburns_...]` de Tailwind ya no encontraría la animación. */
+  @keyframes ctc-kenburns {
+    from {
+      transform: scale(1.02) translate3d(0, 0, 0);
+    }
+    to {
+      transform: scale(1.16) translate3d(-1.5%, -1%, 0);
+    }
+  }
+</style>
+
+<script>
+  // Video diferido (F7.7): las <source> no van en el HTML, así que nada de esto compite por
+  // ancho de banda con el poster ni con las fuentes de la primera pantalla. Se agregan después
+  // del `load` de la página, y nunca si el visitante pidió menos movimiento.
+  //
+  // El `load` no basta por sí solo: en una conexión rápida dispara casi de inmediato, y ahí el
+  // video (varios MB) arranca su descarga tan pegado a la del poster que un medidor de LCP que
+  // reconstruye la carga bajo red lenta (Lighthouse en modo "simulate") los ve competir por el
+  // mismo ancho de banda limitado, aunque en una conexión de verdad lenta el `load` habría
+  // tardado de sobra. `requestIdleCallback` (con margen) separa el video del trabajo crítico
+  // en cualquier conexión, no solo en las lentas.
+  const frame = document.querySelector<HTMLElement>("[data-hero-frame]");
+  const video = frame?.querySelector<HTMLVideoElement>("[data-hero-video]");
+  if (video && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    const attach = () => {
+      // Un solo par ligero para todas las pantallas (F7.7); la pareja de escritorio de mayor
+      // resolución, con reencode para caber en su presupuesto de §12.1, es F7.15.
+      video.innerHTML =
+        '<source src="/videos/hero-promo-light.webm" type="video/webm">' +
+        '<source src="/videos/hero-promo-light.mp4" type="video/mp4">';
+      video.load();
+      // `classList.add` en vez de un segundo utility de Tailwind: dos clases de opacidad con
+      // la misma especificidad dependen del orden de generación del CSS para saber cuál gana.
+      video.addEventListener("playing", () => (video.style.opacity = "1"), { once: true });
+      video.play().catch(() => {
+        // Autoplay bloqueado (política del navegador, batería baja): se queda el poster.
+      });
+    };
+    const idle = (callback: () => void) =>
+      "requestIdleCallback" in window
+        ? window.requestIdleCallback(callback, { timeout: 2000 })
+        : setTimeout(callback, 300);
+    if (document.readyState === "complete") idle(attach);
+    else window.addEventListener("load", () => idle(attach), { once: true });
+  }
+</script>

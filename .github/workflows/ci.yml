@@ -89,6 +89,8 @@ jobs:
         run: npm run e2e
       - name: Lighthouse SEO en 100
         run: npm run seo
+      - name: LCP del hero bajo 2.5s en móvil (F7.7)
+        run: npm run perf
       - run: npm audit --audit-level=high
 
   secrets:

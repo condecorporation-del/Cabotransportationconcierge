@@ -5,14 +5,17 @@ import { expect, test } from "@playwright/test";
  *  estas pruebas miran la familia calculada y además le preguntan al navegador si la fuente
  *  de verdad está disponible. */
 
+// Ancladas a una sección concreta (`#airport-transportation`, clara, sin composición propia) en
+// vez de "la primera que encuentre": el hero tiene su propio <h1> y un <p> de kicker en Cinzel,
+// así que "el primer h2/p de la página" ya no es un ejemplo representativo del cuerpo del sitio.
 const FACES = [
   { selector: "header nav a", family: "Cinzel", probe: '600 16px "Cinzel"' },
   {
-    selector: "main section h2",
+    selector: "#airport-transportation h2",
     family: "Cormorant Garamond",
     probe: '600 16px "Cormorant Garamond"',
   },
-  { selector: "main section p", family: "Manrope", probe: '400 16px "Manrope"' },
+  { selector: "#airport-transportation p", family: "Manrope", probe: '400 16px "Manrope"' },
 ];
 
 for (const { selector, family, probe } of FACES) {
@@ -48,7 +51,7 @@ test("la paleta de marca llega a la página", async ({ page }) => {
   // El cuerpo del sitio es claro (así es el prototipo aprobado); el obsidiana queda para el
   // header, el footer, el hero y los paneles destacados.
   await expect(page.locator("body")).toHaveCSS("background-color", "rgb(249, 250, 251)");
-  await expect(page.locator("main section h2").first()).toHaveCSS("color", "rgb(12, 15, 20)");
+  await expect(page.locator("#airport-transportation h2")).toHaveCSS("color", "rgb(12, 15, 20)");
   await expect(page.locator("footer")).toHaveCSS("background-color", "rgb(12, 15, 20)");
 });
 
