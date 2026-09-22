@@ -1,0 +1,59 @@
+{
+  "hero": {
+    "eyebrow": "SJD Airport Guide",
+    "heading": "Cabo San Lucas <em>Arrival Guide</em>",
+    "lede": "Everything you need to know when you land at Los Cabos International Airport (SJD). From San José del Cabo to Cabo San Lucas—we make your arrival seamless.",
+    "poster": {
+      "src": "/images/arrival-guide/hero-suburban.jpg",
+      "alt": "Travelers at Los Cabos International Airport"
+    }
+  },
+  "videoGuide": {
+    "kicker": "Watch Video Guide",
+    "heading": "How to find us at SJD Airport",
+    "body": "Watch this short video to see exactly where our hostess will be waiting for you upon your arrival in Cabo San Lucas or San José del Cabo.",
+    "poster": {
+      "src": "/images/arrival-guide/sprinter-interior.jpg",
+      "alt": "Private Sprinter ready for your arrival at SJD"
+    }
+  },
+  "beAware": {
+    "heading": "Be Aware",
+    "body": "Kindly inform us if your group arrives at different flights (add on comments). Please be sure to provide us with your complete flight information, as well as your travel party's flight information; failure to do so may require additional charges."
+  },
+  "steps": {
+    "kicker": "At the Airport",
+    "heading": "What to do once my plane lands",
+    "intro": "Follow these simple steps to meet your Cabo Transportation Concierge hostess at Los Cabos International Airport (SJD).",
+    "items": [
+      {
+        "title": "Welcome to Cabo!",
+        "body": "You are a few moments away from your airport transfer."
+      },
+      {
+        "title": "After luggage & customs",
+        "body": "Once you have claimed your luggage and cleared customs, you will immediately see in front of you two doors that lead in the same direction. No matter which door you choose, you will pass many timeshare representatives who will try to make you stop or confuse you by saying they work for the airport or your transportation company; however this is not true and for your safety we highly recommend to avoid them."
+      },
+      {
+        "title": "Keep moving",
+        "body": "Please continue walking without stopping until you have exited the airport."
+      },
+      {
+        "title": "Find your hostess",
+        "body": "Once outside please walk past the taxi drivers and straight cross the yellow stripes towards the \"Island Bar\". A Cabo Transportation Concierge hostess holding an \"CABO TRANSPORTATION CONCIERGE\" sign will be waiting for you in Canopy 3."
+      }
+    ],
+    "highlight": {
+      "title": "Look for the checkpoint",
+      "body": "A Cabo Transportation Concierge hostess holding an <strong>\"CABO TRANSPORTATION CONCIERGE\"</strong> sign will be waiting for you in Canopy 3, past the Island Bar."
+    }
+  },
+  "cta": {
+    "heading": "Ready to Book your transfer?",
+    "body": "Reserve your private airport transportation from SJD to Cabo San Lucas or San José del Cabo in seconds. First time in Baja? Read where Cabo is and why it is in Mexico.",
+    "cta": {
+      "label": "Reserve now",
+      "href": "index.html#booking"
+    }
+  }
+}

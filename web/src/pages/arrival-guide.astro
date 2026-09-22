@@ -1,0 +1,188 @@
+---
+import { getImage, Image } from "astro:assets";
+
+import heroPosterAsset from "../assets/hero-suburban.jpg";
+import { ARRIVAL } from "../content/arrival";
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { localize } from "../lib/nav";
+import { HERO_POSTER_SIZES, HERO_POSTER_WIDTHS } from "../lib/hero-media";
+import { SITE } from "../lib/site";
+
+// F7.9: `/arrival-guide` migrada del prototipo. D-P6: el video de la referencia muestra a *su*
+// anfitriona y *su* letrero — aquí no hay ningún `<video>`, solo el poster propio que el
+// prototipo ya traía (`sprinter-interior.jpg`). El video real, cuando el cliente lo entregue,
+// reemplaza ese recuadro sin tocar el resto de la página.
+const locale = SITE.defaultLocale;
+const reserveHref = localize("/book", locale);
+
+// Mismo poster que el hero de la home (F7.7): el prototipo reusa la foto a propósito, y
+// reimportarla no duplica el archivo — Vite la reconoce como el mismo módulo.
+const heroPoster = await getImage({
+  src: heroPosterAsset,
+  widths: [...HERO_POSTER_WIDTHS],
+  sizes: HERO_POSTER_SIZES,
+  format: "webp",
+  quality: 70,
+});
+---
+
+<BaseLayout
+  title="Cabo San Lucas Arrival Guide"
+  description="Where to meet your Cabo Transportation Concierge driver at Los Cabos International Airport (SJD): step by step, from baggage claim to your vehicle."
+>
+  <Fragment slot="head">
+    <link
+      rel="preload"
+      as="image"
+      href={heroPoster.src}
+      imagesrcset={heroPoster.srcSet.attribute}
+      imagesizes={HERO_POSTER_SIZES}
+      fetchpriority="high"
+    />
+  </Fragment>
+
+  {/* ---------- Hero: poster propio, sin video (D-P6) ---------- */}
+  <section class="relative flex min-h-[50vh] w-full items-center justify-center overflow-hidden bg-deep px-(--spacing-gutter) py-24 text-center">
+    <Image
+      src={heroPosterAsset}
+      alt={ARRIVAL.hero.poster.alt}
+      widths={[...HERO_POSTER_WIDTHS]}
+      sizes={HERO_POSTER_SIZES}
+      format="webp"
+      quality={70}
+      fetchpriority="high"
+      loading="eager"
+      decoding="async"
+      class="absolute inset-0 h-full w-full object-cover object-[center_35%]"
+    />
+    {/* Un lavado parejo al 75% dejaba la foto —de noche, ya oscura de por sí— prácticamente
+        negra. Un degradado, más fuerte abajo (donde está el texto) que arriba, mantiene la
+        foto visible y el texto legible, igual que el gradiente del hero de la home (F7.7). */}
+    <div
+      class="absolute inset-0 bg-gradient-to-b from-deep/55 via-deep/70 to-deep/90"
+      aria-hidden="true"
+    ></div>
+    <div class="relative mx-auto flex max-w-3xl flex-col items-center">
+      <span class="font-brand text-label tracking-(--tracking-label) border border-gold px-5 py-2 text-gold-light uppercase">
+        {ARRIVAL.hero.eyebrow}
+      </span>
+      <h1
+        class="font-display tracking-(--tracking-display) mt-6 text-h1 leading-[1.05] text-pearl"
+        set:html={ARRIVAL.hero.heading}
+      />
+      <p class="mt-5 max-w-(--container-prose) text-lead text-mist">{ARRIVAL.hero.lede}</p>
+    </div>
+  </section>
+
+  {/* ---------- Cómo encontrarnos: poster propio, sin video ---------- */}
+  <section class="border-b border-gold-dark/20 bg-ink py-(--spacing-section)">
+    <div class="mx-auto max-w-(--container-site) px-(--spacing-gutter)" data-reveal>
+      <header class="mx-auto flex max-w-2xl flex-col items-center text-center">
+        <p class="font-brand text-label tracking-(--tracking-label) text-gold uppercase">
+          {ARRIVAL.videoGuide.kicker}
+        </p>
+        <h2 class="font-display tracking-(--tracking-display) mt-4 text-h2 leading-[1.02] text-pearl">
+          {ARRIVAL.videoGuide.heading}
+        </h2>
+        <p class="mt-4 text-lead text-mist">{ARRIVAL.videoGuide.body}</p>
+      </header>
+      <div class="mx-auto mt-10 aspect-video max-w-3xl overflow-hidden border border-gold-dark/30 bg-deep">
+        <img
+          src={ARRIVAL.videoGuide.poster.src}
+          alt={ARRIVAL.videoGuide.poster.alt}
+          width="1600"
+          height="900"
+          loading="lazy"
+          decoding="async"
+          class="h-full w-full object-cover"
+        />
+      </div>
+    </div>
+  </section>
+
+  {/* ---------- Be Aware: aviso, no advertencia ajena — el dorado es el único acento de
+      la marca (§3.5.6); ni el prototipo ni CTC necesitan un segundo color de "alerta". ---------- */}
+  <section class="border-b border-gold-dark/20 bg-deep py-16">
+    <div class="mx-auto max-w-(--container-site) px-(--spacing-gutter)">
+      <div
+        class="mx-auto flex max-w-3xl items-start gap-6 border-l-2 border-gold bg-ink p-8 md:p-10"
+        data-reveal
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          width="28"
+          height="28"
+          aria-hidden="true"
+          class="mt-1 shrink-0 text-gold"
+        >
+          <path
+            d="m23.77 20.57 -10 -19A2 2 0 0 0 12 0.5a2 2 0 0 0 -1.77 1.07l-10 19a2 2 0 0 0 0.06 2A2 2 0 0 0 2 23.5h20a2 2 0 0 0 1.77 -2.93ZM11 8.5a1 1 0 0 1 2 0v6a1 1 0 0 1 -2 0ZM12.05 20a1.53 1.53 0 0 1 -1.52 -1.47A1.48 1.48 0 0 1 12 17a1.53 1.53 0 0 1 1.52 1.47A1.48 1.48 0 0 1 12.05 20Z"
+            fill="currentColor"
+          ></path>
+        </svg>
+        <div>
+          <h2 class="font-display text-h3 leading-tight text-pearl">{ARRIVAL.beAware.heading}</h2>
+          <p class="mt-3 text-slate text-mist">{ARRIVAL.beAware.body}</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  {/* ---------- Pasos numerados: son una secuencia real, la numeración aquí sí dice algo
+      (principio de "la estructura es información") ---------- */}
+  <section class="border-b border-gold-dark/20 bg-ink py-(--spacing-section)">
+    <div class="mx-auto max-w-3xl px-(--spacing-gutter)">
+      <header class="flex flex-col items-center text-center" data-reveal>
+        <p class="font-brand text-label tracking-(--tracking-label) text-gold uppercase">
+          {ARRIVAL.steps.kicker}
+        </p>
+        <h2 class="font-display tracking-(--tracking-display) mt-4 text-h2 leading-[1.02] text-pearl">
+          {ARRIVAL.steps.heading}
+        </h2>
+        <p class="mt-4 max-w-xl text-lead text-mist">{ARRIVAL.steps.intro}</p>
+      </header>
+
+      <ol class="mt-14 flex flex-col gap-10">
+        {ARRIVAL.steps.items.map((step, index) => (
+          <li
+            class="flex gap-6"
+            data-reveal
+            style={`--reveal-delay: ${Math.min(index, 6) * 0.08}s`}
+          >
+            <span class="font-display flex h-16 w-16 shrink-0 items-center justify-center border border-gold-dark/40 text-2xl text-gold-light">
+              {index + 1}
+            </span>
+            <div class="pt-2">
+              <h3 class="font-display text-h3 leading-tight text-pearl">{step.title}</h3>
+              <p class="mt-2 text-mist" set:html={step.body} />
+            </div>
+          </li>
+        ))}
+      </ol>
+
+      <div class="mt-14 border border-gold/25 bg-deep p-8 md:p-10" data-reveal>
+        <h3 class="font-display text-h3 leading-tight text-pearl">
+          {ARRIVAL.steps.highlight.title}
+        </h3>
+        <p class="mt-3 text-mist" set:html={ARRIVAL.steps.highlight.body} />
+      </div>
+    </div>
+  </section>
+
+  {/* ---------- CTA final ---------- */}
+  <section class="bg-deep py-(--spacing-section) text-center">
+    <div class="mx-auto max-w-2xl px-(--spacing-gutter)" data-reveal>
+      <h2 class="font-display tracking-(--tracking-display) text-h2 leading-[1.02] text-pearl">
+        {ARRIVAL.cta.heading}
+      </h2>
+      <p class="mt-4 text-lead text-mist">{ARRIVAL.cta.body}</p>
+      <a
+        href={reserveHref}
+        class="ctc-shine font-brand text-label tracking-(--tracking-label) mt-8 bg-gold px-10 py-4 text-ink uppercase hover:bg-gold-light"
+      >
+        {ARRIVAL.cta.cta.label}
+      </a>
+    </div>
+  </section>
+</BaseLayout>

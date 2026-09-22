@@ -164,3 +164,15 @@ test.describe("rejilla de servicios", () => {
     expect(box?.x).toBe(0);
   });
 });
+
+test("el FAQ no arrastra botones ni fotos del footer", async ({ page }) => {
+  // Bug real de extracción: la sección del FAQ es la última del prototipo y, sin acotar cada
+  // sección a su propio </section>, se quedaba con todo lo que viene después — el <footer>
+  // completo. Se coló como si fueran suyos un botón y una foto que en realidad son del pie de
+  // página. Ver `scripts/lib/prototype-html.mjs`.
+  await page.goto("/");
+  const faqSection = page.locator("#faq");
+  const ctas = faqSection.getByRole("link", { name: /get a quote/i });
+  await expect(ctas).toHaveCount(1);
+  await expect(faqSection.locator("img")).toHaveCount(0);
+});

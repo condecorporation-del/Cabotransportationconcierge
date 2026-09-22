@@ -1,5 +1,6 @@
 /**
- * Lighthouse en modo móvil, solo el LCP, contra el sitio construido (F7.7).
+ * Lighthouse en modo móvil, solo el LCP, contra el sitio construido (F7.7, extendido en F7.9
+ * a `/arrival-guide` — su hero tiene el mismo poster pesado como LCP).
  *
  * El criterio de F7.7 es literal: "LCP < 2.5 s en Lighthouse móvil". No una categoría completa
  * (`performance`, que castigaría cosas de fases futuras, como los tamaños de imagen de F7.11 o
@@ -7,7 +8,8 @@
  *
  * Usa el Chromium de Playwright, igual que `seo.mjs`, para correr igual aquí y en CI.
  *
- *   npm run perf
+ *   npm run perf                      # / y /arrival-guide (default de package.json)
+ *   node scripts/perf.mjs /otra-ruta  # una ruta puntual
  */
 import { chromium } from "@playwright/test";
 import * as chromeLauncher from "chrome-launcher";
@@ -18,8 +20,10 @@ import { withPreview } from "./preview.mjs";
 const LCP_BUDGET_MS = 2500;
 
 process.exitCode = await withPreview(async (origin) => {
-  const urls = process.argv.slice(2);
-  if (urls.length === 0) urls.push(`${origin}/`);
+  const paths = process.argv.slice(2);
+  const urls = (paths.length === 0 ? ["/"] : paths).map((path) =>
+    path.startsWith("http") ? path : `${origin}${path}`,
+  );
 
   const chrome = await chromeLauncher.launch({
     chromePath: chromium.executablePath(),

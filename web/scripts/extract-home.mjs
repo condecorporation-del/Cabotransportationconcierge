@@ -13,72 +13,11 @@
 import { copyFile, mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 
+import { all, rich, splitSections, stripBlock, text } from "./lib/prototype-html.mjs";
+
 const SOURCE = path.join("..", "site", "index.html");
 const OUT = path.join("src", "content", "home.json");
 const IMAGE_DIR = path.join("public", "images", "home");
-
-const ENTITIES = {
-  quot: '"',
-  apos: "'",
-  lt: "<",
-  gt: ">",
-  amp: "&",
-  nbsp: " ",
-  mdash: "—",
-  ndash: "–",
-  hellip: "…",
-  rsquo: "’",
-  lsquo: "‘",
-  ldquo: "“",
-  rdquo: "”",
-};
-
-/** Entidades y espacios, sin tocar etiquetas. */
-function clean(value) {
-  return value
-    .replace(/&#(\d+);/g, (_, code) => String.fromCharCode(Number(code)))
-    .replace(/&(\w+);/g, (match, name) => ENTITIES[name] ?? match)
-    .replace(/\s+/g, " ")
-    .trim();
-}
-
-/**
- * Texto plano. Las etiquetas se quitan sin dejar espacio en su lugar: reemplazarlas por " "
- * convierte `<strong>SJD</strong>.` en "SJD ." con el espacio colgando antes del punto.
- */
-function text(fragment) {
-  return clean(
-    fragment
-      .replace(/<!--.*?-->/gs, "")
-      .replace(/<br\s*\/?>/gi, " ")
-      .replace(/<[^>]+>/g, ""),
-  );
-}
-
-/**
- * Igual, pero conserva `<strong>` y `<em>`: en el prototipo marcan datos (el aeropuerto, el
- * tipo de servicio), no decoran.
- *
- * El centinela tiene que ser algo que no pueda aparecer en el texto. Un número entre espacios
- * no sirve: "up to 10 guests" se rompería.
- */
-function rich(fragment) {
-  const held = [];
-  const masked = fragment
-    .replace(/<!--.*?-->/gs, "")
-    .replace(/<(\/?)(strong|em|b|i)\b[^>]*>/gi, (_, slash, tag) => {
-      const name = /^(b)$/i.test(tag) ? "strong" : /^(i)$/i.test(tag) ? "em" : tag.toLowerCase();
-      held.push(`<${slash}${name}>`);
-      return `@@${held.length - 1}@@`;
-    })
-    .replace(/<br\s*\/?>/gi, " ")
-    .replace(/<[^>]+>/g, "");
-  return clean(masked).replace(/@@(\d+)@@/g, (_, index) => held[Number(index)]);
-}
-
-function all(pattern, source) {
-  return [...source.matchAll(pattern)];
-}
 
 /**
  * El cotizador del primer bloque es un widget, no prosa — y en el prototipo vive dentro de un
@@ -130,11 +69,16 @@ function isReferenceClaim(value) {
 }
 
 const html = await readFile(SOURCE, "utf8");
-const body = html.slice(html.indexOf("<body"));
+// La tarjeta promocional del velero (`phoenix-promo`, $100/persona, "RESERVE YOUR SAIL") vive
+// *adentro* de la sección de info de SJD, no en su propia `<section>` — a diferencia del promo
+// de $600 de más abajo, que sí abre su propia sección y por eso ya sale aparte. Sin quitarla de
+// aquí, sus párrafos y su lista de features se cuelan como si fueran prosa del aeropuerto: no es
+// contenido falso (D-P3 es sobre eso), es contenido de un servicio distinto mezclado a media
+// oración con el de traslados. Se retira entera; su propia tarjeta queda pendiente.
+const body = stripBlock(html.slice(html.indexOf("<body")), "phoenix-promo");
 
 const sections = [];
-for (const chunk of body.split(/(?=<section\b)/).slice(1)) {
-  const open = chunk.match(/<section([^>]*)>/)?.[1] ?? "";
+for (const { openTag: open, inner: chunk } of splitSections(body)) {
   const heading = chunk.match(/<h[12][^>]*>(.*?)<\/h[12]>/s)?.[1];
 
   // La sección de testimonios es prueba social de la referencia de punta a punta: no se filtra
@@ -144,13 +88,19 @@ for (const chunk of body.split(/(?=<section\b)/).slice(1)) {
     continue;
   }
 
-  const paragraphs = all(/<p[^>]*>(.*?)<\/p>/gs, chunk)
+  // `<p\b` y `<li\b`, no `<p[^>]*>` a secas: sin el límite de palabra, "<p" hace match con el
+  // arranque de cualquier otra etiqueta que empiece con esa letra — un `<path>` de un ícono
+  // SVG, por ejemplo — y el `.*?` no greedy sigue de largo hasta el primer `</p>` real,
+  // tragándose de paso el título y lo que venga en medio. Costó una comparación bytes-a-bytes
+  // encontrarlo: el párrafo de "Be Aware" en `/arrival-guide` salía con "Be Aware" duplicado
+  // al principio, viniendo de un ícono de alerta con `<path>` antes del texto real.
+  const paragraphs = all(/<p\b[^>]*>(.*?)<\/p>/gs, chunk)
     .map((m) => rich(m[1]))
     .filter(
       (p) => p.replace(/<[^>]+>/g, "").length > 40 && !isWidgetChrome(p) && !isReferenceClaim(p),
     );
 
-  const bullets = all(/<li[^>]*>(.*?)<\/li>/gs, chunk)
+  const bullets = all(/<li\b[^>]*>(.*?)<\/li>/gs, chunk)
     .map((m) => text(m[1]))
     .filter((b) => b.length > 3 && b.length < 220 && !isWidgetChrome(b) && !isReferenceClaim(b));
 
