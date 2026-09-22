@@ -100,30 +100,32 @@ const heroPoster = await getImage({
     </div>
   </section>
 
-  {/* ---------- Be Aware: aviso, no advertencia ajena — el dorado es el único acento de
-      la marca (§3.5.6); ni el prototipo ni CTC necesitan un segundo color de "alerta". ---------- */}
+  {/* ---------- Be Aware: color ámbar del prototipo, tal cual ---------- */}
   <section class="border-b border-gold-dark/20 bg-deep py-16">
     <div class="mx-auto max-w-(--container-site) px-(--spacing-gutter)">
       <div
-        class="mx-auto flex max-w-3xl items-start gap-6 border-l-2 border-gold bg-ink p-8 md:p-10"
+        class="relative mx-auto max-w-3xl overflow-hidden border border-amber-500/30 bg-ink p-8 md:p-10"
         data-reveal
       >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 24 24"
-          width="28"
-          height="28"
-          aria-hidden="true"
-          class="mt-1 shrink-0 text-gold"
-        >
-          <path
-            d="m23.77 20.57 -10 -19A2 2 0 0 0 12 0.5a2 2 0 0 0 -1.77 1.07l-10 19a2 2 0 0 0 0.06 2A2 2 0 0 0 2 23.5h20a2 2 0 0 0 1.77 -2.93ZM11 8.5a1 1 0 0 1 2 0v6a1 1 0 0 1 -2 0ZM12.05 20a1.53 1.53 0 0 1 -1.52 -1.47A1.48 1.48 0 0 1 12 17a1.53 1.53 0 0 1 1.52 1.47A1.48 1.48 0 0 1 12.05 20Z"
-            fill="currentColor"
-          ></path>
-        </svg>
-        <div>
-          <h2 class="font-display text-h3 leading-tight text-pearl">{ARRIVAL.beAware.heading}</h2>
-          <p class="mt-3 text-slate text-mist">{ARRIVAL.beAware.body}</p>
+        <div class="absolute inset-y-0 left-0 w-1 bg-amber-500/60"></div>
+        <div class="flex items-start gap-6 pl-4">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            width="28"
+            height="28"
+            aria-hidden="true"
+            class="mt-1 shrink-0 text-amber-400"
+          >
+            <path
+              d="m23.77 20.57 -10 -19A2 2 0 0 0 12 0.5a2 2 0 0 0 -1.77 1.07l-10 19a2 2 0 0 0 0.06 2A2 2 0 0 0 2 23.5h20a2 2 0 0 0 1.77 -2.93ZM11 8.5a1 1 0 0 1 2 0v6a1 1 0 0 1 -2 0ZM12.05 20a1.53 1.53 0 0 1 -1.52 -1.47A1.48 1.48 0 0 1 12 17a1.53 1.53 0 0 1 1.52 1.47A1.48 1.48 0 0 1 12.05 20Z"
+              fill="currentColor"
+            ></path>
+          </svg>
+          <div>
+            <h2 class="font-display text-h3 leading-tight text-pearl">{ARRIVAL.beAware.heading}</h2>
+            <p class="mt-3 text-slate text-mist">{ARRIVAL.beAware.body}</p>
+          </div>
         </div>
       </div>
     </div>

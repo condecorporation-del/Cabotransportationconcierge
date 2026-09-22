@@ -44,9 +44,14 @@
       "heading": "Cabo airport transportation from Los Cabos International Airport (SJD)",
       "paragraphs": [
         "Every Cabo trip starts at <strong>Los Cabos International Airport (SJD)</strong>. Cabo Transportation Concierge provides <strong>private Cabo airport transportation</strong> from the terminal to your resort, hotel, or villa in <strong>Cabo San Lucas</strong> and <strong>San José del Cabo</strong>. No shared vans, no extra hotel stops, no waiting for strangers.",
-        "When you land at <strong>Los Cabos Airport</strong>, a certified bilingual driver is already tracking your SJD flight and waiting outside with your name. Your private vehicle — SUV, Sprinter, or van — leaves when you are ready."
+        "When you land at <strong>Los Cabos Airport</strong>, a certified bilingual driver is already tracking your SJD flight and waiting outside with your name. Your private vehicle — SUV, Sprinter, or van — leaves when you are ready.",
+        "The Cabo bucket-list · by Cabo Transportation Concierge",
+        "Cabo transportation to The Arch and sailboat tours"
       ],
-      "bullets": [],
+      "bullets": [
+        "Private sailboat for your group — up to 10 guests",
+        "Hotel transportation included — door to dock to door"
+      ],
       "faq": [],
       "ctas": [
         {
@@ -206,12 +211,12 @@
       "heading": "Why travelers choose Cabo Transportation Concierge",
       "paragraphs": [
         "Private Cabo airport transportation in Cabo San Lucas and San José del Cabo: flight tracking, bilingual drivers, no hidden fees.",
-        "No extra charge on delayed flights. We monitor every SJD arrival for a seamless, stress-free pickup.",
-        "Dedicated private vehicle & secure luggage handling solely for you and your party.",
-        "English-Spanish certified drivers with local expertise, at your service from the moment you land.",
-        "Enjoy complimentary cold refreshments upon your arrival to Cabo.",
-        "Travel with complete peace of mind. Our modern fleet is fully covered.",
-        "No hidden fees or unexpected stops. The fastest, safest route is included.",
+        "Flight tracking on Cabo airport transportationNo extra charge on delayed flights. We monitor every SJD arrival for a seamless, stress-free pickup.",
+        "Private Cabo transfersDedicated private vehicle & secure luggage handling solely for you and your party.",
+        "Bilingual drivers for Cabo transfersEnglish-Spanish certified drivers with local expertise, at your service from the moment you land.",
+        "Drinks included on Cabo airport shuttleEnjoy complimentary cold refreshments upon your arrival to Cabo.",
+        "Insured Cabo transportation fleetTravel with complete peace of mind. Our modern fleet is fully covered.",
+        "Tolls included on Cabo transfersNo hidden fees or unexpected stops. The fastest, safest route is included.",
         "From <strong>Cabo transportation</strong> to Pedregal and Diamante villas to resorts on The Corridor, we serve properties including Esperanza, Grand Velas, Chileno Bay, Montage, Nobu, Pueblo Bonito, and Las Ventanas al Paraíso. <strong>No hidden fees.</strong>"
       ],
       "bullets": [],
@@ -290,8 +295,7 @@
       "dark": false,
       "heading": "Cabo airport transportation photos",
       "paragraphs": [
-        "Private Cabo airport transportation for families and groups: vehicles, drivers, and hotel drop-offs.",
-        "Don't just take our word for it: see what our guests are saying."
+        "Private Cabo airport transportation for families and groups: vehicles, drivers, and hotel drop-offs."
       ],
       "bullets": [],
       "faq": [],
@@ -728,7 +732,12 @@
           "href": "index.html#booking"
         }
       ],
-      "images": [],
+      "images": [
+        {
+          "src": "/images/home/ctc-medallion-192.webp",
+          "alt": "Cabo Transportation Concierge"
+        }
+      ],
       "tiles": []
     }
   ]
